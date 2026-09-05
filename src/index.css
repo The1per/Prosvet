@@ -1,0 +1,464 @@
+@import "tailwindcss";
+
+/* ============ ТЕМЫ ============ */
+:root {
+  --bg: #07080d;
+  --bg-2: #0b0d16;
+  --ink: #f2f4fb;
+  --ink-2: #a2a8bf;
+  --ink-3: #6d7391;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --card: rgba(255, 255, 255, 0.035);
+  --card-2: rgba(255, 255, 255, 0.06);
+  --accent: #ff5d47;
+  --accent-2: #ffb03a;
+  --cool: #56d3ff;
+  --violet: #9d7bff;
+  --shadow: 0 24px 70px -30px rgba(0, 0, 0, 0.9);
+  --grid: rgba(255, 255, 255, 0.055);
+  /* Кривая прибора и линия опроса -- ось отсчёта, а не показание: цвет у них
+     один и тот же всегда, подобран так, чтобы читался на обеих темах. */
+  --curve: #e9edf6;
+  --poll: #ffb03a;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --bg: #f6f4f0;
+  --bg-2: #ffffff;
+  --ink: #14161f;
+  --ink-2: #4f5468;
+  --ink-3: #868ba1;
+  --line: rgba(15, 18, 30, 0.1);
+  --line-strong: rgba(15, 18, 30, 0.22);
+  --card: rgba(255, 255, 255, 0.75);
+  --card-2: rgba(255, 255, 255, 0.95);
+  --accent: #e33a20;
+  --accent-2: #d98200;
+  --cool: #1f8fc4;
+  --violet: #6c4ce0;
+  --shadow: 0 20px 50px -28px rgba(20, 22, 40, 0.45);
+  --grid: rgba(15, 18, 30, 0.06);
+  --curve: #333a4d;
+  --poll: #c07000;
+  color-scheme: light;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  /* Базовый кегль поднят: на этой странице много справочного текста, и в
+     14 px он не читался. Все относительные размеры считаются от него. */
+  font-size: 17px;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, "Inter", "Helvetica Neue", system-ui, -apple-system, sans-serif;
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition:
+    background 0.5s ease,
+    color 0.4s ease;
+}
+
+/* ============ ФОН ============ */
+/* Плавающих цветных пятен по углам здесь НЕТ и быть не должно: цвет на этой
+   странице означает величину тревоги, и светиться он обязан из-за числа,
+   которое эту величину показывает, а не из случайного места экрана. */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, #000 5%, transparent 70%);
+  opacity: 0.6;
+}
+
+.noise {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============ КОМПОНЕНТЫ ============ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), transparent 42%);
+}
+html[data-theme="light"] .card::after {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.7), transparent 45%);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.78rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.btn {
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.52rem 1.05rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+.btn:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+.btn[data-on="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: transparent;
+}
+
+.mono {
+  font-family: ui-monospace, "SFMono-Regular", "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.hl {
+  background: linear-gradient(100deg, var(--accent), var(--accent-2) 55%, var(--violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* слайдер */
+input[type="range"].pai {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 34px;
+  background: transparent;
+  cursor: grab;
+}
+input[type="range"].pai:active {
+  cursor: grabbing;
+}
+/* Дорожка красится ответом: до бегунка -- цвет выбранного уровня, после --
+   пустая шкала. Постоянная радуга показывала цвета, к ответу отношения не
+   имеющие. По умолчанию бегунок стоит посередине, и цвет там янтарный. */
+input[type="range"].pai::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--fill, var(--accent-2)) 0 var(--pos, 50%),
+    var(--card-2) var(--pos, 50%) 100%
+  );
+  border: 1px solid var(--line);
+}
+input[type="range"].pai::-moz-range-track {
+  height: 10px;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--fill, var(--accent-2)) 0 var(--pos, 50%),
+    var(--card-2) var(--pos, 50%) 100%
+  );
+  border: 1px solid var(--line);
+}
+input[type="range"].pai::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  border: 3px solid var(--fill, var(--accent-2));
+  box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.8);
+}
+input[type="range"].pai::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  border: 3px solid var(--fill, var(--accent-2));
+}
+
+/* появление при скролле */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+.bar {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--card-2);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.bar > i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.draw {
+  stroke-dasharray: 9000;
+  stroke-dashoffset: 9000;
+  animation: draw 2.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.ticker {
+  display: flex;
+  gap: 2.5rem;
+  animation: slide 42s linear infinite;
+  white-space: nowrap;
+}
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============ СВЕТ ============ */
+/* Три слоя одного цветового семейства. Слой НЕПОДВИЖЕН относительно окна:
+   он начинается сверху от числа индекса и остаётся с читателем, пока тот
+   листает страницу. Цвет задаётся из mood.ts величиной показания -- выбрать
+   его вручную нельзя, это было бы право врать о показании. */
+/* Сам свет ПРИВЯЗАН К ЦИФРЕ и уезжает вместе с ней: он от неё и исходит.
+   А .glow-echo -- слабый неподвижный отблеск того же цвета: спускаясь по
+   странице, читатель видит отсвет, но источник остаётся наверху, у числа. */
+.numglow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 1100px;
+  z-index: -1;
+  pointer-events: none;
+  transition: background 0.5s ease;
+  background:
+    radial-gradient(
+      calc(460px * var(--gs, 1)) calc(380px * var(--gs, 1)) at var(--gx, 220px) var(--gy, 420px),
+      var(--g1),
+      transparent 72%
+    ),
+    radial-gradient(
+      calc(720px * var(--gs, 1)) calc(580px * var(--gs, 1)) at calc(var(--gx, 220px) + 130px) calc(var(--gy, 420px) - 140px),
+      var(--g2),
+      transparent 74%
+    ),
+    radial-gradient(
+      calc(780px * var(--gs, 1)) calc(640px * var(--gs, 1)) at calc(var(--gx, 220px) - 90px) calc(var(--gy, 420px) + 200px),
+      var(--g3),
+      transparent 76%
+    );
+  filter: blur(60px);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, rgb(0 0 0 / 0.3) 74%, transparent 100%);
+  animation: breathe-glow 8s ease-in-out infinite;
+}
+/* Свет опроса. Источник -- сам бегунок: пятно стоит в его точке (--pos) и
+   едет вместе с ним, цвет берётся от выбранного уровня. Широкое, чтобы было
+   видно, что светится ответ, а не подсвечена дорожка. */
+.pollglow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62%;
+  height: 420px;
+  z-index: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(220px 150px at var(--pos, 50%) 50%, var(--pg), transparent 70%),
+    radial-gradient(460px 260px at var(--pos, 50%) 50%, var(--pg2), transparent 74%);
+  filter: blur(36px);
+  opacity: 0.62;
+  transition: background 0.18s linear;
+}
+html[data-theme="light"] .pollglow {
+  opacity: 0.3;
+  filter: blur(28px);
+}
+
+.glow-echo {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  opacity: 0.34;
+  transition: background 0.5s ease;
+  background:
+    radial-gradient(1100px 800px at var(--gx, 220px) -12%, var(--g2), transparent 72%),
+    radial-gradient(900px 700px at calc(var(--gx, 220px) + 220px) -4%, var(--g3), transparent 76%);
+  filter: blur(80px);
+}
+html[data-theme="light"] .numglow {
+  filter: blur(54px);
+  opacity: 0.62;
+}
+html[data-theme="light"] /* Свет опроса. Источник -- сам бегунок: пятно стоит в его точке (--pos) и
+   едет вместе с ним, цвет берётся от выбранного уровня. Широкое, чтобы было
+   видно, что светится ответ, а не подсвечена дорожка. */
+.pollglow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62%;
+  height: 420px;
+  z-index: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(220px 150px at var(--pos, 50%) 50%, var(--pg), transparent 70%),
+    radial-gradient(460px 260px at var(--pos, 50%) 50%, var(--pg2), transparent 74%);
+  filter: blur(30px);
+  transition: background 0.18s linear;
+}
+html[data-theme="light"] .pollglow {
+  opacity: 0.55;
+  filter: blur(26px);
+}
+
+.glow-echo {
+  opacity: 0.22;
+}
+@keyframes breathe-glow {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.22;
+  }
+  50% {
+    transform: scale(1.28);
+    opacity: 0.1;
+  }
+}
+
+/* ============ ДРОЖЬ И ДЫХАНИЕ СИЛУЭТОВ ============ */
+/* Дрожь включается только с 70 — выше всего, что опрос когда-либо показывал.
+   Ниже 45 фигуры ровно дышат. Между этими краями они просто стоят. */
+@keyframes shiver {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(var(--sx), -0.4px) rotate(calc(var(--sr) * -1));
+  }
+  50% {
+    transform: translate(calc(var(--sx) * -1), 0.3px) rotate(var(--sr));
+  }
+  75% {
+    transform: translate(var(--sx), 0.2px) rotate(calc(var(--sr) * 0.6));
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-1.6px) scaleY(1.035);
+  }
+}
+.shiver {
+  animation: shiver var(--sd, 0.4s) infinite ease-in-out;
+}
+.breathe {
+  animation: breathe 3.4s infinite ease-in-out;
+  transform-origin: 50% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shiver,
+  .breathe,
+  .numglow {
+    animation: none;
+  }
+}
+
+/* Подпись для читалки экрана: видимой она не нужна -- её работу делает
+   плейсхолдер, а место в карточке дороже. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ТЕЛЕФОН } from "./scale";
 
 /** Появление блоков при скролле */
 export function useReveal<T extends HTMLElement>() {
@@ -59,4 +60,25 @@ export function useLocal<T>(key: string, initial: T) {
     }
   }, [key, v]);
   return [v, setV] as const;
+}
+
+/**
+ * ТЕЛЕФОН ЛИ. Граница одна и та же со scale.ts: уже неё страница не
+ * масштабируется, а собирается по-другому -- один столбец, свой порядок,
+ * свой график. Слушаем medium query, а не resize: перерисовка нужна ровно
+ * на переходе через границу, а не на каждом пикселе.
+ */
+export function useТелефон(): boolean {
+  const q = "(max-width: " + (ТЕЛЕФОН - 1) + "px)";
+  const [да, поставить] = useState(() =>
+    typeof window === "undefined" ? false : window.matchMedia(q).matches,
+  );
+  useEffect(() => {
+    const m = window.matchMedia(q);
+    const при = () => поставить(m.matches);
+    при();
+    m.addEventListener("change", при);
+    return () => m.removeEventListener("change", при);
+  }, [q]);
+  return да;
 }

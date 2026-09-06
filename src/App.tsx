@@ -7,7 +7,7 @@ import { BASELINE, LATEST, SERIES, ГРАНИЦА_ЭПОХ, местоВЭпох
 import { EVENT_BY_DATE } from "./data/events";
 import { T, fmtWeek, type Lang } from "./i18n";
 import { moodColor, moodGlow, levelIndex, moodT } from "./mood";
-import { useCounter, useLocal, useReveal } from "./hooks";
+import { useCounter, useLocal, useReveal, useТелефон } from "./hooks";
 
 
 
@@ -22,6 +22,9 @@ export default function App() {
 
   const lang = prefs.lang;
   const w = SERIES[sel];
+  // Телефон -- не «узкий экран», а другая раскладка: один столбец, свой
+  // порядок блоков и свой график. См. ТЕЛЕФОН в scale.ts.
+  const телефон = useТелефон();
 
 
   useEffect(() => {
@@ -104,9 +107,25 @@ export default function App() {
       >
         <div className="mx-auto flex max-w-[1920px] items-center gap-3 px-2 py-1.5 sm:px-3">
           <Pulse idx={w.idx} />
-          <h1 className="flex min-w-0 items-baseline gap-3 truncate text-[20px] font-bold tracking-tight sm:text-[26px]">
-            {T.title[lang]}
-            <span className="mono shrink-0 text-[16.5px] font-normal tracking-normal" style={{ color: "var(--ink-3)" }}>
+          {/* На телефоне заголовок обрезался на «трев»: там нет места ни на
+              кегль 20, ни на годы в одну строку с ним. Кегль меньше, годы --
+              строкой ниже и мелко. */}
+          <h1
+            className={
+              "flex min-w-0 flex-col font-bold tracking-tight " +
+              (телефон
+                ? "text-[16px] leading-tight"
+                : "flex-row items-baseline gap-3 truncate text-[20px] sm:text-[26px]")
+            }
+          >
+            <span className={телефон ? "truncate" : ""}>{T.title[lang]}</span>
+            <span
+              className={
+                "mono shrink-0 font-normal tracking-normal " +
+                (телефон ? "text-[12.5px]" : "text-[16.5px]")
+              }
+              style={{ color: "var(--ink-3)" }}
+            >
               {T.badge[lang](SERIES[0].date.slice(0, 4), SERIES[SERIES.length - 1].date.slice(0, 4), SERIES.length)}
             </span>
           </h1>
@@ -127,7 +146,11 @@ export default function App() {
         {/* Порог md, а не xl: страница масштабируется (см. scale.ts), и на
             экране 1024 её действующая ширина -- 1600, места на две колонки
             хватает. С порогом xl колонки схлопывались там, где не нужно. */}
-        <section className="grid gap-3 md:grid-cols-[minmax(0,1fr)_400px]">
+        <section
+          className={
+            телефон ? "flex flex-col gap-3" : "grid gap-3 md:grid-cols-[minmax(0,1fr)_400px]"
+          }
+        >
           <div ref={heroRef} className="card reveal in flex h-full flex-col overflow-hidden p-3 sm:p-4">
             {/* ПАРЫ «ЗНАЧЕНИЕ + ПОДПИСЬ», А НЕ СЕТКА. Прежде здесь была сетка с
                 жёсткими колонками (392+324+124+92 и просветы) -- на экране уже
@@ -136,16 +159,28 @@ export default function App() {
                 колонками, а ОДИНАКОВОЙ ВЫСОТОЙ верхней части у всех блоков:
                 значения садятся на общую линию, подписи начинаются на общей.
                 Такой ряд переносится сам и влезает в любую ширину. */}
-            <div className="mb-3 flex flex-wrap items-start gap-x-7 gap-y-3">
-              <div>
-                <div className="flex h-[76px] flex-col justify-end">
+            {/* На телефоне общая высота блоков не нужна: они стоят друг под
+                другом, и выравнивать нечего, а 76 пикселей у каждого -- это
+                пустой воздух перед графиком. Число и строй занимают всю
+                ширину, два сравнения встают рядом сами. */}
+            <div
+              className={
+                "flex flex-wrap items-start " +
+                (телефон ? "mb-2 gap-x-6 gap-y-2" : "mb-3 gap-x-7 gap-y-3")
+              }
+            >
+              <div className={телефон ? "w-full" : ""}>
+                <div className={телефон ? "flex flex-col" : "flex h-[76px] flex-col justify-end"}>
                   <div className="text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
                     {sel === SERIES.length - 1 ? T.now[lang] : T.week[lang]}
                   </div>
                   <div className="flex items-end gap-2">
                     <span
                       ref={numRef}
-                      className="mono text-[44px] font-bold leading-[0.84] sm:text-[54px] lg:text-[64px]"
+                      className={
+                        "mono font-bold leading-[0.84] " +
+                        (телефон ? "text-[46px]" : "text-[44px] sm:text-[54px] lg:text-[64px]")
+                      }
                       style={{ color, transition: "color 0.4s ease" }}
                     >
                       {shown.toFixed(1)}
@@ -165,30 +200,30 @@ export default function App() {
                 </div>
               </div>
 
-              <div>
-                <div className="flex h-[76px] items-end">
-                  <People idx={w.idx} lang={lang} preview={preview} part="строй" />
+              <div className={телефон ? "w-full" : ""}>
+                <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
+                  <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} />
                 </div>
                 <div className="mt-1.5">
-                  <People idx={w.idx} lang={lang} preview={preview} part="подпись" />
+                  <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone={телефон} />
                 </div>
               </div>
 
               <div>
-                <div className="flex h-[76px] items-end">
-                  <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} />
+                <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
+                  <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
-                <div className="mt-1.5 w-[118px]">
-                  <KpiLabel l={T.vsBaseline[lang]} />
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[118px]"}>
+                  <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
                 </div>
               </div>
 
               <div>
-                <div className="flex h-[76px] items-end">
-                  <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" />
+                <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
+                  <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
-                <div className="mt-1.5 w-[118px]">
-                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} />
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[118px]"}>
+                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
                 </div>
               </div>
             </div>
@@ -198,16 +233,27 @@ export default function App() {
                 легенде не помощник. */}
             {/* Число опроса стоит рядом с кнопкой, которая его показывает:
                 это одно и то же -- «сколько дал опрос» и «покажи опрос». */}
-            <div className="mb-2 flex flex-wrap items-center gap-x-5 gap-y-2">
-              <FomNumber fom={w.fom} idx={w.idx} lang={lang} />
-              <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} />
+            <div
+              className={
+                "flex flex-wrap items-center " +
+                (телефон ? "mb-1.5 gap-x-3 gap-y-1.5" : "mb-2 gap-x-5 gap-y-2")
+              }
+            >
+              <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
+              <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
               <div>
                 {/* Легенда стоит В СТРОКУ с кнопкой: под кнопкой она съедала
                     целую строку прямо над графиком, а он должен быть виден
                     сразу. Место держит и когда выключена: иначе нажатие
                     сдвигало график на её высоту, и он скакал. */}
                 <div style={{ visibility: showFom ? "visible" : "hidden" }}>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px]" style={{ color: "var(--ink-3)" }}>
+                  <div
+                    className={
+                      "flex flex-wrap items-center gap-y-1 " +
+                      (телефон ? "gap-x-2.5 text-[12.5px]" : "gap-x-4 text-[15px]")
+                    }
+                    style={{ color: "var(--ink-3)" }}
+                  >
                     <span className="flex items-center gap-1.5">
                       <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--cool)" }} />
                       {T.gapUp[lang]}
@@ -219,33 +265,51 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <EventSearch lang={lang} onPick={jumpTo} />
+              <EventSearch lang={lang} onPick={jumpTo} phone={телефон} />
             </div>
 
-            <Chart data={SERIES} lang={lang} sel={sel} onSel={setSel} showFom={showFom} />
+            <Chart data={SERIES} lang={lang} sel={sel} onSel={setSel} showFom={showFom} phone={телефон} />
 
             {/* Чтение недели -- сразу под кривой, в той же карточке: выбрал
                 неделю, тут же видно, что на ней читали. Заодно левая колонка
-                догоняет правую по высоте, и они кончаются вровень. */}
+                догоняет правую по высоте, и они кончаются вровень.
+                На телефоне чтение уезжает ниже опроса -- см. ниже. */}
             {/* Плотно к оси: между подписями лет и заголовком чтения место
                 было пустым. */}
-            <div className="-mt-3 border-t pt-3" style={{ borderColor: "var(--line)" }}>
-              <Reads w={w} lang={lang} />
-            </div>
+            {!телефон && (
+              <div className="-mt-3 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+                <Reads w={w} lang={lang} />
+              </div>
+            )}
           </div>
 
-          {/* Высоту ряда задаёт ТОЛЬКО левая карточка. Содержимое правой
-              вынесено в абсолютный слой: иначе длинный разбор события тянул бы
-              строку вниз, и страница меняла высоту от недели к неделе. Что не
-              влезло -- прокручивается внутри разбора. */}
-          <div className="relative min-h-0">
-            <div className="absolute inset-0 flex flex-col gap-3 overflow-hidden">
-              <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} />
-              <div className="flex min-h-0 flex-1 flex-col">
-                <Breakdown w={w} lang={lang} baseline={BASELINE} />
+          {телефон ? (
+            /* ПОРЯДОК НА ТЕЛЕФОНЕ. Опрос стоит сразу под графиком, до чтения
+               недели: человека спрашивают, пока он смотрит на кривую, а не
+               после трёх экранов списков. Разбор -- следом, он объясняет ту же
+               неделю. Чтение -- последним: это самая длинная часть, и листать
+               её мимо вопроса было бы наоборот. */
+            <>
+              <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} phone />
+              <Breakdown w={w} lang={lang} baseline={BASELINE} />
+              <div className="card p-4">
+                <Reads w={w} lang={lang} />
+              </div>
+            </>
+          ) : (
+            /* Высоту ряда задаёт ТОЛЬКО левая карточка. Содержимое правой
+               вынесено в абсолютный слой: иначе длинный разбор события тянул бы
+               строку вниз, и страница меняла высоту от недели к неделе. Что не
+               влезло -- прокручивается внутри разбора. */
+            <div className="relative min-h-0">
+              <div className="absolute inset-0 flex flex-col gap-3 overflow-hidden">
+                <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} />
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <Breakdown w={w} lang={lang} baseline={BASELINE} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </section>
 
 
@@ -263,7 +327,7 @@ export default function App() {
 }
 
 /* ---------------- поиск по событию ---------------- */
-function EventSearch({ lang, onPick }: { lang: Lang; onPick: (d: string) => void }) {
+function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: string) => void; phone?: boolean }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -279,10 +343,13 @@ function EventSearch({ lang, onPick }: { lang: Lang; onPick: (d: string) => void
   }, [q, lang]);
 
   return (
-    <div ref={box} className="relative">
+    <div ref={box} className={"relative " + (phone ? "w-full" : "")}>
       <input
-        className="mono rounded-full border px-5 py-2.5 text-[17px] outline-none"
-        style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: "min(420px, 100%)" }}
+        className={
+          "mono rounded-full border outline-none " +
+          (phone ? "px-4 py-1.5 text-[14px]" : "px-5 py-2.5 text-[17px]")
+        }
+        style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: phone ? "100%" : "min(420px, 100%)" }}
         placeholder={T.search[lang]}
         value={q}
         onChange={(e) => {
@@ -333,7 +400,7 @@ function EventSearch({ lang, onPick }: { lang: Lang; onPick: (d: string) => void
  * вся проверка прибора. Ссылка ведёт на источник, чтобы читатель мог посмотреть
  * тот же ряд своими глазами, а не верить нам на слово.
  */
-function FomButton({ lang, on, onToggle }: { lang: Lang; on: boolean; onToggle: () => void }) {
+function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: boolean; onToggle: () => void; phone?: boolean }) {
   const [tip, setTip] = useState(false);
   return (
     <div
@@ -343,7 +410,10 @@ function FomButton({ lang, on, onToggle }: { lang: Lang; on: boolean; onToggle: 
     >
       {tip && (
         <div
-          className="absolute top-[calc(100%+10px)] left-0 z-40 w-[380px] rounded-2xl border p-4 text-[16.5px] leading-relaxed"
+          className={
+            "absolute top-[calc(100%+10px)] left-0 z-40 rounded-2xl border leading-relaxed " +
+            (phone ? "w-[min(300px,80vw)] p-3 text-[14px]" : "w-[380px] p-4 text-[16.5px]")
+          }
           style={{ borderColor: "var(--line-strong)", background: "var(--bg-2)", color: "var(--ink-2)", boxShadow: "var(--shadow)" }}
         >
           {T.fomWhat[lang]}{" "}
@@ -359,13 +429,13 @@ function FomButton({ lang, on, onToggle }: { lang: Lang; on: boolean; onToggle: 
         </div>
       )}
       <button
-        className="btn px-5 py-2.5 text-sm"
+        className={"btn " + (phone ? "px-3 py-1.5 text-[13px]" : "px-5 py-2.5 text-sm")}
         data-on={on}
         onClick={onToggle}
         onFocus={() => setTip(true)}
         onBlur={() => setTip(false)}
       >
-        {T.fomOn[lang]}
+        {phone ? T.fomOnShort[lang] : T.fomOn[lang]}
       </button>
     </div>
   );
@@ -383,22 +453,27 @@ function FomButton({ lang, on, onToggle }: { lang: Lang; on: boolean; onToggle: 
  */
 const ПОРОГ_СОГЛАСИЯ = 5;
 
-function FomNumber({ fom, idx, lang }: { fom: number | null; idx: number; lang: Lang }) {
+function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx: number; lang: Lang; phone?: boolean }) {
   const d = fom == null ? 0 : fom - idx;
   const врозь = fom != null && Math.abs(d) >= ПОРОГ_СОГЛАСИЯ;
   // Место под стрелку держится ВСЕГДА: появляясь и пропадая, она сдвигала
   // всё, что правее, и строка дёргалась при переходе по неделям.
   return (
-    <div className="flex items-center gap-2" title={fom == null ? T.fomNone[lang] : T.fomLabel[lang]}>
+    <div
+      className={"flex items-center " + (phone ? "gap-1" : "gap-2")}
+      title={fom == null ? T.fomNone[lang] : T.fomLabel[lang]}
+    >
       {/* Ширина постоянна: прочерк вместо «69%» короче на треть, и без этого
-          всё, что правее, съезжало на неделях без опроса. */}
+          всё, что правее, съезжало на неделях без опроса. На телефоне и кегль,
+          и эта ширина втрое меньше: 96 пикселей там -- четверть строки, и из-за
+          них кнопка с легендой не вставали в один ряд. */}
       <span
-        className="mono text-[40px] font-bold leading-none"
-        style={{ color: "var(--ink-2)", width: 96, display: "inline-block" }}
+        className={"mono font-bold leading-none " + (phone ? "text-[20px]" : "text-[40px]")}
+        style={{ color: "var(--ink-2)", width: phone ? 46 : 96, display: "inline-block" }}
       >
         {fom == null ? "—" : `${fom.toFixed(0)}%`}
       </span>
-      <span className="flex w-[16px] shrink-0 justify-center">
+      <span className={"flex shrink-0 justify-center " + (phone ? "w-[11px]" : "w-[16px]")}>
         {врозь && (
           <span
             aria-label={d > 0 ? T.gapUp[lang] : T.gapDown[lang]}
@@ -406,9 +481,9 @@ function FomNumber({ fom, idx, lang }: { fom: number | null; idx: number; lang: 
             style={{
               width: 0,
               height: 0,
-              borderLeft: "7px solid transparent",
-              borderRight: "7px solid transparent",
-              [d > 0 ? "borderBottom" : "borderTop"]: "10px solid var(--ink-3)",
+              borderLeft: `${phone ? 5 : 7}px solid transparent`,
+              borderRight: `${phone ? 5 : 7}px solid transparent`,
+              [d > 0 ? "borderBottom" : "borderTop"]: `${phone ? 7 : 10}px solid var(--ink-3)`,
             }}
           />
         )}
@@ -417,17 +492,23 @@ function FomNumber({ fom, idx, lang }: { fom: number | null; idx: number; lang: 
   );
 }
 
-function Kpi({ v, c }: { v: string; c: string }) {
+function Kpi({ v, c, phone = false }: { v: string; c: string; phone?: boolean }) {
   return (
-    <div className="mono whitespace-nowrap text-[30px] font-bold leading-none" style={{ color: c }}>
+    <div
+      className={"mono whitespace-nowrap font-bold leading-none " + (phone ? "text-[24px]" : "text-[30px]")}
+      style={{ color: c }}
+    >
       {v}
     </div>
   );
 }
 
-function KpiLabel({ l }: { l: string }) {
+function KpiLabel({ l, phone = false }: { l: string; phone?: boolean }) {
   return (
-    <div className="self-start text-[16.5px] leading-snug" style={{ color: "var(--ink-3)" }}>
+    <div
+      className={"self-start leading-snug " + (phone ? "text-[13px]" : "text-[16.5px]")}
+      style={{ color: "var(--ink-3)" }}
+    >
       {l}
     </div>
   );

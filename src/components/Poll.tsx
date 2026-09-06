@@ -73,12 +73,22 @@ export default function Poll({
   weekDate,
   lang,
   onPreview,
+  phone = false,
 }: {
   weekDate: string;
   lang: Lang;
   /** Значение ползунка наверх, пока его ведут: силуэты у числа отзываются. */
   onPreview?: (v: number | null) => void;
+  /**
+   * Телефонный вид: высота не закреплена, а заголовок сворачивает карточку.
+   * Закреплять высоту тут нельзя -- на телефоне опрос стоит между графиком и
+   * чтением недели, и пустой воздух под ним пришлось бы пролистывать. А
+   * сворачивание нужно тому, кто уже ответил или отвечать не хочет: иначе
+   * опрос стоит поперёк дороги к разбору.
+   */
+  phone?: boolean;
 }) {
+  const [открыт, setОткрыт] = useState(true);
   const [answers, setAnswers] = useState<Answers>(load);
   const [value, setValue] = useState(50);
   const [editing, setEditing] = useState(false);
@@ -133,7 +143,12 @@ export default function Poll({
     // доп-вопросами. Прокрутки внутри поэтому нет никогда, а до ответа внизу
     // остаётся воздух. Строку ряда задаёт левая карточка, так что и то, и
     // другое страницу не двигает.
-    <div className="card relative flex h-[548px] flex-none flex-col overflow-hidden p-5 pb-6 sm:p-6 sm:pb-6">
+    <div
+      className={
+        "card relative flex flex-col overflow-hidden " +
+        (phone ? "p-4" : "h-[548px] flex-none p-5 pb-6 sm:p-6 sm:pb-6")
+      }
+    >
       {/* СВЕТ ОПРОСА идёт от точки бегунка и едет вместе с ним, а после ответа
           ОСТАЁТСЯ на месте ответа: он показывает, что человек сказал. Живёт в
           карточке, а не внутри ползунка, — иначе исчезал бы вместе с ним.
@@ -150,8 +165,28 @@ export default function Poll({
       />
       {/* Название -- в верхнем углу панели; всё остальное содержимое стоит
           по центру оставшейся высоты. */}
-      <div className="chip relative self-start">{T.poll[lang]}</div>
+      {phone ? (
+        <button
+          type="button"
+          onClick={() => setОткрыт((o) => !o)}
+          aria-expanded={открыт}
+          className="chip relative flex w-full items-center justify-between"
+          style={{ background: "none", cursor: "pointer" }}
+        >
+          <span>{T.poll[lang]}</span>
+          {/* Галочка вниз -- открыто, вправо -- закрыто. Поворотом, а не двумя
+              значками: так видно, что это одно и то же место. */}
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden
+               style={{ transform: открыт ? "rotate(90deg)" : "none", transition: "transform .18s ease" }}>
+            <path d="M4 2 L10 7 L4 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      ) : (
+        <div className="chip relative self-start">{T.poll[lang]}</div>
+      )}
 
+      {(!phone || открыт) && (
+        <>
       <div className="relative flex flex-1 flex-col justify-center">
         <p className="text-[18.5px] leading-snug" style={{ color: "var(--ink)" }}>
           {T.pollQ[lang]}
@@ -276,6 +311,8 @@ export default function Poll({
             ))}
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

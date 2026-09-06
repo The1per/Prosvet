@@ -38,9 +38,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Ложная",
     shortEn: "False alarm",
     whyRu:
-      "Ничего не случилось — и в этом всё дело. Прибор подняли предсказатели: «Конец света» читали в 15,9 раза больше, чем на соседних неделях, «Отче наш» в 4 раза, «Нострадамус» в 3,8, в среду был всплеск «Ванги». Это середина декабря — пора предсказаний на будущий год, календарь, а не тревога. Мировая опора тут бессильна: в мире этого не читали, читали мы.",
+      "Ничего не случилось — и в этом всё дело. Индекс подняли предсказатели: «Конец света» читали в 15,9 раза больше, чем на соседних неделях, «Отче наш» в 4 раза, «Нострадамус» в 3,8, в среду был всплеск «Ванги». Это середина декабря — пора предсказаний на будущий год, календарь, а не тревога. Мировая опора тут бессильна: в мире этого не читали, читали мы.",
     whyEn:
-      "Nothing happened — and that is the point. What lifted the instrument was prophecy: “The end of the world” was read 15.9 times more than in neighbouring weeks, “Our Father” 4 times, “Nostradamus” 3.8, with a spike of “Baba Vanga” on the Wednesday. This is mid-December, the season of predictions for the coming year — a calendar, not anxiety. The world anchor is powerless here: the world was not reading this, we were.",
+      "Nothing happened — and that is the point. What lifted the index was prophecy: “The end of the world” was read 15.9 times more than in neighbouring weeks, “Our Father” 4 times, “Nostradamus” 3.8, with a spike of “Baba Vanga” on the Wednesday. This is mid-December, the season of predictions for the coming year — a calendar, not anxiety. The world anchor is powerless here: the world was not reading this, we were.",
     fit: "мимо",
   },
   {
@@ -50,9 +50,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Локдаун",
     shortEn: "Lockdown",
     whyRu:
-      "30 марта 2020-го страну закрыли: объявлены «нерабочие дни» с сохранением зарплаты, закрылись школы, кафе и границы. Прибор поднялся не на медицине, а на пророчествах и конце света — люди искали не как лечиться, а чем всё это кончится.",
+      "30 марта 2020-го страну закрыли: объявлены «нерабочие дни» с сохранением зарплаты, закрылись школы, кафе и границы. Индекс поднялся не на медицине, а на пророчествах и конце света — люди искали не как лечиться, а чем всё это кончится.",
     whyEn:
-      "On 30 March 2020 the country shut down: paid ‘non-working days’ were declared, schools, cafés and borders closed. The instrument rose not on medicine but on prophecy and end-times reading — people asked not how to be treated, but how all this ends.",
+      "On 30 March 2020 the country shut down: paid ‘non-working days’ were declared, schools, cafés and borders closed. The index rose not on medicine but on prophecy and end-times reading — people asked not how to be treated, but how all this ends.",
     fit: "точно",
   },
   {
@@ -62,9 +62,9 @@ export const EVENTS: Ev[] = [
     shortRu: "COVID, 2 волна",
     shortEn: "COVID wave 2",
     whyRu:
-      "Осенью 2020-го заболеваемость и смертность впервые перекрыли весенние, но локдауна больше не объявляли — тревога тянулась месяцами без единого громкого дня. Опрос ставит эту неделю восьмой, прибор — тридцать второй: затяжное он видит хуже, чем резкий удар.",
+      "Осенью 2020-го заболеваемость и смертность впервые перекрыли весенние, но локдауна больше не объявляли — тревога тянулась месяцами без единого громкого дня. Опрос ставит эту неделю восьмой, индекс — тридцать второй: затяжное он видит хуже, чем резкий удар.",
     whyEn:
-      "In autumn 2020 cases and deaths first exceeded the spring peak, but no lockdown was declared — the anxiety dragged on for months with no single loud day. The poll ranks this week eighth, the instrument thirty-second: it sees the drawn-out worse than a sharp blow.",
+      "In autumn 2020 cases and deaths first exceeded the spring peak, but no lockdown was declared — the anxiety dragged on for months with no single loud day. The poll ranks this week eighth, the index thirty-second: it sees the drawn-out worse than a sharp blow.",
     fit: "мимо",
   },
   {
@@ -74,9 +74,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Вторжение",
     shortEn: "Invasion",
     whyRu:
-      "24 февраля 2022-го началось вторжение; в те же дни рухнул рубль, закрылось небо и легли Visa и Mastercard. Прибор ставит эту неделю восьмой, опрос — пятьдесят девятой: чтение вспыхнуло сразу, а настроение по опросу поднялось только к осени.",
+      "24 февраля 2022-го началось вторжение; в те же дни рухнул рубль, закрылось небо и легли Visa и Mastercard. Индекс ставит эту неделю восьмой, опрос ФОМа — пятьдесят девятой: чтение вспыхнуло сразу, а настроение по опросу поднялось только к осени.",
     whyEn:
-      "The invasion began on 24 February 2022; in those same days the rouble collapsed, airspace closed and Visa and Mastercard stopped working. The instrument ranks this week eighth, the poll fifty-ninth: reading flared at once, while the polled mood only rose by autumn.",
+      "The invasion began on 24 February 2022; in those same days the rouble collapsed, airspace closed and Visa and Mastercard stopped working. The index ranks this week eighth, the poll fifty-ninth: reading flared at once, while the polled mood only rose by autumn.",
     fit: "мимо",
   },
   {
@@ -98,9 +98,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Мятеж",
     shortEn: "Mutiny",
     whyRu:
-      "24 июня 2023-го колонна ЧВК «Вагнер» заняла Ростов и пошла на Москву, а к вечеру повернула назад. Ни прибор, ни опрос не шелохнулись: про мятеж читали запоем, но не искали ни отсрочку, ни лекарства — на него смотрели как на зрелище, а не как на угрозу себе.",
+      "24 июня 2023-го колонна ЧВК «Вагнер» заняла Ростов и пошла на Москву, а к вечеру повернула назад. Ни индекс, ни опрос ФОМа не шелохнулись: про мятеж читали запоем, но не искали ни отсрочку, ни лекарства — на него смотрели как на зрелище, а не как на угрозу себе.",
     whyEn:
-      "On 24 June 2023 a Wagner column took Rostov and marched on Moscow, then turned back by evening. Neither instrument nor poll moved: people read about the mutiny avidly but looked up neither deferments nor medicines — they watched it as a spectacle, not as a threat to themselves.",
+      "On 24 June 2023 a Wagner column took Rostov and marched on Moscow, then turned back by evening. Neither index nor poll moved: people read about the mutiny avidly but looked up neither deferments nor medicines — they watched it as a spectacle, not as a threat to themselves.",
     fit: "молчат",
   },
   {
@@ -110,9 +110,9 @@ export const EVENTS: Ev[] = [
     shortRu: "«Крокус»",
     shortEn: "Crocus",
     whyRu:
-      "22 марта 2024-го в подмосковном концертном зале расстреляли и подожгли зал: 145 погибших, крупнейший теракт в России за двадцать лет. Прибор поставил эту неделю 38-й из 302, опрос по уровню — 141-й: 2024-й был спокойным годом, и скачок опроса в десять пунктов утонул в низком фоне. Здесь расходятся не мелочи: событие бесспорное, а уровень опроса на нём почти не двинулся.",
+      "22 марта 2024-го в подмосковном концертном зале расстреляли и подожгли зал: 145 погибших, крупнейший теракт в России за двадцать лет. Индекс поставил эту неделю 38-й из 302, опрос ФОМа по уровню — 141-й: 2024-й был спокойным годом, и скачок опроса в десять пунктов утонул в низком фоне. Здесь расходятся не мелочи: событие бесспорное, а уровень опроса на нём почти не двинулся.",
     whyEn:
-      "On 22 March 2024 gunmen shot up and burned a concert hall outside Moscow: 145 dead, the deadliest attack in Russia in twenty years. The instrument ranks this week 38th of 302, the poll by level 141st: 2024 was a calm year and the poll’s ten-point leap drowned in a low background. The disagreement is not a detail: the event is beyond dispute, and the poll’s level barely moved.",
+      "On 22 March 2024 gunmen shot up and burned a concert hall outside Moscow: 145 dead, the deadliest attack in Russia in twenty years. The index ranks this week 38th of 302, the poll by level 141st: 2024 was a calm year and the poll’s ten-point leap drowned in a low background. The disagreement is not a detail: the event is beyond dispute, and the poll’s level barely moved.",
     fit: "мимо",
   },
   {
@@ -122,9 +122,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Курск",
     shortEn: "Kursk",
     whyRu:
-      "6 августа 2024-го украинские войска вошли в Курскую область — впервые с 1941 года бои шли на признанной российской земле, десятки тысяч человек эвакуировали. Прибор поставил неделю 82-й из 302, опрос — 120-й: обе меры сдержанны, но прибор поднялся заметно выше.",
+      "6 августа 2024-го украинские войска вошли в Курскую область — впервые с 1941 года бои шли на признанной российской земле, десятки тысяч человек эвакуировали. Индекс поставил неделю 82-й из 302, опрос ФОМа — 120-й: обе меры сдержанны, но индекс поднялся заметно выше.",
     whyEn:
-      "On 6 August 2024 Ukrainian forces entered the Kursk region — the first fighting on undisputed Russian soil since 1941, with tens of thousands evacuated. The instrument ranked it 82nd of 302, the poll 120th: both restrained, but the instrument rose markedly higher.",
+      "On 6 August 2024 Ukrainian forces entered the Kursk region — the first fighting on undisputed Russian soil since 1941, with tens of thousands evacuated. The index ranked it 82nd of 302, the poll 120th: both restrained, but the index rose markedly higher.",
     fit: "точно",
   },
 ];

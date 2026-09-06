@@ -55,38 +55,20 @@ export default function App() {
     return () => window.removeEventListener("resize", мера);
   }, []);
 
-  /**
-   * КУСКИ УПРАВЛЕНИЯ ЗАВЕДЕНЫ ОДИН РАЗ, а стоят в разных местах: на экране --
-   * в верхнем ряду, рядом с числами, на телефоне -- каждый у своего числа.
-   * Дважды написанная разметка разъезжается при первой же правке.
-   */
-  const парФОМ = (
-    <div className="flex items-center gap-2">
-      <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
-      <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
-    </div>
-  );
-  const кнопкаОпроса = (
-    <button
-      type="button"
-      onClick={() => setОпросОткрыт(true)}
-      className={"pollbtn font-semibold " + (телефон ? "max-w-[100px] px-2 py-1.5 text-[12px] leading-tight" : "whitespace-nowrap px-3 py-1.5 text-[13px]")}
-      /* Пульсирует цветом показания той недели, что сейчас на экране: спокойная
-         неделя -- спокойное свечение, тревожная -- тревожное. */
-      style={{
-        ["--pulse-1" as string]: moodColor(w.idx, 6, 0.34),
-        ["--pulse-2" as string]: moodColor(w.idx, 6, 0.16),
-        ["--pulse-3" as string]: moodColor(w.idx, 6, 0.4),
-        ["--pulse-4" as string]: moodColor(w.idx, 6, 0.75),
-      }}
-    >
-      {T.pollOpen[lang]}
-    </button>
-  );
   /* Место под легенду держится всегда: иначе нажатие на кнопку сдвигало бы
      всё, что ниже, на её высоту. На телефоне -- только когда она нужна. */
+  /**
+   * Легенда к кривой опроса. На экране место под неё держится всегда: иначе
+   * нажатие сдвигало бы всё, что ниже, на её высоту. На телефоне она висит
+   * ПОД кнопкой отдельным слоем и не двигает вообще ничего -- строка там
+   * тесная, и лишняя её высота съедала бы график.
+   */
   const легенда = (
-    <div style={{ visibility: showFom ? "visible" : "hidden" }} hidden={телефон && !showFom}>
+    <div
+      style={{ visibility: showFom ? "visible" : "hidden" }}
+      hidden={телефон && !showFom}
+      className={телефон ? "absolute left-0 top-[calc(100%+4px)] z-30" : ""}
+    >
       <div
         className={
           "flex flex-wrap items-center gap-y-1 " +
@@ -106,6 +88,35 @@ export default function App() {
     </div>
   );
 
+  /**
+   * КУСКИ УПРАВЛЕНИЯ ЗАВЕДЕНЫ ОДИН РАЗ, а стоят в разных местах: на экране --
+   * в верхнем ряду, рядом с числами, на телефоне -- каждый у своего числа.
+   * Дважды написанная разметка разъезжается при первой же правке.
+   */
+  const парФОМ = (
+    <div className={"flex items-center gap-2 " + (телефон ? "relative" : "")}>
+      <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
+      <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
+      {телефон && легенда}
+    </div>
+  );
+  const кнопкаОпроса = (
+    <button
+      type="button"
+      onClick={() => setОпросОткрыт(true)}
+      className={"pollbtn font-semibold " + (телефон ? "max-w-[100px] px-2 py-1.5 text-[12px] leading-tight" : "whitespace-nowrap px-3 py-1.5 text-[13px]")}
+      /* Пульсирует цветом показания той недели, что сейчас на экране: спокойная
+         неделя -- спокойное свечение, тревожная -- тревожное. */
+      style={{
+        ["--pulse-1" as string]: moodColor(w.idx, 6, 0.34),
+        ["--pulse-2" as string]: moodColor(w.idx, 6, 0.16),
+        ["--pulse-3" as string]: moodColor(w.idx, 6, 0.4),
+        ["--pulse-4" as string]: moodColor(w.idx, 6, 0.75),
+      }}
+    >
+      {T.pollOpen[lang]}
+    </button>
+  );
   const heroRef = useReveal<HTMLDivElement>();
   // 140 мс, а не полсекунды: при движении по графику число не должно
   // отставать от курсора -- иначе кажется, что оно не поспевает за неделей.
@@ -356,8 +367,15 @@ export default function App() {
               </div>
 
               {/* Кнопка опроса -- сразу справа от цифры пика: последнее число
-                  ряда, и следом вопрос к самому читателю. */}
-              {телефон && <div className="flex items-end self-stretch pb-1">{кнопкаОпроса}</div>}
+                  ряда, и следом вопрос к самому читателю. По ширине она
+                  выровнена под кнопку опроса ФОМа, что стоит строкой выше:
+                  две кнопки в столбик читаются как пара, вразнобой -- как
+                  случайность. */}
+              {телефон && (
+                <div className="ml-auto flex items-end self-stretch pb-1">
+                  <div className="flex w-[111px] justify-center">{кнопкаОпроса}</div>
+                </div>
+              )}
 
               {/* НА ЭКРАНЕ управление стоит в том же ряду, что и числа: своей
                   строкой под ними оно отодвигало график, а сказать хотело то
@@ -375,9 +393,6 @@ export default function App() {
                 включён, его легенда. Всё остальное управление разошлось по
                 своим числам в ряду выше. Поле поиска во всю ширину стоило
                 здесь целой строки, а нужно оно редко -- поэтому лупа. */}
-            {телефон && легенда && (
-              <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">{легенда}</div>
-            )}
 
             {/* ВЫСОТА ГРАФИКА ЗАКРЕПЛЕНА и ни от чего на странице не зависит.
                 Растягивать его по высоте карточки нельзя: карточка тянется за

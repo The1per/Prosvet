@@ -16,18 +16,20 @@ import { useReveal } from "../hooks";
  * выглядеть.
  */
 function Тема({ a, className, style }: { a: string; className?: string; style?: React.CSSProperties }) {
+  // И показываем, и ищем по-человечески: «Долли Партон», а не «Партон, Долли».
+  const имя = поЧеловечески(a);
   return (
     <a
-      href={`https://www.google.com/search?q=${encodeURIComponent(a)}`}
+      href={`https://www.google.com/search?q=${encodeURIComponent(имя)}`}
       target="_blank"
       rel="noreferrer noopener"
-      title={a}
+      title={имя}
       className={className}
       style={{ color: "inherit", textDecoration: "none", ...style }}
       onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
       onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
     >
-      {a}
+      {имя}
     </a>
   );
 }
@@ -235,6 +237,29 @@ export function Reads({ w, lang }: { w: Week; lang: Lang }) {
           только тревожное -- то, ради чего прибор и сделан. */}
     </div>
   );
+}
+
+/**
+ * ИМЯ ВПЕРЁД, ФАМИЛИЯ ПОТОМ.
+ *
+ * В источнике люди названы по-каталожному: «Партон, Долли». Так пишут в
+ * справочниках, и это сразу выдаёт, откуда взят список. Человек же читает
+ * «Долли Партон».
+ *
+ * Переставляем ОСТОРОЖНО: только если запятая ровно одна, а то, что после
+ * неё, похоже на имя -- начинается с большой буквы и не содержит ни цифр, ни
+ * скобок. «Список умерших в 2026 году» и «Я — легенда (фильм)» так не
+ * тронутся.
+ */
+function поЧеловечески(a: string): string {
+  const ч = a.split(",");
+  if (ч.length !== 2) return a;
+  const фамилия = ч[0].trim();
+  const имя = ч[1].trim();
+  if (!фамилия || !имя) return a;
+  if (!/^[A-ZА-ЯЁ]/.test(имя)) return a;
+  if (/[0-9()]/.test(имя) || /[0-9()]/.test(фамилия)) return a;
+  return имя + " " + фамилия;
 }
 
 /* ---------------- Методология ---------------- */

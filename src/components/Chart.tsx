@@ -612,10 +612,28 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
             обязателен: без него клик уходит в полотно, которое выбирает неделю
             по координате мыши, и попадание в край подписи выбирало бы совсем
             другую неделю. */}
+        {/* ВЫНОСКИ ОТДЕЛЬНЫМ СЛОЕМ, И ОН НИЖЕ РАМОК. Рисуя каждую метку
+            целиком, мы клали выноску соседа под следующую рамку -- на телефоне,
+            где рамки стоят в три-четыре ряда, палочки пропадали за ними.
+            Теперь сперва все линии, потом все рамки. */}
         {markers.map((m) => {
-          const on = sel === m.i;
           const низ = m.ly + 13;
           const плечо = Math.min(low(m.y) - 14, низ + 26);
+          const on = sel === m.i;
+          return (
+            <polyline
+              key={"в" + m.i}
+              points={`${m.lx},${низ} ${m.lx},${плечо} ${m.x},${плечо + 12} ${m.x},${m.y - 6}`}
+              fill="none"
+              stroke="var(--accent-2)"
+              strokeWidth={on ? 1.5 : 1}
+              opacity={on ? 0.9 : 0.32}
+            />
+          );
+        })}
+
+        {markers.map((m) => {
+          const on = sel === m.i;
           return (
             <g
               key={m.i}
@@ -625,13 +643,6 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
                 onSel(m.i);
               }}
             >
-              <polyline
-                points={`${m.lx},${низ} ${m.lx},${плечо} ${m.x},${плечо + 12} ${m.x},${m.y - 6}`}
-                fill="none"
-                stroke="var(--accent-2)"
-                strokeWidth={on ? 1.5 : 1}
-                opacity={on ? 0.9 : 0.32}
-              />
               <rect
                 x={m.lx - m.wid / 2}
                 y={m.ly - 13}

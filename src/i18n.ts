@@ -19,11 +19,11 @@ export type Lang = "ru" | "en";
 export const T = {
   title: { ru: "Индекс общественной тревоги", en: "Public Anxiety Index" },
   subtitle: {
-    ru: "Социология спрашивает людей. Мы не спрашиваем. Человек может не сказать интервьюеру, что боится, — но тот же человек ночью откроет статью про повестку. Опрос ловит слова, следы ловят поступки.",
+    ru: "Социология спрашивает людей. Мы не спрашиваем. Человек может не сказать интервьюеру, что боится, — но тот же человек ночью откроет статью про повестку. Опрос ФОМа ловит слова, следы ловят поступки.",
     en: "Sociology asks people. We do not ask. Someone may not tell an interviewer they are afraid — yet the same person opens an article about call-up papers at night. A poll catches words; traces catch acts.",
   },
   subtitleTail: {
-    ru: "Человек может не сказать интервьюеру, что боится: постесняется, не поймёт вопроса, ответит из вежливости. Но тот же человек ночью откроет статью про повестку. Опрос ловит слова, следы ловят поступки.",
+    ru: "Человек может не сказать интервьюеру, что боится: постесняется, не поймёт вопроса, ответит из вежливости. Но тот же человек ночью откроет статью про повестку. Опрос ФОМа ловит слова, следы ловят поступки.",
     en: "Someone may not tell an interviewer they are afraid: too embarrassed, misreading the question, answering out of politeness. Yet the same person opens an article about call-up papers at night. A poll catches words; traces catch acts.",
   },
   term: {
@@ -56,18 +56,20 @@ export const T = {
   },
   peakAll: { ru: "Пик за 11 лет", en: "11-year peak" },
   fomLabel: { ru: "Опрос той недели", en: "Poll that week" },
-  fomNone: { ru: "опроса не было", en: "no poll" },
+  fomNone: { ru: "опроса ФОМа не было", en: "no poll" },
   fomOn: { ru: "Кривая опроса ФОМ", en: "FOM poll curve" },
   /** То же на телефоне: длинная надпись там занимала строку целиком. */
   fomOnShort: { ru: "опрос ФОМ", en: "FOM poll" },
   fomWhat: {
-    ru: "ФОМ каждую пятницу публикует, сколько людей называют настроение вокруг себя тревожным. На этом ряду прибор и проверяется:",
-    en: "Every Friday FOM publishes the share of people who call the mood around them anxious. That is the series the instrument is checked against:",
+    ru: "ФОМ каждую пятницу публикует, сколько людей называют настроение вокруг себя тревожным. На этом ряду индекс и проверяется:",
+    en: "Every Friday FOM publishes the share of people who call the mood around them anxious. That is the series the index is checked against:",
   },
   /** Постоянная подпись рядом с числом: на чём это число основано. */
   basis: { ru: "по следам в сети", en: "from web traces" },
+  // Здесь «опрос» без имени нарочно: подпись стоит вплотную к кнопке «опрос
+  // ФОМ», и полное имя во второй раз только удлиняет строку.
   gapUp: { ru: "опрос выше", en: "poll higher" },
-  gapDown: { ru: "прибор выше", en: "instrument higher" },
+  gapDown: { ru: "индекс выше", en: "index higher" },
   chartHint: { ru: "Ведите по графику или нажмите:", en: "Drag across the chart, or jump to:" },
   search: { ru: "поиск по событию", en: "search an event" },
   searchNone: { ru: "ничего не нашлось", en: "nothing found" },
@@ -141,7 +143,7 @@ export const T = {
   pollOpen: { ru: "Тревожно ли вокруг вас?", en: "Is it anxious around you?" },
   pollClose: { ru: "закрыть", en: "close" },
   pollDisclaimer: {
-    ru: "Ваш ответ — про эту неделю. Число слева — про прошедшую, ту, по которой уже вышел опрос.",
+    ru: "Ваш ответ — про эту неделю. Число слева — про прошедшую, ту, по которой уже вышел опрос ФОМа.",
     en: "Your answer is about this week. The number on the left is about the past week, the one the poll has already covered.",
   },
 
@@ -175,7 +177,7 @@ export const T = {
         : "Ни одна тема заметно не поднялась: читали примерно то же, что и всегда.";
       const о = д.опрос == null
         ? "Опроса в ту неделю не было — сверить не с чем."
-        : `Опрос в ту неделю дал ${d0(д.опрос)} %, прибор разошёлся с ним на ${Math.abs(д.промах!).toFixed(1).replace(".", ",")} пункта.`;
+        : `Опрос ФОМа в ту неделю дал ${d0(д.опрос)} %, индекс разошёлся с ним на ${Math.abs(д.промах!).toFixed(1).replace(".", ",")} пункта.`;
       return `${д.место}-я по тревоге из ${д.всего} недель. ${ч} ${о}`;
     },
     en: (д: { место: number; всего: number; тема: string; раз: number; опрос: number | null; промах: number | null }) => {
@@ -184,7 +186,7 @@ export const T = {
         : "No topic rose noticeably: the reading was much as always.";
       const о = д.опрос == null
         ? "There was no poll that week, so there is nothing to check against."
-        : `The poll that week gave ${d0(д.опрос)}%, and the instrument differed from it by ${Math.abs(д.промах!).toFixed(1)} points.`;
+        : `The poll that week gave ${d0(д.опрос)}%, and the index differed from it by ${Math.abs(д.промах!).toFixed(1)} points.`;
       return `Ranked ${д.место} of ${д.всего} weeks by anxiety. ${ч} ${о}`;
     },
   },
@@ -195,10 +197,10 @@ export const T = {
 
   method: { ru: "Как это измерено", en: "How it is measured" },
   methodLead: {
-    ru: "Прибор смотрит не на то, что люди говорят о своём настроении, а на то, что они в это время делают руками.",
-    en: "The instrument watches not what people say about their mood, but what they do with their hands at the time.",
+    ru: "Индекс смотрит не на то, что люди говорят о своём настроении, а на то, что они в это время делают руками.",
+    en: "The index watches not what people say about their mood, but what they do with their hands at the time.",
   },
-  limits: { ru: "Границы прибора", en: "Limits of the instrument" },
+  limits: { ru: "Границы индекса", en: "Limits of the index" },
   phase: { ru: "Режим", en: "Mode" },
   phases: {
     ru: { обучение: "настройка", живое: "живое", отложено: "проверка" },
@@ -206,12 +208,12 @@ export const T = {
   },
   phaseHint: {
     ru: {
-      обучение: "на этих неделях прибор настраивался",
-      отложено: "эти недели прибор при настройке не видел",
+      обучение: "на этих неделях индекс настраивался",
+      отложено: "эти недели индекс при настройке не видел",
       живое: "считается сейчас, вперёд ещё не проверялось",
     },
     en: {
-      обучение: "the instrument was tuned on these weeks",
+      обучение: "the index was tuned on these weeks",
       отложено: "these weeks were hidden during tuning",
       живое: "computed now, not yet validated forward",
     },
@@ -223,7 +225,7 @@ export const T = {
    * знает, что такое настройка. Здесь сказано, что это значит для читателя:
    * правее прибор эти недели впервые видит и предсказывает вслепую.
    */
-  untuned: { ru: "обучение прибора закончено", en: "instrument training ends here" },
+  untuned: { ru: "начало работы индекса", en: "the index goes live here" },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",
@@ -233,63 +235,63 @@ export const T = {
     en: ["calm", "background", "tension", "alarm", "panic"],
   },
   fit: {
-    ru: { точно: "прибор попал", мимо: "прибор промахнулся", молчат: "обе меры молчат" },
-    en: { точно: "the instrument hit it", мимо: "the instrument missed", молчат: "both measures were silent" },
+    ru: { точно: "индекс попал", мимо: "индекс промахнулся", молчат: "обе меры молчат" },
+    en: { точно: "the index hit it", мимо: "the index missed", молчат: "both measures were silent" },
   },
 
   steps: {
     ru: [
       {
         t: "1. Следы вместо ответов",
-        d: "Прибор никого не спрашивает. Он считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, чем прикрывались в сети, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно. На него идут не из любопытства, а когда припекло.",
+        d: "Мы не собираем социологию — с ней в стране большие проблемы. Индекс считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, чем прикрывались в сети, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно. На него идут не из любопытства, а когда припекло.",
       },
       {
         t: "2. На что он отзывается",
-        d: "Прибор ищет не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Катастрофические прогнозы** — чем всё это кончится. **Религиозное обращение** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
+        d: "Индекс ищет не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Катастрофические прогнозы** — чем всё это кончится. **Религиозное обращение** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
       },
       {
         t: "3. Только лишнее",
-        d: "У каждого следа есть свой обычный уровень, и он гуляет по временам года и дням недели. Прибор считает не уровень, а превышение над спокойной такой же неделей: обычное вычитается целиком. Крупная новость поднимает мир весь сразу — мировой подъём меряется отдельно и вычитается тоже, чтобы не выдать чужое событие за здешнюю тревогу.",
+        d: "У каждого следа есть свой обычный уровень, и он гуляет по временам года и дням недели. Индекс считает не уровень, а превышение над спокойной такой же неделей: обычное вычитается целиком. Крупная новость поднимает мир весь сразу — мировой подъём меряется отдельно и вычитается тоже, чтобы не выдать чужое событие за здешнюю тревогу.",
       },
       {
-        t: "4. Проверка опросом",
-        d: "Готовую кривую сверяют с еженедельным опросом. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Прибор отвечает верно примерно в 84 случаях из 100 — и на тех неделях, которые он при настройке не видел, тоже.",
+        t: "4. Проверка опросом ФОМа",
+        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100 — и на тех неделях, которые он при настройке не видел, тоже.",
       },
     ],
     en: [
       {
         t: "1. Traces, not answers",
-        d: "The instrument asks nothing. It counts open statistics of what the country did that week: what people read, what they searched for, what they hid behind online, how they handled cash. Not every action counts — only the kind that costs something. People do it not out of curiosity but when it burns.",
+        d: "We do not collect survey data — surveying in Russia has troubles of its own. The index counts open statistics of what the country did that week: what people read, what they searched for, what they hid behind online, how they handled cash. Not every action counts — only the kind that costs something. People do it not out of curiosity but when it burns.",
       },
       {
         t: "2. What it responds to",
-        d: "The instrument looks for four traces of anxiety, not anxiety in general. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **Catastrophic forecasts** — how all this ends. **Religious recourse** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
+        d: "The index looks for four traces of anxiety, not anxiety in general. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **Catastrophic forecasts** — how all this ends. **Religious recourse** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
       },
       {
         t: "3. Only the excess",
-        d: "Every trace has its own ordinary level, and that level drifts with the seasons and the days of the week. The instrument counts not the level but the excess over a calm week like this one: the ordinary is subtracted entirely. A big story lifts the whole world at once — that world-wide rise is measured separately and subtracted too, so that someone else’s event is not passed off as anxiety here.",
+        d: "Every trace has its own ordinary level, and that level drifts with the seasons and the days of the week. The index counts not the level but the excess over a calm week like this one: the ordinary is subtracted entirely. A big story lifts the whole world at once — that world-wide rise is measured separately and subtracted too, so that someone else’s event is not passed off as anxiety here.",
       },
       {
         t: "4. Checked against the poll",
-        d: "The finished curve is checked against the weekly poll. The test is strict: take any two weeks and ask which was more anxious. The instrument answers correctly in about 84 cases out of 100 — including on weeks it never saw while being tuned.",
+        d: "The finished curve is checked against the weekly poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100 — including on weeks it never saw while being tuned.",
       },
     ],
   },
 
   limitList: {
     ru: [
-      "Прибор видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у прибора есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое чужой громкой новостью, иногда проходит за здешнюю тревогу.",
-      "Расходясь с опросом, прибор не всегда неправ. Неделя «Крокуса» у него 38-я из 302, у опроса по уровню — 141-я; неделя боёв в Курской области — 82-я против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
-      "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос поставил восьмой неделей, прибор — тридцать второй.",
-      "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
-      "Ответы посетителей на индекс не влияют. Прибор считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
+      "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое чужой громкой новостью, иногда проходит за здешнюю тревогу.",
+      "Расходясь с опросом ФОМа, индекс не всегда неправ. Неделя «Крокуса» у него 38-я из 302, у опроса по уровню — 141-я; неделя боёв в Курской области — 82-я против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
+      "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос ФОМа поставил восьмой неделей, индекс — тридцать второй.",
+      "По регионам он не считает и считать не будет: региональных опросов ФОМа, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
+      "Ответы посетителей на индекс не влияют. Индекс считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
     ],
     en: [
-      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the instrument has such weeks. There are counterweights: the ordinary level is subtracted entirely, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by someone else’s loud news sometimes passes for anxiety here.",
-      "When the instrument disagrees with the poll, it is not always the instrument that is wrong. The Crocus week ranks 38th of 302 for the instrument and 141st for the poll by level; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which of the two is closer to the truth on such weeks cannot be checked: the poll is the truth being checked against.",
-      "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the instrument thirty-second.",
+      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by someone else’s loud news sometimes passes for anxiety here.",
+      "When the index disagrees with the poll, it is not always the index that is wrong. The Crocus week ranks 38th of 302 for the index and 141st for the poll by level; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which of the two is closer to the truth on such weeks cannot be checked: the poll is the truth being checked against.",
+      "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the index thirty-second.",
       "It does not measure regions and will not: there are no regional polls to check against, and without a truth there is nothing to check with.",
-      "Visitors’ answers do not affect the index. The instrument is computed from reading and knows nothing about them: it is a separate question to separate people, not part of the measurement.",
+      "Visitors’ answers do not affect the index. The index is computed from reading and knows nothing about them: it is a separate question to separate people, not part of the measurement.",
     ],
   },
 } as const;

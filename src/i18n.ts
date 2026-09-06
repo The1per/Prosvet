@@ -159,6 +159,12 @@ export const T = {
   /** Кнопка, которой на телефоне выдвигается опрос, и её закрытие. */
   pollOpen: { ru: "Тревожно ли вокруг вас?", en: "Is it anxious around you?" },
   pollClose: { ru: "закрыть", en: "close" },
+  // Зачем отвечать. Стоит под вопросом и до ползунка: человек должен понимать,
+  // во что его зовут, ДО того как двинет ручку, а не после.
+  pollCall: {
+    ru: "Социология в России давно спит. Пора её разбудить — вместе с вами.",
+    en: "Sociology in Russia has long been asleep. Time to wake it up — with you.",
+  },
   pollDisclaimer: {
     ru: "Ваш ответ — про эту неделю. Число слева — про прошедшую, ту, по которой уже вышел опрос ФОМа.",
     en: "Your answer is about this week. The number on the left is about the past week, the one the poll has already covered.",

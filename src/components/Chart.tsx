@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ГРАНИЦА_ЭПОХ, type Week } from "../data/series";
 import { EVENT_BY_DATE } from "../data/events";
 import { T, fmtWeek, type Lang } from "../i18n";
@@ -7,7 +7,7 @@ import { moodColor } from "../mood";
 /**
  * Кривая тревоги.
  *
- * ШКАЛА. Ось не 0…100. Опрос за одиннадцать лет ходил в пределах 32…70 %, и
+ * ШКАЛА. Ось не 0…100. Опрос за всё время ходил в пределах 32…70 %, и
  * растянуть ось на всю сотню значило бы сплющить весь ряд в узкую полосу
  * посередине и спрятать разницу между спокойной неделей и мобилизацией.
  *
@@ -17,10 +17,29 @@ import { moodColor } from "../mood";
  */
 
 const W = 1000;
-const H = 430;
-// Сверху оставлено место под три ряда подписей: метки должны читаться, а не
-// быть точками, по которым надо угадывать.
-const PAD = { l: 34, r: 12, t: 120, b: 30 };
+
+/**
+ * ВЫСОТА ХОЛСТА СЧИТАЕТСЯ ПО КОРОБКЕ, А НЕ ЗАДАНА ЧИСЛОМ.
+ *
+ * Здесь стояло H = 430 при W = 1000, то есть холст с намертво заданными
+ * пропорциями 2.33:1. Коробка же под график шире и ниже -- её высоту задаёт
+ * раскладка, чтобы левая карточка кончалась вровень с опросом. Браузер
+ * вписывал холст в коробку целиком и центрировал, и разница уходила в пустые
+ * полосы сверху и снизу. Измерено: на экране 1600 -- по 93 пикселя с каждой
+ * стороны, на 1920 -- по 58. Именно эта полоса и отодвигала ряд важных дат от
+ * строки поиска, и именно она съедала высоту у самой кривой.
+ *
+ * Теперь высота холста берётся из пропорций коробки, полос нет вовсе, и вся
+ * высота достаётся кривой. Пределы -- на случай очень узкой или очень широкой
+ * коробки, где деление вырождается.
+ */
+const H_МИН = 300;
+const H_МАКС = 900;
+const H_ПО_УМОЛЧАНИЮ = 430; // до первого измерения
+
+// PAD.t держит ряд подписей и табличку недели. 96 -- ровно столько, сколько им
+// нужно: рамка кончается на 35, табличка занимает 44 начиная с PAD.t - 52.
+const PAD = { l: 34, r: 12, t: 96, b: 30 };
 const LABEL_Y = 22; // единственный ряд подписей, наверху
 // Средняя ширина знака -- примерно 0.58 кегля для этого шрифта. Считаем
 // ширину рамки под текст, а если текст в свою долю не влезает -- УМЕНЬШАЕМ
@@ -37,7 +56,7 @@ const TICKS = [30, 40, 50, 60, 70];
 
 /**
  * ЦВЕТ КРИВОЙ ПОСТОЯНЕН. Раньше вся линия перекрашивалась в цвет выбранной
- * недели: одиннадцать лет истории меняли цвет от того, куда ткнули мышью, и в
+ * недели: вся история меняла цвет от того, куда ткнули мышью, и в
  * спокойных неделях кривая уходила в тусклую бирюзу. Здесь она -- ось отсчёта,
  * а не показание, и цвет у неё один, видный на обеих темах.
  */
@@ -56,7 +75,22 @@ export default function Chart({ data, lang, sel, onSel, showFom }: Props) {
   const [hovering, setHovering] = useState(false);
 
   const x = useCallback((i: number) => PAD.l + (i / (data.length - 1)) * (W - PAD.l - PAD.r), [data.length]);
-  const y = useCallback((v: number) => PAD.t + (1 - (v - LO) / (HI - LO)) * (H - PAD.t - PAD.b), []);
+  // Высота холста -- из пропорций коробки. Пересчитывается при каждом
+  // изменении размера: коробку двигают и раскладка, и масштаб страницы.
+  const [H, setH] = useState(H_ПО_УМОЛЧАНИЮ);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const o = new ResizeObserver(([e]) => {
+      const { width, height } = e.contentRect;
+      if (!width || !height) return;
+      setH(Math.round(Math.min(H_МАКС, Math.max(H_МИН, (W * height) / width))));
+    });
+    o.observe(el);
+    return () => o.disconnect();
+  }, []);
+
+  const y = useCallback((v: number) => PAD.t + (1 - (v - LO) / (HI - LO)) * (H - PAD.t - PAD.b), [H]);
 
   const { line, area, fomLine, years, markers, gaps, liveX, eraX } = useMemo(() => {
     const pts = data.map((d, i) => [x(i), y(d.idx)] as const);
@@ -197,7 +231,7 @@ export default function Chart({ data, lang, sel, onSel, showFom }: Props) {
         ref={ref}
         viewBox={`0 0 ${W} ${H}`}
         className="w-full touch-none"
-        style={{ height: "clamp(360px, 42vw, 740px)", overflow: "visible" }}
+        style={{ height: "var(--chart-h, clamp(360px, 42vw, 740px))", overflow: "visible" }}
         onPointerDown={(e) => {
           if (!вПоле(e.clientY)) return;
           (e.target as Element).setPointerCapture?.(e.pointerId);
@@ -259,13 +293,11 @@ export default function Chart({ data, lang, sel, onSel, showFom }: Props) {
               fill="var(--ink)"
               opacity="0.05"
             />
+            {/* Без подписей: «короткий прибор / полный прибор» объясняли
+                устройство прибора там, где читатель смотрит на кривую. Черта
+                и затенение остаются -- они говорят «левее и правее не
+                сравниваются», а подробности стоят в разборе. */}
             <line x1={eraX} x2={eraX} y1={PAD.t - 12} y2={H - PAD.b} stroke="var(--ink-2)" strokeWidth="1.4" />
-            <text x={eraX - 8} y={PAD.t + 6} fontSize="14" textAnchor="end" fill="var(--ink-3)">
-              {T.eraEarly[lang]}
-            </text>
-            <text x={eraX + 8} y={PAD.t + 6} fontSize="14" fill="var(--ink-3)">
-              {T.eraLate[lang]}
-            </text>
           </g>
         )}
 
@@ -281,6 +313,27 @@ export default function Chart({ data, lang, sel, onSel, showFom }: Props) {
               opacity="0.035"
             />
             <line x1={liveX} x2={liveX} y1={PAD.t - 12} y2={H - PAD.b} stroke="var(--line-strong)" strokeDasharray="4 4" />
+            {/* ЭТА подпись нужна, в отличие от эпох: она говорит не про
+                устройство прибора, а про то, чего стоят его показания.
+                Правее черты недель прибор при настройке не видел -- значит
+                там он не подогнан, а угадывает. Сторона выбирается по месту:
+                у правого края текст не помещается и встаёт слева. */}
+            {(() => {
+              const t = T.untuned[lang];
+              const шир = t.length * 14 * 0.58;
+              const справа = W - PAD.r - liveX > шир + 16;
+              return (
+                <text
+                  x={справа ? liveX + 8 : liveX - 8}
+                  y={PAD.t + 6}
+                  fontSize="14"
+                  textAnchor={справа ? "start" : "end"}
+                  fill="var(--ink-3)"
+                >
+                  {t}
+                </text>
+              );
+            })()}
           </g>
         )}
 

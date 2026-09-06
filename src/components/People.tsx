@@ -14,7 +14,7 @@ import type { Lang } from "../i18n";
  * пропадает сама мысль «из десяти».
  *
  * ПОЛ. Скобка внизу отмечает, сколько человек называют настроение вокруг
- * тревожным ДАЖЕ в самую спокойную неделю за одиннадцать лет. Это не
+ * тревожным ДАЖЕ в самую спокойную неделю за всё время опроса. Это не
  * оформление, а измеренное свойство опроса: ниже 3,2 из 10 страна не
  * опускалась ни разу. Скобка кончается ровно на 3,2, а не «около трёх».
  *
@@ -67,8 +67,8 @@ export default function People({ idx, lang, preview = null, part }: Props) {
         ? `${shown.replace(".", ",")} из 10 говорят, что вокруг тревожно`
         : `${shown} in 10 say the mood around them is anxious`;
   const floorLabel = ru
-    ? `${floor.toFixed(1).replace(".", ",")} из 10 — даже в самую спокойную неделю за одиннадцать лет`
-    : `${floor.toFixed(1)} in 10 — even in the calmest week of eleven years`;
+    ? `${floor.toFixed(1).replace(".", ",")} из 10 — даже в самую спокойную неделю за всё время опроса`
+    : `${floor.toFixed(1)} in 10 — even in the calmest week the poll has seen`;
 
   if (part === "подпись") {
     return (

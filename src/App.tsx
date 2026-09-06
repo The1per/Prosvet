@@ -107,7 +107,7 @@ export default function App() {
           <h1 className="flex min-w-0 items-baseline gap-3 truncate text-[20px] font-bold tracking-tight sm:text-[26px]">
             {T.title[lang]}
             <span className="mono shrink-0 text-[16.5px] font-normal tracking-normal" style={{ color: "var(--ink-3)" }}>
-              {T.badge[lang]}
+              {T.badge[lang](SERIES[0].date.slice(0, 4), SERIES[SERIES.length - 1].date.slice(0, 4), SERIES.length)}
             </span>
           </h1>
           <div className="ml-auto flex items-center gap-1.5">

@@ -98,9 +98,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Мобилизация",
     shortEn: "Mobilisation",
     whyRu:
-      "21 сентября 2022-го объявили «частичную мобилизацию»: повестки, очереди на выезд, закрывающиеся границы. Единственный случай полного согласия на вершине — обе меры называют эту неделю самой тревожной за одиннадцать лет, и читали тогда ровно то, что решает судьбу: категории годности, военно-учётную специальность, отсрочку.",
+      "21 сентября 2022-го объявили «частичную мобилизацию»: повестки, очереди на выезд, закрывающиеся границы. Единственный случай полного согласия на вершине — обе меры называют эту неделю самой тревожной за всё время наблюдений, и читали тогда ровно то, что решает судьбу: категории годности, военно-учётную специальность, отсрочку.",
     whyEn:
-      "On 21 September 2022 ‘partial mobilisation’ was declared: call-up papers, queues at the exits, borders closing. The one case of full agreement at the top — both measures call this the most anxious week in eleven years, and the reading was exactly what decides a fate: fitness categories, military speciality codes, deferment.",
+      "On 21 September 2022 ‘partial mobilisation’ was declared: call-up papers, queues at the exits, borders closing. The one case of full agreement at the top — both measures call this the most anxious week on record, and the reading was exactly what decides a fate: fitness categories, military speciality codes, deferment.",
     fit: "точно",
   },
   {

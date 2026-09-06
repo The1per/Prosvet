@@ -30,14 +30,20 @@ export const T = {
     ru: "В науке это называется невключённым измерением по цифровым следам.",
     en: "In research this is called unobtrusive measurement from digital traces.",
   },
-  badge: { ru: "2016 — 2026 · 519 недель", en: "2016 — 2026 · 519 weeks" },
+  /**
+   * Годы и число недель БЕРУТСЯ ИЗ РЯДА, а не вписаны. Строкой здесь стояло
+   * «2016 — 2026 · 519 недель», и после первого же среза ряда подпись стала
+   * врать -- о годах и о числе недель разом.
+   */
+  badge: {
+    ru: (a: string, b: string, n: number) => `${a} — ${b} · ${n} недель`,
+    en: (a: string, b: string, n: number) => `${a} — ${b} · ${n} weeks`,
+  },
   now: { ru: "Прошедшая неделя", en: "The past week" },
   week: { ru: "Неделя", en: "Week" },
   ofTen: { ru: "% — столько называют настроение вокруг тревожным", en: "% say the mood around them is anxious" },
   vsBaseline: { ru: "к обычной неделе", en: "vs a normal week" },
   /** Пик СВОЕЙ эпохи: между эпохами пики не сравниваются, см. ГРАНИЦА_ЭПОХ. */
-  eraEarly: { ru: "короткий прибор", en: "shorter instrument" },
-  eraLate: { ru: "полный прибор", en: "full instrument" },
   peakEra: {
     ru: (ранняя: boolean) => (ранняя ? "Пик до 2020" : "Пик с 2020"),
     en: (ранняя: boolean) => (ранняя ? "Peak before 2020" : "Peak since 2020"),
@@ -110,18 +116,18 @@ export const T = {
   youVsHistory: {
     ru: (доля: number, всего: number, край: "выше" | "ниже" | null, пол: number, потолок: number) => {
       if (край === "выше")
-        return `Выше, чем опрос показывал хоть раз за одиннадцать лет: его потолок — ${потолок} %, неделя мобилизации.`;
+        return `Выше, чем опрос показывал хоть раз за всё время: его потолок — ${потолок} %, неделя мобилизации.`;
       if (край === "ниже")
-        return `Ниже, чем опрос опускался хоть раз за одиннадцать лет: его пол — ${пол} %, и ниже страна не была ни разу.`;
+        return `Ниже, чем опрос опускался хоть раз за всё время: его пол — ${пол} %, и ниже страна не была ни разу.`;
       return доля >= 50
         ? `Спокойнее, чем вы сказали, было в ${доля} из 100 недель, по которым ФОМ спрашивал то же самое (всего таких недель ${всего}).`
         : `Тревожнее, чем вы сказали, было в ${100 - доля} из 100 недель, по которым ФОМ спрашивал то же самое (всего таких недель ${всего}).`;
     },
     en: (доля: number, всего: number, край: "выше" | "ниже" | null, пол: number, потолок: number) => {
       if (край === "выше")
-        return `Higher than the poll has ever gone in eleven years: its ceiling is ${потолок}%, the week of mobilisation.`;
+        return `Higher than the poll has ever gone: its ceiling is ${потолок}%, the week of mobilisation.`;
       if (край === "ниже")
-        return `Lower than the poll has ever fallen in eleven years: its floor is ${пол}%, and the country has never been below it.`;
+        return `Lower than the poll has ever fallen: its floor is ${пол}%, and the country has never been below it.`;
       return доля >= 50
         ? `${доля} out of 100 weeks in which FOM asked the same question were calmer than your answer (${всего} such weeks in all).`
         : `${100 - доля} out of 100 weeks in which FOM asked the same question were more anxious than your answer (${всего} such weeks in all).`;
@@ -140,7 +146,7 @@ export const T = {
   views: { ru: "просмотров сверх обычного", en: "views above normal" },
   viewsPlain: { ru: "просмотров", en: "views" },
   weakerThanMob: { ru: "слабее недели мобилизации", en: "weaker than mobilisation week" },
-  isTheMob: { ru: "это и есть самая тревожная неделя за одиннадцать лет", en: "this is the most anxious week in eleven years" },
+  isTheMob: { ru: "это и есть самая тревожная неделя ряда", en: "this is the most anxious week on record" },
   aboveNormal: { ru: "выше обычной недели", en: "above a normal week" },
   belowNormalShort: { ru: "ниже обычной", en: "below normal" },
   belowNormal: { ru: "ниже обычной недели", en: "below a normal week" },
@@ -209,6 +215,8 @@ export const T = {
   },
   scrollHint: { ru: "ниже — как это измерено", en: "below — how it is measured" },
   events: { ru: "Что было в эти недели", en: "What happened in these weeks" },
+  /** Отсечка на графике: правее прибор при настройке недель не видел. */
+  untuned: { ru: "дальше без настройки", en: "untuned from here" },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",

@@ -65,7 +65,7 @@ export const T = {
     en: "Every Friday FOM publishes the share of people who call the mood around them anxious. That is the series the instrument is checked against:",
   },
   /** Постоянная подпись рядом с числом: на чём это число основано. */
-  basis: { ru: "по чтению", en: "from reading" },
+  basis: { ru: "по следам в сети", en: "from web traces" },
   gapUp: { ru: "опрос выше", en: "poll higher" },
   gapDown: { ru: "прибор выше", en: "instrument higher" },
   chartHint: { ru: "Ведите по графику или нажмите:", en: "Drag across the chart, or jump to:" },

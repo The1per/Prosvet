@@ -85,7 +85,7 @@ export default function App() {
    * Дважды написанная разметка разъезжается при первой же правке.
    */
   const парФОМ = (
-    <div className={телефон ? "flex flex-col items-end gap-1" : "flex items-center gap-2"}>
+    <div className={телефон ? "flex flex-col items-end gap-2" : "flex items-center gap-2"}>
       <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
     </div>
@@ -95,6 +95,14 @@ export default function App() {
       type="button"
       onClick={() => setОпросОткрыт(true)}
       className={"pollbtn font-semibold " + (телефон ? "max-w-[100px] px-2 py-1.5 text-[12px] leading-tight" : "whitespace-nowrap px-3 py-1.5 text-[13px]")}
+      /* Пульсирует цветом показания той недели, что сейчас на экране: спокойная
+         неделя -- спокойное свечение, тревожная -- тревожное. */
+      style={{
+        ["--pulse-1" as string]: moodColor(w.idx, 6, 0.34),
+        ["--pulse-2" as string]: moodColor(w.idx, 6, 0.16),
+        ["--pulse-3" as string]: moodColor(w.idx, 6, 0.4),
+        ["--pulse-4" as string]: moodColor(w.idx, 6, 0.75),
+      }}
     >
       {T.pollOpen[lang]}
     </button>
@@ -263,11 +271,19 @@ export default function App() {
                   </div>
                 </div>
                 <div className="mono mt-1.5">
-                  <div className="text-[19px] font-semibold sm:text-[20px]" style={{ color: "var(--ink)" }}>
+                  {/* На телефоне дата мельче и НЕ ПЕРЕНОСИТСЯ: на длинных
+                      датах она разъезжалась на две строки, и весь блок под
+                      индексом прыгал от недели к неделе. */}
+                  <div
+                    className={
+                      "font-semibold " + (телефон ? "whitespace-nowrap text-[16px]" : "text-[18px] sm:text-[19px]")
+                    }
+                    style={{ color: "var(--ink)" }}
+                  >
                     {fmtWeek(w.date, lang)}
                   </div>
                   <div className="mt-0.5 text-[15.5px]" style={{ color: "var(--ink-3)" }}>
-                    {T.phase[lang]}: {T.phases[lang][w.phase]} · {T.placeInEra[lang](место.место, место.всего, ранняя)}
+                    {T.placeInEra[lang](место.место, место.всего, ранняя)}
                   </div>
                 </div>
                 </div>
@@ -278,7 +294,7 @@ export default function App() {
                 {телефон && <div className="shrink-0">{парФОМ}</div>}
               </div>
 
-              <div className={телефон ? "w-full" : "order-last"}>
+              <div className={телефон ? "w-full" : ""}>
                 <div className={телефон ? "flex items-end" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} />
                 </div>
@@ -291,7 +307,7 @@ export default function App() {
                 <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[118px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[100px]"}>
                   <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
                 </div>
               </div>
@@ -300,7 +316,7 @@ export default function App() {
                 <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[118px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[100px]"}>
                   <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
                 </div>
               </div>
@@ -315,10 +331,7 @@ export default function App() {
                   показать, вот как найти неделю». */}
               {!телефон && (
                 <div>
-                  <div className="flex h-[76px] items-end gap-3">
-                    {парФОМ}
-                    <EventSearch lang={lang} onPick={jumpTo} phone={false} />
-                  </div>
+                  <div className="flex h-[76px] items-end">{парФОМ}</div>
                   <div className="mt-1.5">{легенда}</div>
                 </div>
               )}
@@ -328,11 +341,8 @@ export default function App() {
                 включён, его легенда. Всё остальное управление разошлось по
                 своим числам в ряду выше. Поле поиска во всю ширину стоило
                 здесь целой строки, а нужно оно редко -- поэтому лупа. */}
-            {телефон && (
-              <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <EventSearch lang={lang} onPick={jumpTo} phone />
-                {легенда}
-              </div>
+            {телефон && легенда && (
+              <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">{легенда}</div>
             )}
 
             {/* ВЫСОТА ГРАФИКА ЗАКРЕПЛЕНА и ни от чего на странице не зависит.
@@ -341,8 +351,15 @@ export default function App() {
                 график менял рост при переходе на другую неделю, в том числе
                 когда курсор просто проходил по кривой. Слабина карточки
                 уходит вниз, под чтение недели, где она никому не мешает. */}
-            <div className="flex h-[var(--chart-h,360px)] flex-none flex-col">
+            {/* Поиск сидит В ПРАВОМ ВЕРХНЕМ УГЛУ ГРАФИКА. Своей строкой он
+                стоил высоты перед кривой, а полем во всю ширину -- ещё и
+                места в ряду показателей. Ряд подписей событий укорочен
+                справа ровно на его ширину, чтобы они не встретились. */}
+            <div className="relative flex h-[var(--chart-h,360px)] flex-none flex-col">
               <Chart data={SERIES} lang={lang} sel={sel} onSel={setSel} showFom={showFom} phone={телефон} />
+              <div className="absolute right-1 top-0 z-20">
+                <EventSearch lang={lang} onPick={jumpTo} phone />
+              </div>
             </div>
 
             {/* Чтение недели -- сразу под кривой, в той же карточке: выбрал
@@ -573,11 +590,22 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
     >
       {tip && (
         <div
+          /* На телефоне кнопка стоит у ПРАВОГО края, и подсказка, привязанная
+             к левому краю кнопки, уезжала за экран. Там она цепляется правым
+             краем и меряется от ширины окна, а не от своей. */
           className={
-            "absolute top-[calc(100%+10px)] left-0 z-40 rounded-2xl border leading-relaxed " +
-            (phone ? "w-[min(300px,80vw)] p-3 text-[14px]" : "w-[380px] p-4 text-[16.5px]")
+            "absolute top-[calc(100%+10px)] z-40 rounded-2xl border leading-relaxed " +
+            (phone ? "right-0 p-3 text-[13.5px]" : "left-0 p-4 text-[16px]")
           }
-          style={{ borderColor: "var(--line-strong)", background: "var(--bg-2)", color: "var(--ink-2)", boxShadow: "var(--shadow)" }}
+          /* Ширина стилем, а не классом: произвольное значение с calc внутри
+             min() Tailwind не собрал, и подсказка сжималась до ширины кнопки. */
+          style={{
+            borderColor: "var(--line-strong)",
+            background: "var(--bg-2)",
+            color: "var(--ink-2)",
+            boxShadow: "var(--shadow)",
+            width: phone ? "min(280px, calc(100vw - 32px))" : 340,
+          }}
         >
           {T.fomWhat[lang]}{" "}
           <a

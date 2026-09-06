@@ -483,21 +483,28 @@ html[data-theme="light"] .pollglow {
   cursor: pointer;
   animation: pollpulse 2.6s ease-in-out infinite;
 }
+/* Цвет пульсации приходит СНАРУЖИ, из показания недели: кнопка спрашивает про
+   то же самое, про что говорит число, и светиться ей положено тем же цветом.
+   Значения по умолчанию -- на случай, если переменные не заданы. */
 @keyframes pollpulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(245, 183, 49, 0.34), 0 0 10px rgba(245, 183, 49, 0.16);
+    box-shadow:
+      0 0 0 0 var(--pulse-1, rgba(245, 183, 49, 0.34)),
+      0 0 10px var(--pulse-2, rgba(245, 183, 49, 0.16));
     border-color: var(--line-strong);
   }
   50% {
-    box-shadow: 0 0 0 5px rgba(245, 183, 49, 0), 0 0 20px rgba(245, 183, 49, 0.36);
-    border-color: rgba(245, 183, 49, 0.75);
+    box-shadow:
+      0 0 0 5px transparent,
+      0 0 20px var(--pulse-3, rgba(245, 183, 49, 0.36));
+    border-color: var(--pulse-4, rgba(245, 183, 49, 0.75));
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .pollbtn {
     animation: none;
-    box-shadow: 0 0 14px rgba(245, 183, 49, 0.26);
-    border-color: rgba(245, 183, 49, 0.6);
+    box-shadow: 0 0 14px var(--pulse-3, rgba(245, 183, 49, 0.36));
+    border-color: var(--pulse-4, rgba(245, 183, 49, 0.75));
   }
 }

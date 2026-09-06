@@ -59,25 +59,13 @@ export const EVENTS: Ev[] = [
     date: "2020-11-09",
     ru: "Вторая волна ковида",
     en: "The second covid wave",
-    shortRu: "2-я волна",
-    shortEn: "Second wave",
+    shortRu: "COVID, 2 волна",
+    shortEn: "COVID wave 2",
     whyRu:
       "Осенью 2020-го заболеваемость и смертность впервые перекрыли весенние, но локдауна больше не объявляли — тревога тянулась месяцами без единого громкого дня. Опрос ставит эту неделю восьмой, прибор — тридцать второй: затяжное он видит хуже, чем резкий удар.",
     whyEn:
       "In autumn 2020 cases and deaths first exceeded the spring peak, but no lockdown was declared — the anxiety dragged on for months with no single loud day. The poll ranks this week eighth, the instrument thirty-second: it sees the drawn-out worse than a sharp blow.",
     fit: "мимо",
-  },
-  {
-    date: "2022-02-21",
-    ru: "Признание ДНР и ЛНР",
-    en: "Recognition of the DNR and LNR",
-    shortRu: "Признание",
-    shortEn: "DNR",
-    whyRu:
-      "21 февраля 2022-го Россия признала ДНР и ЛНР и ввела туда войска — за три дня до вторжения. Прибор и опрос сошлись близко: тревога поднялась ещё до 24 февраля, люди поняли, к чему идёт.",
-    whyEn:
-      "On 21 February 2022 Russia recognised the DNR and LNR and sent troops in — three days before the invasion. Instrument and poll agreed closely: anxiety rose before 24 February; people saw where it was going.",
-    fit: "точно",
   },
   {
     date: "2022-02-28",

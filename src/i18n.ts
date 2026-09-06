@@ -61,8 +61,8 @@ export const T = {
   /** То же на телефоне: длинная надпись там занимала строку целиком. */
   fomOnShort: { ru: "опрос ФОМ", en: "FOM poll" },
   fomWhat: {
-    ru: "ФОМ — Фонд «Общественное мнение», один из двух больших российских опросных центров. Каждую пятницу он публикует, сколько людей называют настроение вокруг себя тревожным. Это тот ряд, на котором прибор проверяется, и он открыт:",
-    en: "FOM is the Public Opinion Foundation, one of Russia’s two large survey houses. Every Friday it publishes the share of people who call the mood around them anxious. That is the series the instrument is checked against, and it is open:",
+    ru: "ФОМ каждую пятницу публикует, сколько людей называют настроение вокруг себя тревожным. На этом ряду прибор и проверяется:",
+    en: "Every Friday FOM publishes the share of people who call the mood around them anxious. That is the series the instrument is checked against:",
   },
   gapUp: { ru: "опрос выше", en: "poll higher" },
   gapDown: { ru: "прибор выше", en: "instrument higher" },

@@ -52,9 +52,16 @@ export function Breakdown({ w, lang, baseline }: { w: Week; lang: Lang; baseline
       {/* Дата ВСЕГДА справа и НИКОГДА не переносится: flex-nowrap и запрет
           переноса внутри. Съезжая под заголовок на длинных датах вроде
           «28 февраля — 6 марта 2022», она делала карточку то выше, то ниже. */}
-      <div className="mb-4 flex flex-nowrap items-center justify-between gap-2">
-        <h3 className="shrink truncate text-[20px] font-semibold">{T.breakdown[lang]}</h3>
-        <span className="chip shrink-0 whitespace-nowrap">{fmtWeek(w.date, lang)}</span>
+      {/* Ниже 640 заголовок с датой ПЕРЕНОСИТСЯ: на экране 320 дата в одну
+          строку с названием не помещалась и растягивала страницу вбок. Выше
+          640 перенос по-прежнему запрещён -- там от него карточка меняла
+          высоту от недели к неделе. */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap">
+        {/* Заголовок не обрезается: в суженном столбике «Разбор недели»
+            превращалось в «Разбор неде…». Кегль чуть меньше, дата тоже --
+            вдвоём они умещаются в строку целиком. */}
+        <h3 className="shrink-0 whitespace-nowrap text-[18px] font-semibold">{T.breakdown[lang]}</h3>
+        <span className="chip shrink whitespace-nowrap text-[13px]">{fmtWeek(w.date, lang)}</span>
       </div>
 
       {/* У обычной недели блока нет вовсе -- пустая рамка сверху ничего не

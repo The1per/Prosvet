@@ -3,7 +3,7 @@ import Poles from "./Poles";
 import ProfileForm from "./Profile";
 import { moodColor } from "../mood";
 import { SERIES } from "../data/series";
-import { СБОР_ВКЛЮЧЁН, отправить, type Сводка } from "../answers";
+import { отправить, type Сводка } from "../answers";
 import { T, fmtDate, type Lang } from "../i18n";
 
 /**
@@ -277,9 +277,6 @@ export default function Poll({
         </div>
       )}
 
-        <p className="mono mt-4 text-[15px] leading-snug" style={{ color: "var(--ink-3)" }}>
-          {СБОР_ВКЛЮЧЁН ? T.privacySent[lang] : T.privacyLocal[lang]}
-        </p>
       </div>
 
       {past.length > 0 && (

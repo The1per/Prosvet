@@ -136,7 +136,7 @@ export const T = {
     },
   },
   /** Кнопка, которой на телефоне выдвигается опрос, и её закрытие. */
-  pollOpen: { ru: "Ответить на вопрос", en: "Answer the question" },
+  pollOpen: { ru: "Тревожно ли вокруг вас?", en: "Is it anxious around you?" },
   pollClose: { ru: "закрыть", en: "close" },
   pollDisclaimer: {
     ru: "Ваш ответ — про эту неделю. Число слева — про прошедшую, ту, по которой уже вышел опрос.",
@@ -276,22 +276,24 @@ export const T = {
 
   limitList: {
     ru: [
-      "Недели до 2020 года и после НЕ СРАВНИВАЮТСЯ между собой. До 2020-го прибор короче: одна из его осей — та, что мерит не чтение, а поступок, — существует только с 2020 года и ранние недели не судит вовсе. Измерено: до этих осей ранних недель в верхней двадцатке нет ни одной, после — половина. Поэтому место недели считается внутри своей эпохи, а граница нарисована прямо на графике.",
+      "Недели до 2020 года и после НЕ СРАВНИВАЮТСЯ между собой. До 2020-го прибор короче: одна из его осей — та, что мерит не чтение, а поступок, — существует только с 2020 года и ранние недели не судит вовсе. Измерено: до этих осей ранних недель в верхней двадцатке нет ни одной, после — половина. Поэтому место недели считается внутри своей эпохи — это написано под числом, строкой «место из N с 2020».",
       "Прибор видит внимание, а не чувство. Человек может читать про бомбоубежища из любопытства — и такие недели у прибора есть.",
       "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос поставил восьмой неделей, прибор — тридцать второй.",
       "Википедия — не вся страна: она смещена в сторону городов и людей помоложе.",
       "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
       "Последние недели помечены «живое»: они посчитаны сейчас и вперёд ещё никем не проверены.",
       "Совпадение с опросом не означает причинность. Это два разных термометра в одной комнате.",
+      "Ответы посетителей сохраняются у нас — без имени, без адреса: только число и то, что человек указал сам. Они нигде не смешиваются с показаниями прибора и на индекс не влияют.",
     ],
     en: [
-      "Weeks before and after 2020 are NOT compared with each other. Before 2020 the instrument is shorter: one of its axes — the one measuring an act rather than reading — exists only from 2020 and does not judge earlier weeks at all. Measured: before those axes not a single early week is in the top twenty; after them, half of it is. So a week’s rank is counted within its own era, and the boundary is drawn on the chart.",
+      "Weeks before and after 2020 are NOT compared with each other. Before 2020 the instrument is shorter: one of its axes — the one measuring an act rather than reading — exists only from 2020 and does not judge earlier weeks at all. Measured: before those axes not a single early week is in the top twenty; after them, half of it is. So a week’s rank is counted within its own era — it is stated under the number, in the line “Nth of M since 2020”.",
       "It sees attention, not feeling. A person can read about bomb shelters out of curiosity — and the instrument has such weeks.",
       "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the instrument thirty-second.",
       "Wikipedia is not the whole country: it skews urban and younger.",
       "It does not measure regions and will not: there are no regional polls to check against, and without a truth there is nothing to check with.",
       "The most recent weeks are marked 'live': they were computed now and nothing has yet validated them forward.",
       "Agreement with the poll is not causation. These are two thermometers in one room.",
+      "Visitors’ answers are stored by us — no name, no address: just the number and whatever the person added themselves. They are never mixed with the instrument’s readings and do not affect the index.",
     ],
   },
 } as const;

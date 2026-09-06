@@ -269,6 +269,19 @@ export default function App() {
             >
               <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
               <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
+              {/* Кнопка опроса стоит ЗДЕСЬ, рядом с кнопкой ФОМа, а не висит
+                  над графиком: там она закрывала кривую. Материал -- то же
+                  стекло, что у карточек; отличает её только медленная жёлтая
+                  пульсация по краю. */}
+              {телефон && (
+                <button
+                  type="button"
+                  onClick={() => setОпросОткрыт(true)}
+                  className="pollbtn px-3 py-1.5 text-[13px] font-semibold"
+                >
+                  {T.pollOpen[lang]}
+                </button>
+              )}
               <div>
                 {/* Легенда стоит В СТРОКУ с кнопкой: под кнопкой она съедала
                     целую строку прямо над графиком, а он должен быть виден
@@ -377,16 +390,6 @@ export default function App() {
           который уже стоит на месте, иначе он появлялся бы рывком. */}
       {телефон && (
         <>
-          <button
-            type="button"
-            onClick={() => setОпросОткрыт(true)}
-            className="btn fixed bottom-4 right-3 z-40 px-4 py-2.5 text-[15px] font-semibold"
-            data-on={true}
-            style={{ boxShadow: "var(--shadow)" }}
-          >
-            {T.pollOpen[lang]}
-          </button>
-
           <div
             className="fixed inset-0 z-50"
             style={{ pointerEvents: опросОткрыт ? "auto" : "none" }}

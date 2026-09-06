@@ -221,7 +221,7 @@ export const T = {
    * знает, что такое настройка. Здесь сказано, что это значит для читателя:
    * правее прибор эти недели впервые видит и предсказывает вслепую.
    */
-  untuned: { ru: "правее — вслепую, эти недели прибор не видел", en: "to the right — blind: weeks the instrument never saw" },
+  untuned: { ru: "обучение прибора закончено", en: "instrument training ends here" },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",

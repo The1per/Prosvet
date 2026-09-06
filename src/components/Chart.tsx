@@ -87,6 +87,27 @@ type Props = {
 export default function Chart({ data, lang, sel, onSel, showFom, phone = false }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const [hovering, setHovering] = useState(false);
+  /**
+   * ВЕДЁМ ЛИ НЕДЕЛЮ ПАЛЬЦЕМ.
+   *
+   * На телефоне у пальца два дела на одном месте: листать страницу и выбирать
+   * неделю. Раньше побеждало то одно, то другое -- сперва полотно забирало
+   * все касания и страница не листалась, потом листание забрало всё и неделю
+   * стало не сдвинуть. Развели их по началу жеста: палец, опущенный НА САМ
+   * КРУЖОК выбранной недели, ведёт неделю; опущенный где угодно ещё -- листает.
+   * Короткое касание мимо кружка по-прежнему просто выбирает неделю.
+   */
+  // Признак живёт в ref, а не только в state: между нажатием и первым
+  // движением React может не успеть перерисовать, и обработчик движения читал
+  // бы старое значение -- ведение не начиналось бы вовсе. State нужен лишь
+  // для touch-action, которому нужна перерисовка.
+  const тащимRef = useRef(false);
+  const [тащим, setТащим] = useState(false);
+  const начало = useRef<{ x: number; y: number } | null>(null);
+  const вести = (да: boolean) => {
+    тащимRef.current = да;
+    setТащим(да);
+  };
 
   // Коробка меряется, а не угадывается: её размер задаёт раскладка.
   const [бокс, setБокс] = useState<{ w: number; h: number } | null>(null);
@@ -306,6 +327,16 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
     return ((clientY - r.top) / r.height) * H >= PAD.t - 8;
   };
 
+  /** Палец на самом кружке выбранной недели? Радиус щедрый: по кружку в
+      шесть пикселей пальцем не попасть. */
+  const наКружке = (clientX: number, clientY: number) => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return false;
+    const px = r.left + (cx / W) * r.width;
+    const py = r.top + (cy / H) * r.height;
+    return Math.hypot(clientX - px, clientY - py) <= 26;
+  };
+
   const pick = (clientX: number, clientY: number) => {
     const r = ref.current?.getBoundingClientRect();
     if (!r || !вПоле(clientY)) return;
@@ -329,30 +360,60 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
       <svg
         ref={ref}
         viewBox={`0 0 ${W} ${H}`}
-        /**
-         * ПАЛЕЦ ПО ГРАФИКУ ЛИСТАЕТ СТРАНИЦУ. Стояло touch-none -- полотно
-         * забирало себе все касания, и на телефоне палец, попавший на график,
-         * не прокручивал страницу: она замирала. Теперь по вертикали листает
-         * браузер (touch-pan-y), а неделю выбирает КАСАНИЕ, а не проведение:
-         * тянуть неделю пальцем всё равно нельзя -- этот же жест листает.
-         */
-        className={"w-full " + (phone ? "touch-pan-y" : "touch-none")}
-        style={{ height: "100%", minHeight: "var(--chart-h, 360px)", overflow: "visible" }}
+        className="w-full"
+        style={{
+          height: "100%",
+          overflow: "visible",
+          // Пока ведут неделю -- касания наши; в остальное время по вертикали
+          // листает браузер. На экране мышь и так не листает.
+          touchAction: phone ? (тащим ? "none" : "pan-y") : "none",
+        }}
         onPointerDown={(e) => {
           if (!вПоле(e.clientY)) return;
-          if (!phone) (e.target as Element).setPointerCapture?.(e.pointerId);
+          начало.current = { x: e.clientX, y: e.clientY };
+          if (phone) {
+            // Палец на кружке -- ведём неделю; мимо -- отдаём жест странице
+            // и решим на отпускании, было ли это касанием.
+            if (!наКружке(e.clientX, e.clientY)) return;
+            вести(true);
+            (e.target as Element).setPointerCapture?.(e.pointerId);
+            setHovering(true);
+            return;
+          }
+          (e.target as Element).setPointerCapture?.(e.pointerId);
           setHovering(true);
           pick(e.clientX, e.clientY);
         }}
         onPointerMove={(e) => {
-          if (phone) return;
+          if (phone) {
+            if (тащимRef.current && вПоле(e.clientY)) pick(e.clientX, e.clientY);
+            return;
+          }
           if ((e.pointerType === "mouse" || e.buttons > 0) && вПоле(e.clientY)) {
             setHovering(true);
             pick(e.clientX, e.clientY);
           }
         }}
         onPointerLeave={() => setHovering(false)}
-        onPointerUp={() => setHovering(false)}
+        onPointerCancel={() => {
+          вести(false);
+          начало.current = null;
+        }}
+        onPointerUp={(e) => {
+          setHovering(false);
+          if (phone) {
+            const н = начало.current;
+            начало.current = null;
+            if (тащимRef.current) {
+              вести(false);
+              return;
+            }
+            // Короткое касание -- выбор недели. Порог в 8 пикселей отделяет
+            // касание от начала прокрутки: листание пальцем неделю не двигает.
+            if (н && Math.hypot(e.clientX - н.x, e.clientY - н.y) < 8 && вПоле(e.clientY))
+              pick(e.clientX, e.clientY);
+          }
+        }}
       >
         <defs>
           <linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
@@ -424,9 +485,10 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
               return (
                 <text
                   x={справа ? liveX + 6 : liveX - 6}
-                  // Наверху на телефоне подпись ложилась на выноски меток --
-                  // там их три ряда. Внизу, у самой оси, пусто.
-                  y={phone ? H - PAD.b - 8 : PAD.t + 6}
+                  // У САМОЙ ОСИ, а не наверху. Наверху подпись ложилась на
+                  // выноски меток, а главное -- стояла посреди поля кривой и
+                  // ловила курсор: наведение на неё выбирало неделю под ней.
+                  y={H - PAD.b - 8}
                   fontSize={кегль}
                   textAnchor={справа ? "start" : "end"}
                   fill="var(--ink-3)"

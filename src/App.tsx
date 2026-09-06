@@ -79,6 +79,49 @@ export default function App() {
     return () => window.removeEventListener("resize", мера);
   }, []);
 
+  /**
+   * КУСКИ УПРАВЛЕНИЯ ЗАВЕДЕНЫ ОДИН РАЗ, а стоят в разных местах: на экране --
+   * в верхнем ряду, рядом с числами, на телефоне -- каждый у своего числа.
+   * Дважды написанная разметка разъезжается при первой же правке.
+   */
+  const парФОМ = (
+    <div className={телефон ? "flex flex-col items-end gap-1" : "flex items-center gap-2"}>
+      <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
+      <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
+    </div>
+  );
+  const кнопкаОпроса = (
+    <button
+      type="button"
+      onClick={() => setОпросОткрыт(true)}
+      className={"pollbtn font-semibold " + (телефон ? "max-w-[100px] px-2 py-1.5 text-[12px] leading-tight" : "whitespace-nowrap px-3 py-1.5 text-[13px]")}
+    >
+      {T.pollOpen[lang]}
+    </button>
+  );
+  /* Место под легенду держится всегда: иначе нажатие на кнопку сдвигало бы
+     всё, что ниже, на её высоту. На телефоне -- только когда она нужна. */
+  const легенда = (
+    <div style={{ visibility: showFom ? "visible" : "hidden" }} hidden={телефон && !showFom}>
+      <div
+        className={
+          "flex flex-wrap items-center gap-y-1 " +
+          (телефон ? "gap-x-2.5 text-[12.5px]" : "gap-x-4 text-[15px]")
+        }
+        style={{ color: "var(--ink-3)" }}
+      >
+        <span className="flex items-center gap-1.5">
+          <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--cool)" }} />
+          {T.gapUp[lang]}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--violet)" }} />
+          {T.gapDown[lang]}
+        </span>
+      </div>
+    </div>
+  );
+
   const heroRef = useReveal<HTMLDivElement>();
   // 140 мс, а не полсекунды: при движении по графику число не должно
   // отставать от курсора -- иначе кажется, что оно не поспевает за неделей.
@@ -177,7 +220,7 @@ export default function App() {
             хватает. С порогом xl колонки схлопывались там, где не нужно. */}
         <section
           className={
-            телефон ? "flex flex-col gap-3" : "grid gap-3 md:grid-cols-[minmax(0,1fr)_400px]"
+            телефон ? "flex flex-col gap-3" : "grid gap-3 md:grid-cols-[minmax(0,1fr)_374px]"
           }
         >
           <div ref={heroRef} className="card reveal in flex h-full flex-col overflow-hidden p-3 sm:p-4">
@@ -195,10 +238,11 @@ export default function App() {
             <div
               className={
                 "flex flex-wrap items-start " +
-                (телефон ? "mb-2 gap-x-6 gap-y-2" : "mb-3 gap-x-7 gap-y-3")
+                (телефон ? "mb-2 gap-x-3 gap-y-2" : "mb-3 gap-x-5 gap-y-3")
               }
             >
-              <div className={телефон ? "w-full" : ""}>
+              <div className={телефон ? "flex w-full items-start justify-between gap-2" : ""}>
+                <div className={телефон ? "min-w-0" : ""}>
                 {/* Надписи «прошедшая неделя» над числом больше нет: дата
                     недели стоит прямо под числом и говорит то же самое. */}
                 <div className={телефон ? "flex flex-col" : "flex h-[76px] flex-col justify-end"}>
@@ -213,7 +257,7 @@ export default function App() {
                     >
                       {shown.toFixed(1)}
                     </span>
-                    <span className="whitespace-nowrap pb-1 text-[17px]" style={{ color: "var(--ink-2)" }}>
+                    <span className={"whitespace-nowrap pb-1 " + (телефон ? "text-[15px]" : "text-[17px]")} style={{ color: "var(--ink-2)" }}>
                       % · {level}
                     </span>
                   </div>
@@ -226,10 +270,16 @@ export default function App() {
                     {T.phase[lang]}: {T.phases[lang][w.phase]} · {T.placeInEra[lang](место.место, место.всего, ранняя)}
                   </div>
                 </div>
+                </div>
+                {/* Число опроса и кнопка к нему -- СПРАВА ОТ ИНДЕКСА: это два
+                    показания одной и той же недели, и стоять им положено
+                    рядом. Ниже, отдельной строкой, они читались как
+                    управление графиком, чем они только наполовину. */}
+                {телефон && <div className="shrink-0">{парФОМ}</div>}
               </div>
 
-              <div className={телефон ? "w-full" : ""}>
-                <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
+              <div className={телефон ? "w-full" : "order-last"}>
+                <div className={телефон ? "flex items-end" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} />
                 </div>
                 <div className="mt-1.5">
@@ -254,73 +304,44 @@ export default function App() {
                   <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
                 </div>
               </div>
-            </div>
 
-            {/* Управление стоит НАД графиком: под ним его приходилось искать
-                прокруткой, а легенда к кривой, до которой надо доскроллить,
-                легенде не помощник. */}
-            {/* Число опроса стоит рядом с кнопкой, которая его показывает:
-                это одно и то же -- «сколько дал опрос» и «покажи опрос». */}
-            <div
-              className={
-                "flex flex-wrap items-center " +
-                (телефон ? "mb-1.5 gap-x-3 gap-y-1.5" : "mb-2 gap-x-5 gap-y-2")
-              }
-            >
-              <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
-              <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
-              {/* Кнопка опроса стоит ЗДЕСЬ, рядом с кнопкой ФОМа, а не висит
-                  над графиком: там она закрывала кривую. Материал -- то же
-                  стекло, что у карточек; отличает её только медленная жёлтая
-                  пульсация по краю. */}
-              {телефон && (
-                <button
-                  type="button"
-                  onClick={() => setОпросОткрыт(true)}
-                  className="pollbtn px-3 py-1.5 text-[13px] font-semibold"
-                >
-                  {T.pollOpen[lang]}
-                </button>
-              )}
-              <div>
-                {/* Легенда стоит В СТРОКУ с кнопкой: под кнопкой она съедала
-                    целую строку прямо над графиком, а он должен быть виден
-                    сразу. Место держит и когда выключена: иначе нажатие
-                    сдвигало график на её высоту, и он скакал. */}
-                {/* На экране место под легенду держится всегда: иначе нажатие
-                    сдвигало бы график на её высоту. На телефоне она стоит
-                    отдельной строкой, и пустая строка перед графиком дороже
-                    маленького сдвига -- там её просто нет, пока опрос выключен. */}
-                <div
-                  style={{ visibility: showFom ? "visible" : "hidden" }}
-                  hidden={телефон && !showFom}
-                >
-                  <div
-                    className={
-                      "flex flex-wrap items-center gap-y-1 " +
-                      (телефон ? "gap-x-2.5 text-[12.5px]" : "gap-x-4 text-[15px]")
-                    }
-                    style={{ color: "var(--ink-3)" }}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--cool)" }} />
-                      {T.gapUp[lang]}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--violet)" }} />
-                      {T.gapDown[lang]}
-                    </span>
+              {/* Кнопка опроса -- сразу справа от цифры пика: последнее число
+                  ряда, и следом вопрос к самому читателю. */}
+              {телефон && <div className="flex items-end self-stretch pb-1">{кнопкаОпроса}</div>}
+
+              {/* НА ЭКРАНЕ управление стоит в том же ряду, что и числа: своей
+                  строкой под ними оно отодвигало график, а сказать хотело то
+                  же самое -- «вот другое показание этой недели, вот как его
+                  показать, вот как найти неделю». */}
+              {!телефон && (
+                <div>
+                  <div className="flex h-[76px] items-end gap-3">
+                    {парФОМ}
+                    <EventSearch lang={lang} onPick={jumpTo} phone={false} />
                   </div>
+                  <div className="mt-1.5">{легенда}</div>
                 </div>
-              </div>
-              <EventSearch lang={lang} onPick={jumpTo} phone={телефон} />
+              )}
             </div>
 
-            {/* График РАСТЯГИВАЕТСЯ на всю оставшуюся высоту карточки: она
-                тянется за правым столбиком, и слабина должна доставаться
-                кривой, а не пустоте под ней. --chart-h тут не жёсткая высота,
-                а НИЖНЯЯ граница. */}
-            <div className="flex min-h-[var(--chart-h,360px)] flex-1 flex-col">
+            {/* НА ТЕЛЕФОНЕ над графиком остаётся только лупа и, когда опрос
+                включён, его легенда. Всё остальное управление разошлось по
+                своим числам в ряду выше. Поле поиска во всю ширину стоило
+                здесь целой строки, а нужно оно редко -- поэтому лупа. */}
+            {телефон && (
+              <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <EventSearch lang={lang} onPick={jumpTo} phone />
+                {легенда}
+              </div>
+            )}
+
+            {/* ВЫСОТА ГРАФИКА ЗАКРЕПЛЕНА и ни от чего на странице не зависит.
+                Растягивать его по высоте карточки нельзя: карточка тянется за
+                правым столбиком, а разбор у разных недель разной длины -- и
+                график менял рост при переходе на другую неделю, в том числе
+                когда курсор просто проходил по кривой. Слабина карточки
+                уходит вниз, под чтение недели, где она никому не мешает. */}
+            <div className="flex h-[var(--chart-h,360px)] flex-none flex-col">
               <Chart data={SERIES} lang={lang} sel={sel} onSel={setSel} showFom={showFom} phone={телефон} />
             </div>
 
@@ -442,7 +463,11 @@ export default function App() {
 function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: string) => void; phone?: boolean }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  // На телефоне поиск свёрнут в лупу и разворачивается по нажатию: полем во
+  // всю ширину он занимал целую строку перед графиком, а нужен редко.
+  const [развёрнут, setРазвёрнут] = useState(false);
   const box = useRef<HTMLDivElement>(null);
+  const поле = useRef<HTMLInputElement>(null);
 
   const hits = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -454,23 +479,49 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
     return named.filter((h) => h.n.toLowerCase().includes(s) || h.d.includes(s)).slice(0, 8);
   }, [q, lang]);
 
+  const свёрнут = phone && !развёрнут;
+
   return (
-    <div ref={box} className={"relative " + (phone ? "w-full" : "")}>
-      <input
-        className={
-          "mono rounded-full border outline-none " +
-          (phone ? "px-4 py-1.5 text-[14px]" : "px-5 py-2.5 text-[17px]")
-        }
-        style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: phone ? "100%" : "min(420px, 100%)" }}
-        placeholder={T.search[lang]}
-        value={q}
-        onChange={(e) => {
-          setQ(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 140)}
-      />
+    <div ref={box} className="relative">
+      {свёрнут ? (
+        <button
+          type="button"
+          aria-label={T.search[lang]}
+          onClick={() => {
+            setРазвёрнут(true);
+            window.setTimeout(() => поле.current?.focus(), 0);
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-full border"
+          style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink-3)", cursor: "pointer" }}
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden>
+            <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
+            <path d="M10.4 10.4 L14 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </button>
+      ) : (
+        <input
+          ref={поле}
+          className={
+            "mono rounded-full border outline-none " +
+            (phone ? "px-4 py-1.5 text-[14px]" : "px-5 py-2.5 text-[17px]")
+          }
+          style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: phone ? "min(260px, 68vw)" : "min(186px, 100%)" }}
+          placeholder={T.search[lang]}
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() =>
+            window.setTimeout(() => {
+              setOpen(false);
+              if (phone && q.trim() === "") setРазвёрнут(false);
+            }, 140)
+          }
+        />
+      )}
       {open && q.trim() !== "" && (
         <div
           className="absolute left-0 top-[calc(100%+8px)] z-40 w-[min(420px,90vw)] overflow-hidden rounded-2xl border"
@@ -547,7 +598,7 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
         onFocus={() => setTip(true)}
         onBlur={() => setTip(false)}
       >
-        {phone ? T.fomOnShort[lang] : T.fomOn[lang]}
+        {T.fomOnShort[lang]}
       </button>
     </div>
   );
@@ -581,7 +632,7 @@ function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx:
           них кнопка с легендой не вставали в один ряд. */}
       <span
         className={"mono font-bold leading-none " + (phone ? "text-[20px]" : "text-[40px]")}
-        style={{ color: "var(--ink-2)", width: phone ? 46 : 96, display: "inline-block" }}
+        style={{ color: "var(--ink-2)", width: phone ? 46 : 80, display: "inline-block" }}
       >
         {fom == null ? "—" : `${fom.toFixed(0)}%`}
       </span>
@@ -618,7 +669,7 @@ function Kpi({ v, c, phone = false }: { v: string; c: string; phone?: boolean })
 function KpiLabel({ l, phone = false }: { l: string; phone?: boolean }) {
   return (
     <div
-      className={"self-start leading-snug " + (phone ? "text-[13px]" : "text-[16.5px]")}
+      className={"self-start leading-snug " + (phone ? "text-[12px]" : "text-[16.5px]")}
       style={{ color: "var(--ink-3)" }}
     >
       {l}

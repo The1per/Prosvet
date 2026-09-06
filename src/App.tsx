@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Chart from "./components/Chart";
 import People from "./components/People";
 import Poll from "./components/Poll";
@@ -146,6 +146,9 @@ export default function App() {
       {T.pollOpen[lang]}
     </button>
   );
+  // Обе подписи сравнений берут один кегль -- наименьший из нужных им.
+  const { общий: кегльПодписи, сообщить: сообщитьКегль } = useОбщийКегль();
+  const подписи = { сообщить: сообщитьКегль, общий: кегльПодписи };
   const heroRef = useReveal<HTMLDivElement>();
   // 140 мс, а не полсекунды: при движении по графику число не должно
   // отставать от курсора -- иначе кажется, что оно не поспевает за неделей.
@@ -431,7 +434,7 @@ export default function App() {
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
                 <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
-                  <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
+                  <KpiLabel l={T.vsBaseline[lang]} phone={телефон} имя="база" {...подписи} />
                 </div>
               </div>
 
@@ -440,7 +443,7 @@ export default function App() {
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
                 <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
-                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
+                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} имя="пик" {...подписи} />
                 </div>
               </div>
 
@@ -957,9 +960,12 @@ function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx:
 }
 
 function Kpi({ v, c, phone = false }: { v: string; c: string; phone?: boolean }) {
+  // Кегль сравнений УМЕНЬШЕН (было 30 и 24). Они стоят рядом с главным числом,
+  // и почти равный ему рост спорил с ним за внимание: показание недели одно, а
+  // это к нему приписки.
   return (
     <div
-      className={"mono whitespace-nowrap font-bold leading-none " + (phone ? "text-[24px]" : "text-[30px]")}
+      className={"mono whitespace-nowrap font-bold leading-none " + (phone ? "text-[20px]" : "text-[24px]")}
       style={{ color: c }}
     >
       {v}
@@ -967,13 +973,85 @@ function Kpi({ v, c, phone = false }: { v: string; c: string; phone?: boolean })
   );
 }
 
-function KpiLabel({ l, phone = false }: { l: string; phone?: boolean }) {
+/**
+ * ОБЩИЙ КЕГЛЬ НА ВСЕ ПОДПИСИ РЯДА.
+ *
+ * Каждая подпись сжимается по своей длине, и порознь они разъезжались: «к
+ * обычной неделе» вставала в 10 пикселей, а «Пик с 2020, 2022» рядом в 12 --
+ * два разных кегля в одной строке читаются как ошибка вёрстки. Поэтому каждая
+ * сообщает, какой кегль ей нужен, а берут все НАИМЕНЬШИЙ из нужных.
+ */
+function useОбщийКегль() {
+  const [кегли, setКегли] = useState<Record<string, number>>({});
+  const сообщить = useCallback(
+    (имя: string, v: number) =>
+      setКегли((с) => (с[имя] === v ? с : { ...с, [имя]: v })),
+    [],
+  );
+  const значения = Object.values(кегли);
+  return { общий: значения.length ? Math.min(...значения) : null, сообщить };
+}
+
+/** Кегль подписи, когда места хватает; ниже него не опускаемся никогда. */
+const ПОДПИСЬ_КЕГЛЬ = { экран: 15, телефон: 12 };
+const ПОДПИСЬ_МИНИМУМ = 9;
+
+/**
+ * Подпись под числом сравнения. ВСЕГДА В ОДНУ СТРОКУ.
+ *
+ * Раньше она переносилась: «к обычной неделе» и «Пик с 2020, 2022» не влезали
+ * в свою коробку и вставали в две строки, отчего низ ряда ходил ходуном --
+ * у одной недели подпись в одну строку, у соседней в две, и всё под ней
+ * прыгало. По-английски они ещё длиннее («Peak before 2020, 2019»), так что
+ * подобрать один кегль на все случаи нельзя.
+ *
+ * Поэтому не перенос, а СЖАТИЕ: подпись меряется в своём полном кегле, и если
+ * не помещается -- кегль уменьшается ровно во столько раз, во сколько не
+ * хватило места. Ниже ПОДПИСЬ_МИНИМУМ не опускаемся: нечитаемая подпись хуже
+ * перенесённой.
+ *
+ * Мерить обязательно в useLayoutEffect и обязательно вернув полный кегль
+ * перед замером: иначе второй замер пойдёт от уже сжатого кегля и подпись
+ * будет ужиматься на каждой перерисовке.
+ */
+function KpiLabel({
+  l, phone = false, имя, сообщить, общий,
+}: {
+  l: string; phone?: boolean; имя: string;
+  сообщить: (имя: string, v: number) => void; общий: number | null;
+}) {
+  const база = phone ? ПОДПИСЬ_КЕГЛЬ.телефон : ПОДПИСЬ_КЕГЛЬ.экран;
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const короб = el?.parentElement;
+    if (!el || !короб) return;
+    // Мерить обязательно ПО СОДЕРЖИМОМУ: у блочного элемента scrollWidth
+    // возвращает ширину коробки, а не строки, и подпись «не помещается»
+    // никогда. Поэтому span -- inline-block, он сам по себе шириной в текст.
+    el.style.fontSize = база + "px";
+    // offsetWidth, а НЕ getBoundingClientRect: страница масштабируется zoom-ом
+    // (scale.ts), и getBoundingClientRect отдаёт ширину уже масштабированной, а
+    // clientWidth -- нет. Смешав их, получаем разный кегль на разной ширине
+    // окна и подпись, вылезающую за коробку на 1440. offsetWidth меряет то же,
+    // что и clientWidth, -- обе в немасштабированных пикселях.
+    const надо = el.offsetWidth;
+    const есть = короб.clientWidth;
+    const нужно = надо > есть && надо > 0
+      ? Math.max(ПОДПИСЬ_МИНИМУМ, Math.floor((база * есть) / надо))
+      : база;
+    // Вернуть кегль ОБЯЗАТЕЛЬНО. Замер сделан правкой стиля напрямую, и React
+    // об этой правке не знает: он считает, что уже поставил нужный кегль, и
+    // второй раз его не поставит. Без этой строки подпись навсегда оставалась
+    // в полном кегле, а состояние говорило другое.
+    el.style.fontSize = (общий ?? база) + "px";
+    сообщить(имя, нужно);
+  }, [l, база, имя, сообщить, общий]);
   return (
-    <div
-      className={"self-start leading-snug " + (phone ? "text-[12px]" : "text-[16.5px]")}
-      style={{ color: "var(--ink-3)" }}
-    >
-      {l}
+    <div className="w-full overflow-hidden leading-snug" style={{ color: "var(--ink-3)" }}>
+      <span ref={ref} className="inline-block whitespace-nowrap" style={{ fontSize: общий ?? база }}>
+        {l}
+      </span>
     </div>
   );
 }

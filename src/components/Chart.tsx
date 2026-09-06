@@ -583,10 +583,12 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
               const справа = W - PAD.r - liveX > шир + 12;
               return (
                 <text
-                  x={справа ? liveX + 6 + (phone ? шир : 0) : liveX - 6}
+                  // На телефоне подпись прижата к правому краю поля: полоса
+                  // прогноза узкая, и у самой черты подпись сидела на ней.
+                  x={phone ? W - PAD.r - 4 : справа ? liveX + 6 : liveX - 6}
                   y={H - PAD.b - 6}
                   fontSize={кегль}
-                  textAnchor={справа ? "start" : "end"}
+                  textAnchor={phone ? "end" : справа ? "start" : "end"}
                   fill="var(--ink-3)"
                   className="mono"
                 >
@@ -660,9 +662,9 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
                 width={m.wid}
                 height={26}
                 rx="13"
-                fill={on ? "var(--accent-2)" : "var(--bg-2)"}
-                stroke={on ? "var(--accent-2)" : "var(--line-strong)"}
-                strokeWidth="1.2"
+                fill={on ? moodColor(data[m.i].idx, 6) : "var(--bg-2)"}
+                stroke={moodColor(data[m.i].idx, 6, on ? 1 : 0.55)}
+                strokeWidth={on ? 1.6 : 1.2}
               />
               <text
                 x={m.lx}

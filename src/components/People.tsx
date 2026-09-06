@@ -103,22 +103,27 @@ export default function People({ idx, lang, preview = null, part, phone = false,
             и здесь остаётся только пол опроса -- иначе блок занимал на строку
             больше и весь верхний ряд уезжал вниз. На телефоне места вбок нет,
             и она по-прежнему тут. */}
-        {/* НА ТЕЛЕФОНЕ ПОДПИСЬ НЕ ПЕРЕНОСИТСЯ. Одной строкой с уровнем она
-            не помещалась ни при каком кегле, и слово «тревожно» уезжало вниз.
-            Уровень встал своей строкой -- он короткий и не переносится, --
-            а подпись целиком идёт следом одной строкой мельче. Высота от
-            недели к неделе не меняется: длина обеих строк постоянна. */}
+        {/* НА ТЕЛЕФОНЕ ВСЁ В ОДНУ СТРОКУ, и она не переносится.
+            Кегль привязан к ширине экрана: строка занимает 49 знаков, а знак
+            моноширинного здесь -- 0.61 кегля, поэтому 3 vw укладывают её в
+            карточку и на 320, и на 430. Слово уровня сидит в коробке
+            постоянной ширины в 6.1 знака -- иначе «фон» и «напряжение» разной
+            длины двигали бы подпись при каждом переходе на другую неделю. */}
         {phone && (
-          <>
+          <div
+            className="mono whitespace-nowrap"
+            style={{ color: "var(--ink-2)", fontSize: "clamp(9px, 3vw, 12px)" }}
+          >
             {level && (
-              <div className="mono whitespace-nowrap text-[14px] font-semibold" style={{ color: "var(--ink)" }}>
+              <b
+                className="font-semibold"
+                style={{ color: "var(--ink)", display: "inline-block", width: "6.1em" }}
+              >
                 {level[0].toUpperCase() + level.slice(1)}
-              </div>
+              </b>
             )}
-            <div className="mono whitespace-nowrap text-[12.5px]" style={{ color: "var(--ink-2)" }}>
-              {label}
-            </div>
-          </>
+            {label}
+          </div>
         )}
         <div
           className={"mono leading-snug " + (phone ? "text-[13px]" : "text-[17px]")}

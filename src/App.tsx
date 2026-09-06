@@ -34,7 +34,9 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.lang = lang;
-    document.title = T.title[lang];
+    // В заголовке вкладки -- аббревиатура и раздел: там места на полное имя
+    // нет, а «ИКС» узнаётся и в списке из двадцати вкладок.
+    document.title = (lang === "ru" ? "ИКС · " : "IIS · ") + T.section[lang];
   }, [lang]);
 
   // Свет должен идти ИЗ-ЗА САМОЙ ЦИФРЫ, а не из доли экрана: доля разъезжается
@@ -188,7 +190,29 @@ export default function App() {
                 : "flex-row items-baseline gap-3 truncate text-[20px] sm:text-[26px]")
             }
           >
-            <span className={телефон ? "truncate" : ""}>{T.title[lang]}</span>
+            {/* ИКС СОБИРАЕТСЯ НА ГЛАЗАХ: первые буквы трёх слов выделены
+                цветом показания и стоят чуть крупнее. Расшифровывать
+                аббревиатуру отдельной строкой не нужно -- она и есть строка. */}
+            <span className={телефон ? "truncate" : "whitespace-nowrap"}>
+              {T.titleParts[lang].map(([буква, хвост], i) => (
+                <span key={буква + i}>
+                  {i > 0 ? " " : ""}
+                  <span style={{ color: "var(--accent)" }}>{буква}</span>
+                  {хвост}
+                </span>
+              ))}
+            </span>
+            {/* Раздел -- то, что показано на этой странице. Отделён точкой и
+                набран обычным начертанием: это не часть имени. */}
+            <span
+              className={
+                "shrink-0 font-normal " + (телефон ? "text-[13px]" : "text-[19px] sm:text-[21px]")
+              }
+              style={{ color: "var(--ink-2)" }}
+            >
+              {телефон ? "" : "· "}
+              {T.section[lang]}
+            </span>
             <span
               className={
                 "mono shrink-0 font-normal tracking-normal " +

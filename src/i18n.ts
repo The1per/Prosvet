@@ -17,7 +17,29 @@ export type Lang = "ru" | "en";
  */
 
 export const T = {
-  title: { ru: "Индекс общественной тревоги", en: "Public Anxiety Index" },
+  /**
+   * ИМЯ. Полное -- «Индекс косвенных сигналов»; то, что показано здесь --
+   * его раздел, «Общественная тревога». Заглавные буквы трёх слов складывают
+   * ИКС, и в заголовке они выделены цветом: аббревиатура должна читаться с
+   * первого взгляда, а не расшифровываться потом.
+   *
+   * titleParts -- то же имя, разобранное на «буква + хвост слова», чтобы
+   * разметка не занималась нарезкой строки посимвольно.
+   */
+  title: { ru: "Индекс Косвенных Сигналов", en: "Index of Indirect Signals" },
+  titleParts: {
+    ru: [
+      ["И", "ндекс"],
+      ["К", "освенных"],
+      ["С", "игналов"],
+    ],
+    en: [
+      ["I", "ndex of"],
+      ["I", "ndirect"],
+      ["S", "ignals"],
+    ],
+  },
+  section: { ru: "Общественная тревога", en: "Public anxiety" },
   subtitle: {
     ru: "Социология спрашивает людей. Мы не спрашиваем. Человек может не сказать интервьюеру, что боится, — но тот же человек ночью откроет статью про повестку. Опрос ФОМа ловит слова, следы ловят поступки.",
     en: "Sociology asks people. We do not ask. Someone may not tell an interviewer they are afraid — yet the same person opens an article about call-up papers at night. A poll catches words; traces catch acts.",

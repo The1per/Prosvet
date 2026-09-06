@@ -189,8 +189,10 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     {/* ПОЛ ОПРОСА -- ПРЯМО ПОД ФИГУРАМИ. Он про них: столько тревожных даже в
         самую спокойную неделю, и пунктирная скобка под строем показывает ту же
         величину. Стоя ниже главной строки, он отрывался от того, что объясняет. */}
+    {/* Пол опроса -- ниже главной строки по кеглю (13.5 против 14.5). Он к
+        ней приписка, и крупнее её быть не может. */}
     {!phone && (
-      <div className="mono mt-3 text-[15.5px] leading-snug" style={{ color: "var(--ink-3)", width: ширина }}>
+      <div className="mono mt-3 text-[13.5px] leading-snug" style={{ color: "var(--ink-3)", width: ширина }}>
         ↳ {floorLabel}
       </div>
     )}
@@ -198,8 +200,11 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     {/* Главная строка -- вплотную справа от фигур и вровень с ними: она про
         них и есть. Ширина задана, иначе блок растянулся бы на всю свободную
         ширину ряда и вытолкнул из строки числа сравнения. */}
+    {/* Кегль 14.5, а не 17. Строка стоит вплотную к строю и к главному числу
+        недели, и в прежнем росте читалась вровень с ними -- как второе
+        показание, а не как подпись к первому. */}
     {!phone && (
-      <div className="mono text-[17px] leading-snug" style={{ color: "var(--ink-2)", width: 204 }}>
+      <div className="mono text-[14.5px] leading-snug" style={{ color: "var(--ink-2)", width: 204 }}>
         {level && (
           <b className="block font-semibold" style={{ color: "var(--ink)" }}>
             {level[0].toUpperCase() + level.slice(1)}

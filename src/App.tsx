@@ -310,8 +310,16 @@ export default function App() {
                 пустой воздух перед графиком. Число и строй занимают всю
                 ширину, два сравнения встают рядом сами. */}
             <div
+              /* НА КОМПЬЮТЕРЕ РЯД НЕ ПЕРЕНОСИТСЯ ВОВСЕ (lg:flex-nowrap). Пик
+                 тревоги -- последний блок ряда -- срывался на вторую строку,
+                 стоило любому блоку подрасти на несколько пикселей: запас там
+                 восемь пикселей из 1156. Раскладка рассчитана на ширину 1600 и
+                 сжимается zoom-ом целиком (scale.ts), поэтому переносить её
+                 незачем -- она и так влезает в любое окно шире 1024.
+                 Ниже 1024 zoom упирается в свой предел и ширины уже не
+                 хватает: там перенос остаётся, для того он и оставлен. */
               className={
-                "flex flex-wrap items-start " +
+                "flex flex-wrap items-start lg:flex-nowrap " +
                 (телефон ? "mb-2 gap-x-3 gap-y-2" : "mb-3 gap-x-5 gap-y-3")
               }
             >
@@ -411,7 +419,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className={телефон ? "w-full" : ""}>
+              <div className={телефон ? "w-full" : "shrink-0"}>
                 <div className={телефон ? "flex items-end" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
                 </div>
@@ -426,7 +434,7 @@ export default function App() {
                 )}
               </div>
 
-              <div>
+              <div className={телефон ? "" : "shrink-0"}>
                 {/* Прижаты к ВЕРХУ ряда, как число и строй: в коробке на 76
                     пикселей с прижатием к низу они висели заметно ниже всего
                     остального и читались как приписка. */}
@@ -438,7 +446,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div>
+              <div className={телефон ? "" : "shrink-0"}>
                 <div className="flex items-start">
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>

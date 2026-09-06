@@ -245,7 +245,7 @@ export default function App() {
                     недели стоит прямо под числом и говорит то же самое. */}
                 {/* Число прижато к ВЕРХУ ряда, как и строй: прижатое к низу
                     76-пиксельной коробки, оно оказывалось ниже человечков. */}
-                <div className="flex flex-col">
+                <div className={"flex flex-col " + (телефон ? "pt-1.5" : "")}>
                   <div className="flex items-end gap-2">
                     <span
                       ref={numRef}
@@ -264,7 +264,27 @@ export default function App() {
                         переехало к строю: там оно живёт внутри блока
                         постоянной ширины и ничего не двигает. */}
                     <span className={"whitespace-nowrap pb-1 " + (телефон ? "text-[15px]" : "text-[17px]")} style={{ color: "var(--ink-2)" }}>
-                      % · {T.basis[lang]}
+                      % ·{" "}
+                      {/* Подпись -- ссылка вниз, к разбору метода: человек,
+                          который спросит «по каким ещё следам?», получает
+                          ответ в одно нажатие, а не поиском по странице.
+                          Звёздочка и подчёркивание -- чтобы было видно, что на
+                          неё вообще можно нажать. */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          document
+                            .getElementById("как-измерено")
+                            ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                        }
+                        className={
+                          "underline decoration-dotted underline-offset-4 " +
+                          (телефон ? "text-[16px]" : "text-[18.5px]")
+                        }
+                        style={{ background: "none", border: "none", padding: 0, color: "var(--ink)", cursor: "pointer" }}
+                      >
+                        {T.basis[lang]}*
+                      </button>
                     </span>
                   </div>
                 </div>
@@ -310,7 +330,9 @@ export default function App() {
                 <div className={телефон ? "flex items-end" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} />
                 </div>
-                <div className="mt-1.5">
+                {/* Отступ больше обычного: под строем идёт пунктирная скобка
+                    пола опроса, и слово уровня ложилось прямо на неё. */}
+                <div className="mt-3">
                   <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone={телефон} level={level} />
                 </div>
               </div>
@@ -319,7 +341,7 @@ export default function App() {
                 <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[100px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
                   <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
                 </div>
               </div>
@@ -328,7 +350,7 @@ export default function App() {
                 <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[100px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
                   <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
                 </div>
               </div>
@@ -389,7 +411,7 @@ export default function App() {
                 коробке, -- и отступ стал вычитать не пустоту, а сами подписи
                 годов: они уходили под заголовок «Что читали в эту неделю». */}
             {!телефон && (
-              <div className="mt-2 flex-1 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+              <div className="mt-auto border-t pt-3" style={{ borderColor: "var(--line)" }}>
                 <Reads w={w} lang={lang} />
               </div>
             )}
@@ -539,7 +561,7 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
             "mono rounded-full border outline-none " +
             (phone ? "px-4 py-1.5 text-[14px]" : "px-5 py-2.5 text-[17px]")
           }
-          style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: phone ? "min(260px, 68vw)" : "min(186px, 100%)" }}
+          style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: phone ? "min(260px, 68vw)" : "min(170px, 100%)" }}
           placeholder={T.search[lang]}
           value={q}
           onChange={(e) => {

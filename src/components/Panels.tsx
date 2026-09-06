@@ -238,12 +238,33 @@ export function Reads({ w, lang }: { w: Week; lang: Lang }) {
 }
 
 /* ---------------- Методология ---------------- */
+/**
+ * Кусок текста между двумя парами звёздочек -- жирный. Полноценный markdown
+ * тут не нужен: выделяется ровно одно -- названия тем, на которые прибор
+ * отзывается, и они должны цепляться взглядом в сплошном абзаце.
+ */
+function Жирным({ t }: { t: string }) {
+  return (
+    <>
+      {t.split("**").map((кусок, i) =>
+        i % 2 ? (
+          <b key={i} style={{ color: "var(--ink)" }}>
+            {кусок}
+          </b>
+        ) : (
+          <span key={i}>{кусок}</span>
+        ),
+      )}
+    </>
+  );
+}
+
 export function Methodology({ lang }: { lang: Lang }) {
   const ref = useReveal<HTMLDivElement>();
   const [open, setOpen] = useState<number | null>(0);
   const steps = T.steps[lang];
   return (
-    <div ref={ref} className="reveal grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
+    <div ref={ref} id="как-измерено" className="reveal grid gap-4 lg:grid-cols-[1.15fr_.85fr] scroll-mt-16">
       <div className="card p-5 sm:p-7">
         <div className="chip mb-3">{T.method[lang]}</div>
         <h3 className="mb-5 max-w-xl text-xl font-semibold leading-snug sm:text-2xl">{T.methodLead[lang]}</h3>
@@ -267,7 +288,7 @@ export function Methodology({ lang }: { lang: Lang }) {
               <div className="grid transition-all duration-500" style={{ gridTemplateRows: open === i ? "1fr" : "0fr" }}>
                 <div className="overflow-hidden">
                   <p className="pt-2 text-[16px] leading-relaxed" style={{ color: "var(--ink-2)" }}>
-                    {s.d}
+                    <Жирным t={s.d} />
                   </p>
                 </div>
               </div>

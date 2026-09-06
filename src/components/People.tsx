@@ -94,12 +94,19 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     // складывались в одну строку. Строк в подписи стало больше, зато ряд один.
     return (
       <div className="space-y-1" style={{ maxWidth: phone ? "100%" : ширина }}>
+        {/* Слово уровня стоит СВОЕЙ строкой и не переносится. В общей строке
+            с подписью оно от недели к неделе перекладывало её на другое число
+            строк -- «штиль» и «напряжение» разной длины, -- и блок то рос, то
+            садился. Своей строкой он всегда один и тот же высоты. */}
+        {level && (
+          <div
+            className={"mono whitespace-nowrap font-semibold " + (phone ? "text-[14px]" : "text-[17px]")}
+            style={{ color: "var(--ink)" }}
+          >
+            {level[0].toUpperCase() + level.slice(1)}
+          </div>
+        )}
         <div className={"mono " + (phone ? "text-[14px]" : "text-[17px]")} style={{ color: "var(--ink-2)" }}>
-          {level && (
-            <b className="font-semibold" style={{ color: "var(--ink)" }}>
-              {level[0].toUpperCase() + level.slice(1)} ·{" "}
-            </b>
-          )}
           {label}
         </div>
         <div

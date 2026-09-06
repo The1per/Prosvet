@@ -458,12 +458,18 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
           setHovering(true);
           pick(e.clientX, e.clientY);
         }}
+        /**
+         * НЕДЕЛЯ ВЕДЁТСЯ ТОЛЬКО ЗАЖАТОЙ КНОПКОЙ. Прежде точка бежала за
+         * курсором сама, и отвести взгляд от графика было нельзя: любое
+         * движение мыши по странице меняло выбранную неделю. Теперь нажал --
+         * ведёшь, отпустил -- неделя замерла и стоит, пока не нажмёшь снова.
+         */
         onPointerMove={(e) => {
           if (phone) {
             if (тащимRef.current && вПоле(e.clientY)) pick(e.clientX, e.clientY);
             return;
           }
-          if ((e.pointerType === "mouse" || e.buttons > 0) && вПоле(e.clientY)) {
+          if (e.buttons > 0 && вПоле(e.clientY)) {
             setHovering(true);
             pick(e.clientX, e.clientY);
           }

@@ -110,9 +110,9 @@ export const EVENTS: Ev[] = [
     shortRu: "«Крокус»",
     shortEn: "Crocus",
     whyRu:
-      "22 марта 2024-го в подмосковном концертном зале расстреляли и подожгли зал: 145 погибших, крупнейший теракт в России за двадцать лет. По уровню опрос ставит неделю сто пятьдесят третьей, но по приращению — двадцать пятой из 306: 2024-й был спокойным годом, и скачок в десять пунктов утонул в низком фоне.",
+      "22 марта 2024-го в подмосковном концертном зале расстреляли и подожгли зал: 145 погибших, крупнейший теракт в России за двадцать лет. Прибор поставил эту неделю 38-й из 302, опрос по уровню — 141-й: 2024-й был спокойным годом, и скачок опроса в десять пунктов утонул в низком фоне. Здесь расходятся не мелочи: событие бесспорное, а уровень опроса на нём почти не двинулся.",
     whyEn:
-      "On 22 March 2024 gunmen shot up and burned a concert hall outside Moscow: 145 dead, the deadliest attack in Russia in twenty years. By level the poll ranks this week 153rd, but by jump 25th of 306: 2024 was a calm year and a ten-point leap drowned in a low background.",
+      "On 22 March 2024 gunmen shot up and burned a concert hall outside Moscow: 145 dead, the deadliest attack in Russia in twenty years. The instrument ranks this week 38th of 302, the poll by level 141st: 2024 was a calm year and the poll’s ten-point leap drowned in a low background. The disagreement is not a detail: the event is beyond dispute, and the poll’s level barely moved.",
     fit: "мимо",
   },
   {
@@ -122,9 +122,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Курск",
     shortEn: "Kursk",
     whyRu:
-      "6 августа 2024-го украинские войска вошли в Курскую область — впервые с 1941 года бои шли на признанной российской земле, десятки тысяч человек эвакуировали. Обе меры оценили это сдержанно: прибор восемьдесят третьей неделей, опрос — сто тридцать седьмой.",
+      "6 августа 2024-го украинские войска вошли в Курскую область — впервые с 1941 года бои шли на признанной российской земле, десятки тысяч человек эвакуировали. Прибор поставил неделю 82-й из 302, опрос — 120-й: обе меры сдержанны, но прибор поднялся заметно выше.",
     whyEn:
-      "On 6 August 2024 Ukrainian forces entered the Kursk region — the first fighting on undisputed Russian soil since 1941, with tens of thousands evacuated. Both measures were restrained: the instrument ranked it 83rd, the poll 137th.",
+      "On 6 August 2024 Ukrainian forces entered the Kursk region — the first fighting on undisputed Russian soil since 1941, with tens of thousands evacuated. The instrument ranked it 82nd of 302, the poll 120th: both restrained, but the instrument rose markedly higher.",
     fit: "точно",
   },
 ];

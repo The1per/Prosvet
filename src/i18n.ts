@@ -240,16 +240,16 @@ export const T = {
   steps: {
     ru: [
       {
-        t: "1. Чтение вместо ответа",
-        d: "Прибор никого не спрашивает. Он смотрит, что люди в стране читали на этой неделе — по открытой почасовой статистике просмотров. Годится не любое чтение, а такое, которое человеку невыгодно и неприятно: ночью открыть статью про повестку, про аптечку, про то, чем всё это кончится. Такое не читают из любопытства — читают, когда припекло.",
+        t: "1. Следы вместо ответов",
+        d: "Прибор никого не спрашивает. Он считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, чем прикрывались в сети, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно. На него идут не из любопытства, а когда припекло.",
       },
       {
-        t: "2. Только лишнее",
-        d: "У каждой темы есть свой обычный уровень, и он гуляет по временам года и дням недели. Прибор считает не сам уровень, а превышение над тем, сколько эту же тему читали бы в спокойную такую же неделю. Обычное чтение вычитается целиком.",
+        t: "2. На что он отзывается",
+        d: "Прибор ищет не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Катастрофические прогнозы** — чем всё это кончится. **Религиозное обращение** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
       },
       {
-        t: "3. Мировая опора",
-        d: "Крупная новость поднимает чтение везде на свете. Чтобы не выдать мировое событие за русскую тревогу, тот же самый всплеск измеряется ещё в семи языковых разделах и вычитается. Остаётся то, что поднялось именно здесь.",
+        t: "3. Только лишнее",
+        d: "У каждого следа есть свой обычный уровень, и он гуляет по временам года и дням недели. Прибор считает не уровень, а превышение над спокойной такой же неделей: обычное вычитается целиком. Крупная новость поднимает мир весь сразу — мировой подъём меряется отдельно и вычитается тоже, чтобы не выдать чужое событие за здешнюю тревогу.",
       },
       {
         t: "4. Проверка опросом",
@@ -258,16 +258,16 @@ export const T = {
     ],
     en: [
       {
-        t: "1. Reading, not an answer",
-        d: "The instrument asks nothing. It watches what the country read that week, from open hourly pageview statistics. Not any reading counts — only reading that costs something to do: opening an article about call-up papers at night, about a first-aid kit, about how all this ends. Nobody reads that out of curiosity.",
+        t: "1. Traces, not answers",
+        d: "The instrument asks nothing. It counts open statistics of what the country did that week: what people read, what they searched for, what they hid behind online, how they handled cash. Not every action counts — only the kind that costs something. People do it not out of curiosity but when it burns.",
       },
       {
-        t: "2. Only the excess",
-        d: "Every topic has its own ordinary level, and that level drifts with the seasons and the days of the week. The instrument counts not the level but the excess over what the same topic would get in a calm week like this one. Ordinary reading is subtracted entirely.",
+        t: "2. What it responds to",
+        d: "The instrument looks for four traces of anxiety, not anxiety in general. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **Catastrophic forecasts** — how all this ends. **Religious recourse** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
       },
       {
-        t: "3. A world anchor",
-        d: "A big news story lifts reading everywhere. So that a world event is not passed off as Russian anxiety, the same surge is measured in seven other language editions and subtracted. What remains is what rose here.",
+        t: "3. Only the excess",
+        d: "Every trace has its own ordinary level, and that level drifts with the seasons and the days of the week. The instrument counts not the level but the excess over a calm week like this one: the ordinary is subtracted entirely. A big story lifts the whole world at once — that world-wide rise is measured separately and subtracted too, so that someone else’s event is not passed off as anxiety here.",
       },
       {
         t: "4. Checked against the poll",
@@ -278,13 +278,15 @@ export const T = {
 
   limitList: {
     ru: [
-      "Прибор видит внимание, а не чувство. Человек может читать про бомбоубежища из любопытства — и такие недели у прибора есть.",
+      "Прибор видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у прибора есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое чужой громкой новостью, иногда проходит за здешнюю тревогу.",
+      "Расходясь с опросом, прибор не всегда неправ. Неделя «Крокуса» у него 38-я из 302, у опроса по уровню — 141-я; неделя боёв в Курской области — 82-я против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
       "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос поставил восьмой неделей, прибор — тридцать второй.",
       "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
       "Ответы посетителей на индекс не влияют. Прибор считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
     ],
     en: [
-      "It sees attention, not feeling. A person can read about bomb shelters out of curiosity — and the instrument has such weeks.",
+      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the instrument has such weeks. There are counterweights: the ordinary level is subtracted entirely, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by someone else’s loud news sometimes passes for anxiety here.",
+      "When the instrument disagrees with the poll, it is not always the instrument that is wrong. The Crocus week ranks 38th of 302 for the instrument and 141st for the poll by level; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which of the two is closer to the truth on such weeks cannot be checked: the poll is the truth being checked against.",
       "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the instrument thirty-second.",
       "It does not measure regions and will not: there are no regional polls to check against, and without a truth there is nothing to check with.",
       "Visitors’ answers do not affect the index. The instrument is computed from reading and knows nothing about them: it is a separate question to separate people, not part of the measurement.",

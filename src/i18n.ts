@@ -104,7 +104,10 @@ export const T = {
   calm: { ru: "спокойно", en: "calm" },
   panic: { ru: "тревожно", en: "anxious" },
   save: { ru: "Ответить", en: "Answer" },
-  thanks: { ru: "Спасибо — ответ записан.", en: "Thank you — your answer is saved." },
+  thanks: {
+    ru: "Спасибо — ответ записан. Ответить снова можно завтра.",
+    en: "Thank you — your answer is saved. You can answer again tomorrow.",
+  },
   youSaid: { ru: "Ваш ответ", en: "Your answer" },
   change: { ru: "изменить", en: "change" },
   yourPast: { ru: "ваши прошлые ответы", en: "your earlier answers" },
@@ -133,14 +136,6 @@ export const T = {
    * Обещание посетителю зависит от того, настроен ли сбор. Молча начать
    * отправлять ответы на сервер, пока на странице написано обратное, нельзя.
    */
-  privacyLocal: {
-    ru: "Ответ остаётся в этом браузере и никуда не отправляется.",
-    en: "Your answer stays in this browser and is not sent anywhere.",
-  },
-  privacySent: {
-    ru: "Ответ сохраняется у нас — без имени, без адреса, только число и то, что вы сами указали.",
-    en: "Your answer is stored by us — no name, no address, just the number and whatever you chose to add.",
-  },
   youVsHistory: {
     ru: (доля: number, всего: number, край: "выше" | "ниже" | null, пол: number, потолок: number) => {
       if (край === "выше")

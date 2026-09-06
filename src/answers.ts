@@ -19,6 +19,8 @@
  *     VITE_SUPABASE_ANON_KEY=sb_publishable_...
  */
 
+import { собратьСреду } from "./sreda";
+
 const АДРЕС_ПО_УМОЛЧАНИЮ = "https://fqmaxobwdavctzataqcg.supabase.co/functions/v1/answer";
 const КЛЮЧ_ПО_УМОЛЧАНИЮ = "sb_publishable_z2x_FZEIecPROFCAuf4sxA_paLA_5pm";
 
@@ -37,6 +39,10 @@ export async function отправить(ответ: {
   city?: string;
 }): Promise<Сводка | null> {
   if (!СБОР_ВКЛЮЧЁН) return null;
+  // Сведения о среде собираются здесь, а не в опросе: опрос про настроение,
+  // а это про то, с чего заходили. Если браузер что-то не отдал -- шлём без
+  // этого, отказ в сборе среды не должен ронять сам ответ.
+  const среда = await собратьСреду().catch(() => ({}));
   try {
     const r = await fetch(АДРЕС!, {
       method: "POST",
@@ -45,7 +51,7 @@ export async function отправить(ответ: {
         apikey: КЛЮЧ!,
         Authorization: `Bearer ${КЛЮЧ}`,
       },
-      body: JSON.stringify(ответ),
+      body: JSON.stringify({ ...ответ, среда }),
     });
     if (!r.ok) return null;
     const д = await r.json();

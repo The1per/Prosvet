@@ -53,7 +53,7 @@ export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () =
   if (sent) {
     return (
       <p className="mono mt-3 text-[17px]" style={{ color: "var(--ink-3)" }}>
-        {ru ? "Записано. Спасибо." : "Saved. Thank you."}
+        {ru ? "Записано. Спасибо. Ответить снова можно завтра." : "Saved. Thank you. You can answer again tomorrow."}
       </p>
     );
   }

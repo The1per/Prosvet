@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Week } from "../data/series";
+import { BASELINE, type Week } from "../data/series";
 import { EVENT_BY_DATE } from "../data/events";
 import { T, fmtWeek, type Lang } from "../i18n";
 import { moodColor } from "../mood";
@@ -221,7 +221,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
     [H, PAD],
   );
 
-  const { line, area, fomLine, markers, gaps, liveX } = useMemo(() => {
+  const { line, area, fomLine, markers, полосы, gaps, liveX } = useMemo(() => {
     const pts = data.map((d, i) => [x(i), y(d.idx)] as const);
     let p = `M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
     for (let i = 0; i < pts.length - 1; i++) {
@@ -347,6 +347,28 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
     // всю ширину, ни одна подпись не вылезает за полотно и расстояние между
     // соседями одинаково -- прежний зажим по краю сдвигал только крайнюю и
     // она наезжала на следующую.
+    /**
+     * ПОЛОСА СОБЫТИЯ. Метка стоит на одной неделе, а событие длится месяцами:
+     * Курское вторжение держало индекс высоко четырнадцать недель, вторжение
+     * тринадцать, вторая волна ковида пятнадцать. Точка на пике врала о
+     * длительности -- полоса не врёт.
+     *
+     * Граница полосы -- правило, а не глазомер: тянем от помеченной недели в
+     * обе стороны, пока показание держится не ниже СЕРЕДИНЫ между пиком
+     * события и обычной неделей. Соседняя ниже середины -- полоса кончилась.
+     * У «Крокуса» и мятежа так выходит одна неделя, и это верно: они были
+     * резкими и короткими.
+     */
+    const полосы = сырые.map((o) => {
+      const пик = o.d.idx;
+      const порог = (пик + BASELINE) / 2;
+      let a = o.i;
+      let b = o.i;
+      while (a > 0 && data[a - 1].idx >= порог) a--;
+      while (b < data.length - 1 && data[b + 1].idx >= порог) b++;
+      return { i: o.i, от: x(a), до: x(b), цвет: moodColor(пик, 6) };
+    });
+
     const макс = Math.max(...мерки.map((m) => m.wid), 0);
     const лев2 = лев + макс / 2;
     const прав2 = Math.max(лев2, прав - макс / 2);
@@ -370,6 +392,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
       fomLine: f,
 
       markers: ms,
+      полосы,
       gaps,
       liveX: li < 0 ? null : x(li),
     };
@@ -545,6 +568,21 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
             </g>
           );
         })}
+
+        {/* ПОЛОСЫ СОБЫТИЙ идут под кривой и под лентой расхождения: они фон,
+            а не показание. Цвет -- показание пиковой недели события, тот же,
+            что у метки и у точки. */}
+        {полосы.map((п) => (
+          <rect
+            key={"п" + п.i}
+            x={п.от}
+            y={PAD.t}
+            width={Math.max(2, п.до - п.от)}
+            height={H - PAD.b - PAD.t}
+            fill={п.цвет}
+            opacity={sel === п.i ? 0.22 : 0.12}
+          />
+        ))}
 
         {/* Рамки эпохи здесь больше нет. Затенение и черта на 2020 годе
             объясняли устройство прибора (до 2020-го он короче) там, где

@@ -32,6 +32,31 @@ export default function App() {
 
 
 
+  /**
+   * ЗНАЧОК В БРАУЗЕРЕ -- ЦВЕТОМ ПОСЛЕДНЕЙ ПОСЧИТАННОЙ НЕДЕЛИ. В index.html
+   * лежит запасной, в самом спокойном цвете шкалы: он нужен, пока страница
+   * не открылась. Дальше показание известно, и вкладка красится по нему --
+   * та же точка, что в шапке.
+   *
+   * Именно LATEST, а не выбранная неделя: значок -- про состояние страны на
+   * сегодня, а не про то, куда посетитель ткнул мышью.
+   */
+  useEffect(() => {
+    const c = moodColor(LATEST.idx, 6);
+    const svg =
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>" +
+      "<circle cx='32' cy='32' r='32' fill='#0a0c12'/>" +
+      "<circle cx='32' cy='32' r='19' fill='none' stroke='" + c + "' stroke-opacity='.3' stroke-width='3'/>" +
+      "<circle cx='32' cy='32' r='10' fill='" + c + "'/></svg>";
+    let l = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+    if (!l) {
+      l = document.createElement("link");
+      l.rel = "icon";
+      document.head.appendChild(l);
+    }
+    l.href = "data:image/svg+xml," + encodeURIComponent(svg);
+  }, []);
+
   useEffect(() => {
     document.documentElement.lang = lang;
     // В заголовке вкладки -- аббревиатура и раздел: там места на полное имя
@@ -204,7 +229,8 @@ export default function App() {
                     style={{
                       color: "var(--curve)",
                       fontSize: "1.22em",
-                      borderBottom: "2px solid var(--accent)",
+                      // Черта живёт цветом показания: имя и число -- об одном.
+                      borderBottom: "2px solid " + color,
                       paddingBottom: "1px",
                       textShadow: "0 0 12px color-mix(in srgb, var(--curve) 60%, transparent)",
                     }}
@@ -391,7 +417,10 @@ export default function App() {
               </div>
 
               <div>
-                <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
+                {/* Прижаты к ВЕРХУ ряда, как число и строй: в коробке на 76
+                    пикселей с прижатием к низу они висели заметно ниже всего
+                    остального и читались как приписка. */}
+                <div className="flex items-start">
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
                 <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
@@ -400,7 +429,7 @@ export default function App() {
               </div>
 
               <div>
-                <div className={телефон ? "flex items-end" : "flex h-[76px] items-end"}>
+                <div className="flex items-start">
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
                 <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
@@ -465,8 +494,11 @@ export default function App() {
                 нужно было подтянуть к оси. Полосы давно нет -- холст мерится по
                 коробке, -- и отступ стал вычитать не пустоту, а сами подписи
                 годов: они уходили под заголовок «Что читали в эту неделю». */}
+            {/* my-auto: блок садится ПО ЦЕНТРУ того места, что осталось под
+                графиком. Прижатый к графику он оставлял пустоту внизу,
+                прижатый к низу -- пустоту сверху. */}
             {!телефон && (
-              <div className="mt-3 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+              <div className="my-auto border-t pt-3" style={{ borderColor: "var(--line)" }}>
                 <Reads w={w} lang={lang} />
               </div>
             )}
@@ -840,7 +872,12 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
         </div>
       )}
       <button
-        className={"btn " + (phone ? "px-2.5 py-1 text-[11.5px]" : "px-5 py-2.5 text-sm")}
+        className={
+          "btn " +
+          (phone ? "px-2.5 py-1 text-[11.5px]" : "px-5 py-2.5 text-sm") +
+          // Перелив идёт, только пока кривую не включили.
+          (on ? "" : " fombtn-idle")
+        }
         data-on={on}
         onClick={onToggle}
       >

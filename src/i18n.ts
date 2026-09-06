@@ -257,8 +257,18 @@ export const T = {
     en: ["calm", "background", "tension", "alarm", "panic"],
   },
   fit: {
-    ru: { точно: "индекс попал", мимо: "индекс промахнулся", молчат: "обе меры молчат", врозь: "меры разошлись" },
-    en: { точно: "the index hit it", мимо: "the index missed", молчат: "both measures were silent", врозь: "the measures disagree" },
+    ru: {
+      точно: "обе меры сошлись",
+      мимо: "индекс не заметил",
+      молчат: "обе меры промолчали",
+      врозь: "меры разошлись",
+    },
+    en: {
+      точно: "both measures agreed",
+      мимо: "the index did not notice",
+      молчат: "neither measure noticed",
+      врозь: "the measures disagree",
+    },
   },
 
   steps: {
@@ -277,7 +287,7 @@ export const T = {
       },
       {
         t: "4. Проверка опросом ФОМа",
-        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100 — и на тех неделях, которые он при настройке не видел, тоже. Там, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 38-й из 302, а опрос по уровню — 141-й; неделю боёв в Курской области — 82-й против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
+        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100 — и на тех неделях, которые он при настройке не видел, тоже.\n\nТам, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 38-й из 302, а опрос по уровню — 141-й; неделю боёв в Курской области — 82-й против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
       },
     ],
     en: [
@@ -295,20 +305,20 @@ export const T = {
       },
       {
         t: "4. Checked against the poll",
-        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100 — including on weeks it never saw while being tuned. Where the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 38th of 302 while the poll by level ranks it 141st; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
+        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100 — including on weeks it never saw while being tuned.\n\nWhere the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 38th of 302 while the poll by level ranks it 141st; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
       },
     ],
   },
 
   limitList: {
     ru: [
-      "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое чужой громкой новостью, иногда проходит за здешнюю тревогу.",
+      "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое зарубежной громкой новостью, иногда проходит за здешнюю тревогу.",
       "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос ФОМа поставил восьмой неделей, индекс — тридцать второй.",
       "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
       "Ответы посетителей на индекс не влияют. Индекс считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
     ],
     en: [
-      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by someone else’s loud news sometimes passes for anxiety here.",
+      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by a loud foreign story sometimes passes for anxiety here.",
       "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the index thirty-second.",
       "It does not measure regions and will not: there are no regional polls to check against, and without a truth there is nothing to check with.",
       "Visitors’ answers do not affect the index. The index is computed from reading and knows nothing about them: it is a separate question to separate people, not part of the measurement.",

@@ -101,9 +101,9 @@ export const EVENTS: Ev[] = [
     shortRu: "Мятеж",
     shortEn: "Mutiny",
     whyRu:
-      "24 июня 2023-го колонна ЧВК «Вагнер» заняла Ростов и пошла на Москву, а к вечеру повернула назад. Ни индекс, ни опрос ФОМа не шелохнулись: про мятеж читали запоем, но не искали ни отсрочку, ни лекарства — на него смотрели как на зрелище, а не как на угрозу себе.",
+      "24 июня 2023-го колонна ЧВК «Вагнер» заняла Ростов и пошла на Москву, а к вечеру повернула назад. Ни индекс, ни опрос ФОМа не шелохнулись: на мятеж смотрели как на зрелище, а не как на угрозу себе.",
     whyEn:
-      "On 24 June 2023 a Wagner column took Rostov and marched on Moscow, then turned back by evening. Neither index nor poll moved: people read about the mutiny avidly but looked up neither deferments nor medicines — they watched it as a spectacle, not as a threat to themselves.",
+      "On 24 June 2023 a Wagner column took Rostov and marched on Moscow, then turned back by evening. Neither index nor poll moved: the mutiny was watched as a spectacle, not as a threat to oneself.",
     fit: "молчат",
   },
   {
@@ -116,7 +116,9 @@ export const EVENTS: Ev[] = [
       "22 марта 2024-го в подмосковном концертном зале расстреляли и подожгли зал: 145 погибших, крупнейший теракт в России за двадцать лет. Индекс поставил эту неделю 38-й из 302, опрос ФОМа по уровню — 141-й: 2024-й был спокойным годом, и скачок опроса в десять пунктов утонул в низком фоне. Здесь расходятся не мелочи: событие бесспорное, а уровень опроса на нём почти не двинулся.",
     whyEn:
       "On 22 March 2024 gunmen shot up and burned a concert hall outside Moscow: 145 dead, the deadliest attack in Russia in twenty years. The index ranks this week 38th of 302, the poll by level 141st: 2024 was a calm year and the poll’s ten-point leap drowned in a low background. The disagreement is not a detail: the event is beyond dispute, and the poll’s level barely moved.",
-    fit: "мимо",
+    // Не «не заметил»: индекс поставил неделю 38-й из 302 -- на кривой это
+    // видимый пик. Не увидел её ОПРОС: у него 141-е место. Меры разошлись.
+    fit: "врозь",
   },
   {
     date: "2024-08-05",
@@ -132,17 +134,17 @@ export const EVENTS: Ev[] = [
   },
   {
     date: "2026-07-06",
-    ru: "Эскалация войны, июль 2026",
-    en: "War escalation, July 2026",
+    ru: "Эскалация: удары, бензин, ожидание мобилизации",
+    en: "Escalation: strikes, fuel, expected mobilisation",
     shortRu: "Эскалация",
     shortEn: "Escalation",
     // ЧТО ЗДЕСЬ НАПИСАНО. Только то, что видно в самих числах: какие темы
     // поднялись, насколько и в каком порядке. Названия события в новостях мы
     // не приводим -- индекс его не знает, он знает, что люди читали.
     whyRu:
-      "Пятая по тревожности неделя из 355 — и первая такая после мобилизации 2022 года. Поднялось не чтение вообще, а именно то, за чем стоит решение о себе: «Мобилизация» дала 541 просмотр сверх обычного, следом «Военное положение» и «Комендантский час». Через неделю они поменялись местами — «Военное положение» вышло вперёд с 514, — а ещё через неделю добавились «Бомбоубежище» и «Йодид калия». Три недели подряд не ниже 55: так ведёт себя не одна новость, а нарастание. Опрос ФОМа в те же недели стоял на 53 % — 37-е место из 302: расхождение здесь одно из крупнейших за весь ряд.",
+      "Июль 2026-го: удары вглубь России идут непрерывно, к ним добавляется бензиновый кризис, и по стране расходится ожидание скорой мобилизации. Пятая по тревожности неделя из 355 — и первая такая после мобилизации 2022 года. Поднялось не чтение вообще, а именно то, за чем стоит решение о себе: «Мобилизация» дала 541 просмотр сверх обычного, следом «Военное положение» и «Комендантский час». Через неделю они поменялись местами — «Военное положение» вышло вперёд с 514, — а ещё через неделю добавились «Бомбоубежище» и «Йодид калия». Три недели подряд не ниже 55: так ведёт себя не одна новость, а нарастание. Опрос ФОМа в те же недели стоял на 53 % — 37-е место из 302: расхождение здесь одно из крупнейших за весь ряд.",
     whyEn:
-      "The fifth most anxious week of 355 — and the first of its kind since the 2022 mobilisation. What rose was not reading in general but the kind that precedes a decision about oneself: ‘Mobilisation’ gave 541 views above normal, then ‘Martial law’ and ‘Curfew’. A week later they swapped places — ‘Martial law’ took the lead with 514 — and a week after that ‘Bomb shelter’ and ‘Potassium iodide’ joined in. Three weeks above 55 in a row: that is not one piece of news but a build-up. The FOM poll stood at 53% through those weeks — 37th of 302: one of the largest disagreements in the whole series.",
+      "July 2026: strikes deep inside Russia go on without a pause, a petrol crisis piles on top, and the expectation of an imminent mobilisation spreads across the country. The fifth most anxious week of 355 — and the first of its kind since the 2022 mobilisation. What rose was not reading in general but the kind that precedes a decision about oneself: ‘Mobilisation’ gave 541 views above normal, then ‘Martial law’ and ‘Curfew’. A week later they swapped places — ‘Martial law’ took the lead with 514 — and a week after that ‘Bomb shelter’ and ‘Potassium iodide’ joined in. Three weeks above 55 in a row: that is not one piece of news but a build-up. The FOM poll stood at 53% through those weeks — 37th of 302: one of the largest disagreements in the whole series.",
     fit: "врозь",
   },
 ];

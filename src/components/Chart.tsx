@@ -583,7 +583,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
               const справа = W - PAD.r - liveX > шир + 12;
               return (
                 <text
-                  x={справа ? liveX + 6 : liveX - 6}
+                  x={справа ? liveX + 6 + (phone ? шир : 0) : liveX - 6}
                   y={H - PAD.b - 6}
                   fontSize={кегль}
                   textAnchor={справа ? "start" : "end"}
@@ -674,7 +674,14 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
               >
                 {m.text}
               </text>
-              <circle cx={m.x} cy={m.y} r={on ? 5 : 3.2} fill="var(--bg)" stroke="var(--accent-2)" strokeWidth="1.8" />
+              <circle
+                cx={m.x}
+                cy={m.y}
+                r={on ? 5 : 3.2}
+                fill="var(--bg)"
+                stroke={moodColor(data[m.i].idx, 6)}
+                strokeWidth="1.8"
+              />
             </g>
           );
         })}

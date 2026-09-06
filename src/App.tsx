@@ -124,55 +124,73 @@ export default function App() {
             «как это измерено», где этому и место. */}
         {/* Колонки одной высоты: слабину забирает карточка опроса, поэтому
             график слева и разбор недели справа кончаются на одном уровне. */}
-        <section className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_400px]">
+        {/* Порог md, а не xl: страница масштабируется (см. scale.ts), и на
+            экране 1024 её действующая ширина -- 1600, места на две колонки
+            хватает. С порогом xl колонки схлопывались там, где не нужно. */}
+        <section className="grid gap-3 md:grid-cols-[minmax(0,1fr)_400px]">
           <div ref={heroRef} className="card reveal in flex h-full flex-col overflow-hidden p-4 sm:p-5">
-            {/* СЕТКА, А НЕ РЯД БЛОКОВ. Верхняя строка -- цифра, строй людей и
-                числа сравнения; нижняя -- их подписи. Пока это были блоки в
-                flex, подпись из двух строк тянула строй вверх, и он переставал
-                стоять вровень с цифрой; в сетке они выровнены по построению. */}
-            <div className="mb-5 grid w-fit grid-cols-[392px_auto_124px_92px] items-end gap-x-10 gap-y-2">
+            {/* ПАРЫ «ЗНАЧЕНИЕ + ПОДПИСЬ», А НЕ СЕТКА. Прежде здесь была сетка с
+                жёсткими колонками (392+324+124+92 и просветы) -- на экране уже
+                1280 она вылезала за край и не переносилась в принципе.
+                Теперь каждая пара -- свой блок, а выравнивание держится не
+                колонками, а ОДИНАКОВОЙ ВЫСОТОЙ верхней части у всех блоков:
+                значения садятся на общую линию, подписи начинаются на общей.
+                Такой ряд переносится сам и влезает в любую ширину. */}
+            <div className="mb-5 flex flex-wrap items-start gap-x-10 gap-y-5">
               <div>
-                <div className="text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
-                  {sel === SERIES.length - 1 ? T.now[lang] : T.week[lang]}
+                <div className="flex h-[104px] flex-col justify-end">
+                  <div className="text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+                    {sel === SERIES.length - 1 ? T.now[lang] : T.week[lang]}
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <span
+                      ref={numRef}
+                      className="mono text-[52px] font-bold leading-[0.86] sm:text-[68px] lg:text-[82px]"
+                      style={{ color, transition: "color 0.4s ease" }}
+                    >
+                      {shown.toFixed(1)}
+                    </span>
+                    <span className="whitespace-nowrap pb-2 text-[17px]" style={{ color: "var(--ink-2)" }}>
+                      % · {level}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-end gap-2">
-                  <span
-                    ref={numRef}
-                    className="mono text-[62px] font-bold leading-[0.86] sm:text-[82px]"
-                    style={{ color, transition: "color 0.4s ease" }}
-                  >
-                    {shown.toFixed(1)}
-                  </span>
-                  <span className="whitespace-nowrap pb-3 text-[17px]" style={{ color: "var(--ink-2)" }}>
-                    % · {level}
-                  </span>
-                </div>
-              </div>
-
-              <People idx={w.idx} lang={lang} preview={preview} part="строй" />
-
-              <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} />
-              <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" />
-
-              {/* Неделя и режим -- РАЗНЫМИ строками, и обе неподвижны.
-                  «19—25 сентября 2022» и «28 февраля — 6 марта 2022» разной
-                  длины, и в одну строку с режимом это тянуло весь ряд. Ширина
-                  задана столбцом сетки, строка не переносится. */}
-              <div className="mono self-start whitespace-nowrap">
-                <div className="text-[21px] font-semibold" style={{ color: "var(--ink)" }}>
-                  {fmtWeek(w.date, lang)}
-                </div>
-                <div className="mt-1 text-[17px]" style={{ color: "var(--ink-3)" }}>
-                  {T.phase[lang]}: {T.phases[lang][w.phase]} · {T.placeInEra[lang](место.место, место.всего, ранняя)}
+                <div className="mono mt-2">
+                  <div className="text-[19px] font-semibold sm:text-[21px]" style={{ color: "var(--ink)" }}>
+                    {fmtWeek(w.date, lang)}
+                  </div>
+                  <div className="mt-1 text-[16px]" style={{ color: "var(--ink-3)" }}>
+                    {T.phase[lang]}: {T.phases[lang][w.phase]} · {T.placeInEra[lang](место.место, место.всего, ранняя)}
+                  </div>
                 </div>
               </div>
 
-              <div className="self-start">
-                <People idx={w.idx} lang={lang} preview={preview} part="подпись" />
+              <div>
+                <div className="flex h-[104px] items-end">
+                  <People idx={w.idx} lang={lang} preview={preview} part="строй" />
+                </div>
+                <div className="mt-2">
+                  <People idx={w.idx} lang={lang} preview={preview} part="подпись" />
+                </div>
               </div>
 
-              <KpiLabel l={T.vsBaseline[lang]} />
-              <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} />
+              <div>
+                <div className="flex h-[104px] items-end">
+                  <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} />
+                </div>
+                <div className="mt-2 w-[124px]">
+                  <KpiLabel l={T.vsBaseline[lang]} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex h-[104px] items-end">
+                  <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" />
+                </div>
+                <div className="mt-2 w-[124px]">
+                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} />
+                </div>
+              </div>
             </div>
 
             {/* Управление стоит НАД графиком: под ним его приходилось искать
@@ -263,7 +281,7 @@ function EventSearch({ lang, onPick }: { lang: Lang; onPick: (d: string) => void
     <div ref={box} className="relative">
       <input
         className="mono rounded-full border px-5 py-2.5 text-[17px] outline-none"
-        style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: 420 }}
+        style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink)", width: "min(420px, 100%)" }}
         placeholder={T.search[lang]}
         value={q}
         onChange={(e) => {
@@ -275,7 +293,7 @@ function EventSearch({ lang, onPick }: { lang: Lang; onPick: (d: string) => void
       />
       {open && q.trim() !== "" && (
         <div
-          className="absolute left-0 top-[calc(100%+8px)] z-40 w-[420px] overflow-hidden rounded-2xl border"
+          className="absolute left-0 top-[calc(100%+8px)] z-40 w-[min(420px,90vw)] overflow-hidden rounded-2xl border"
           style={{ borderColor: "var(--line-strong)", background: "var(--bg-2)", boxShadow: "var(--shadow)" }}
         >
           {hits.length === 0 ? (

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ГРАНИЦА_ЭПОХ, type Week } from "../data/series";
+import type { Week } from "../data/series";
 import { EVENT_BY_DATE } from "../data/events";
 import { T, fmtWeek, type Lang } from "../i18n";
 import { moodColor } from "../mood";
@@ -125,10 +125,53 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
     return Math.ceil(n / столбцов);
   }, [phone, data, lang, W]);
 
-  // Верхнее поле держит ровно столько рядов, сколько получилось.
+  /**
+   * ГОДЫ НА ОСИ. Пишутся полностью и стоят ВСЕ до одного: пропущенный год
+   * читается как отсутствующий отрезок времени. Ряд начинается в июле 2019-го,
+   * поэтому первый промежуток вдвое короче остальных, и на телефоне «2019» с
+   * «2020» налезали друг на друга.
+   *
+   * Лечится по порядку: сперва уменьшается кегль -- ровно настолько, чтобы
+   * влезть в САМЫЙ УЗКИЙ промежуток, а не в средний. Если и на предельно
+   * мелком не влезает, подписи расходятся в ДВА РЯДА через одну -- промежуток
+   * для каждой удваивается, и все годы остаются на месте.
+   */
+  const годы = useMemo(() => {
+    const т: { year: number; x: number }[] = [];
+    const шир = W - (phone ? PAD_ТЕЛ.l + PAD_ТЕЛ.r : PAD_БАЗА.l + PAD_БАЗА.r);
+    const л = phone ? PAD_ТЕЛ.l : PAD_БАЗА.l;
+    data.forEach((d, i) => {
+      const yr = +d.date.slice(0, 4);
+      if (!т.some((v) => v.year === yr)) т.push({ year: yr, x: л + (i / (data.length - 1)) * шир });
+    });
+    let мин = Infinity;
+    for (let i = 0; i + 1 < т.length; i++) мин = Math.min(мин, т[i + 1].x - т[i].x);
+    if (!isFinite(мин)) мин = шир;
+    const нужно = (k: number) => 4 * k * ШИР_ЗНАКА + 3;
+    // 11 -- граница читаемости года на телефоне, ниже неё в один ряд не
+    // опускаемся: лучше два ряда крупных подписей, чем один мелких. 9 -- пол
+    // на случай, когда не хватает и двух рядов.
+    const ЧИТАЕМЫЙ = 11;
+    const ПОЛ = 9;
+    const потолок = phone ? 13 : 16;
+    const лесенка = нужно(ЧИТАЕМЫЙ) > мин;
+    const место = лесенка ? мин * 2 : мин;
+    const кегль = Math.max(ПОЛ, Math.min(потолок, (место - 3) / (4 * ШИР_ЗНАКА)));
+    return { точки: т, кегль, лесенка };
+  }, [data, phone, W]);
+
+  // Верхнее поле держит ровно столько рядов подписей, сколько получилось;
+  // нижнее -- один ряд годов или два.
   const PAD = useMemo(
-    () => (phone ? { ...PAD_ТЕЛ, t: LABEL_Y + (рядов - 1) * ШАГ_РЯДА + 13 + 14 } : PAD_БАЗА),
-    [phone, рядов],
+    () =>
+      phone
+        ? {
+            ...PAD_ТЕЛ,
+            t: LABEL_Y + (рядов - 1) * ШАГ_РЯДА + 13 + 14,
+            b: PAD_ТЕЛ.b + (годы.лесенка ? годы.кегль + 3 : 0),
+          }
+        : PAD_БАЗА,
+    [phone, рядов, годы],
   );
   const H = бокс
     ? phone
@@ -145,7 +188,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
     [H, PAD],
   );
 
-  const { line, area, fomLine, years, markers, gaps, liveX, eraX } = useMemo(() => {
+  const { line, area, fomLine, markers, gaps, liveX } = useMemo(() => {
     const pts = data.map((d, i) => [x(i), y(d.idx)] as const);
     let p = `M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
     for (let i = 0; i < pts.length - 1; i++) {
@@ -196,19 +239,6 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
       });
     }
 
-    // Год ставится, только если от предыдущего есть место под подпись. На
-    // телефоне первый год начинается в середине -- ряд обрезан по 2019-07-01,
-    // -- и ’19 с ’20 налезали друг на друга.
-    const ЗАЗОР_ГОДА = phone ? 34 : 0;
-    const ys: { year: number; x: number }[] = [];
-    data.forEach((d, i) => {
-      const yr = +d.date.slice(0, 4);
-      if (ys.some((v) => v.year === yr)) return;
-      const место = x(i);
-      const пред = ys[ys.length - 1];
-      if (пред && место - пред.x < ЗАЗОР_ГОДА) return;
-      ys.push({ year: yr, x: место });
-    });
 
     // ОДИН РЯД. Подписи стоят ровной строкой наверху, в порядке дат, каждой
     // отведена равная доля ширины -- а к своей точке на кривой от неё идёт
@@ -250,17 +280,15 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
     });
 
     const li = data.findIndex((d) => d.phase !== "обучение");
-    const ei = data.findIndex((d) => d.date >= ГРАНИЦА_ЭПОХ);
 
     return {
       line: p,
       area: a,
       fomLine: f,
-      years: ys,
+
       markers: ms,
       gaps,
       liveX: li < 0 ? null : x(li),
-      eraX: ei <= 0 ? null : x(ei),
     };
   }, [data, lang, x, y, W, PAD, phone, рядов]);
 
@@ -297,19 +325,27 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
   const boxH = 44;
 
   return (
-    <div className="relative w-full select-none">
+    <div className="relative flex w-full flex-1 select-none">
       <svg
         ref={ref}
         viewBox={`0 0 ${W} ${H}`}
-        className="w-full touch-none"
-        style={{ height: "var(--chart-h, clamp(360px, 42vw, 740px))", overflow: "visible" }}
+        /**
+         * ПАЛЕЦ ПО ГРАФИКУ ЛИСТАЕТ СТРАНИЦУ. Стояло touch-none -- полотно
+         * забирало себе все касания, и на телефоне палец, попавший на график,
+         * не прокручивал страницу: она замирала. Теперь по вертикали листает
+         * браузер (touch-pan-y), а неделю выбирает КАСАНИЕ, а не проведение:
+         * тянуть неделю пальцем всё равно нельзя -- этот же жест листает.
+         */
+        className={"w-full " + (phone ? "touch-pan-y" : "touch-none")}
+        style={{ height: "100%", minHeight: "var(--chart-h, 360px)", overflow: "visible" }}
         onPointerDown={(e) => {
           if (!вПоле(e.clientY)) return;
-          (e.target as Element).setPointerCapture?.(e.pointerId);
+          if (!phone) (e.target as Element).setPointerCapture?.(e.pointerId);
           setHovering(true);
           pick(e.clientX, e.clientY);
         }}
         onPointerMove={(e) => {
+          if (phone) return;
           if ((e.pointerType === "mouse" || e.buttons > 0) && вПоле(e.clientY)) {
             setHovering(true);
             pick(e.clientX, e.clientY);
@@ -342,35 +378,26 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
           </g>
         ))}
 
-        {years.map((yr) => (
+        {годы.точки.map((yr, i) => (
           <g key={yr.year}>
             <line x1={yr.x} x2={yr.x} y1={PAD.t - 12} y2={H - PAD.b} stroke="var(--line)" opacity="0.5" />
-            <text x={yr.x + 5} y={H - PAD.b + 19} fontSize="16" fill="var(--ink-3)" className="mono">
-              ’{String(yr.year).slice(2)}
+            <text
+              x={yr.x + 4}
+              y={H - PAD.b + годы.кегль + 4 + (годы.лесенка && i % 2 ? годы.кегль + 3 : 0)}
+              fontSize={годы.кегль}
+              fill="var(--ink-3)"
+              className="mono"
+            >
+              {yr.year}
             </text>
           </g>
         ))}
 
-        {/* ГРАНИЦА ЭПОХ. Левее прибор короче: ось укрытия применяется только
-            с 2020 года и ранние недели не судит вовсе. Ранги по разные стороны
-            не сравниваются, и это должно быть ВИДНО, а не только сказано. */}
-        {eraX != null && (
-          <g>
-            <rect
-              x={PAD.l}
-              y={PAD.t - 12}
-              width={eraX - PAD.l}
-              height={H - PAD.b - PAD.t + 12}
-              fill="var(--ink)"
-              opacity="0.05"
-            />
-            {/* Без подписей: «короткий прибор / полный прибор» объясняли
-                устройство прибора там, где читатель смотрит на кривую. Черта
-                и затенение остаются -- они говорят «левее и правее не
-                сравниваются», а подробности стоят в разборе. */}
-            <line x1={eraX} x2={eraX} y1={PAD.t - 12} y2={H - PAD.b} stroke="var(--ink-2)" strokeWidth="1.4" />
-          </g>
-        )}
+        {/* Рамки эпохи здесь больше нет. Затенение и черта на 2020 годе
+            объясняли устройство прибора (до 2020-го он короче) там, где
+            читатель смотрит на кривую, и делили картинку надвое без пользы
+            для него. Само правило никуда не делось: место недели считается
+            внутри своей эпохи, и это написано словами под числом. */}
 
         {/* граница: правее прибор недели при настройке не видел */}
         {liveX != null && (
@@ -490,7 +517,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
         {/* Таблички на телефоне нет: она повторяет то, что и так стоит прямо
             над графиком крупным числом -- неделю и показание, -- а места
             стоила бы столько же, сколько ряд подписей. */}
-        {!phone && (
+        {!phone && hovering && (
           <g transform={`translate(${Math.max(PAD.l, Math.min(flip ? cx - 262 : cx + 14, W - PAD.r - 250))}, ${boxY})`}>
             <rect width="250" height={boxH} rx="12" fill="var(--bg-2)" stroke="var(--line-strong)" opacity="0.98" />
             <text x="14" y="18" fontSize="16" fill="var(--ink-3)" className="mono">

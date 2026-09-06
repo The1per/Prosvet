@@ -48,7 +48,7 @@ export function Breakdown({ w, lang, baseline }: { w: Week; lang: Lang; baseline
 
 
   return (
-    <div ref={ref} className="card reveal in h-full overflow-y-auto p-5 sm:p-6">
+    <div ref={ref} className="card reveal in p-5 sm:p-6">
       {/* Дата ВСЕГДА справа и НИКОГДА не переносится: flex-nowrap и запрет
           переноса внутри. Съезжая под заголовок на длинных датах вроде
           «28 февраля — 6 марта 2022», она делала карточку то выше, то ниже. */}
@@ -139,9 +139,6 @@ export function Breakdown({ w, lang, baseline }: { w: Week; lang: Lang; baseline
             </li>
           )}
         </ol>
-        <p className="mt-4 text-[16px] leading-relaxed" style={{ color: "var(--ink-3)" }}>
-          {T.bgNote[lang]}
-        </p>
       </div>
 
     </div>
@@ -182,13 +179,14 @@ export function Reads({ w, lang }: { w: Week; lang: Lang }) {
     // Без класса card: блок живёт ВНУТРИ карточки графика, и своя рамка
     // делала бы из него карточку в карточке.
     <div ref={ref} className="reveal in">
-      <h3 className="mb-4 text-[20px] font-semibold">{T.readsTitle[lang]}</h3>
-
       {/* Во всю ширину список из пяти строк растягивался бы на полтора метра
           ради числа «79». Поэтому пять плиток в ряд: то же горизонтально, но
           длина полоски остаётся соразмерной числу. */}
-      <div className="mb-2 text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
-        {T.alarmReads[lang]} · {fmt(alarm.total, lang)} {T.views[lang]}
+      <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h3 className="text-[20px] font-semibold">{T.readsTitle[lang]}</h3>
+        <div className="text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+          {T.alarmReads[lang]} · {fmt(alarm.total, lang)} {T.views[lang]}
+        </div>
       </div>
       {/* Пять мест всегда, даже если тем меньше: иначе ряд плиток то короче,
           то длиннее, и соседние блоки едут при каждом переходе на другую

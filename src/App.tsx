@@ -14,7 +14,9 @@ import { useCounter, useLocal, useReveal, useТелефон } from "./hooks";
 export default function App() {
   const [prefs, setPrefs] = useLocal("pai.prefs.v1", { lang: "ru" as Lang });
   const [sel, setSel] = useState(SERIES.length - 1);
-  const [showFom, setShowFom] = useState(true);
+  // Кривая опроса по умолчанию ВЫКЛЮЧЕНА: страница открывается своим
+  // показанием, а сверка с опросом -- следующий шаг, по нажатию.
+  const [showFom, setShowFom] = useState(false);
   // Пока посетитель ведёт ползунок опроса, отзываются силуэты и фигуры по
   // краям шкалы. ЧИСЛО И СВЕТ ЗА НИМ ВЕДЁТ ТОЛЬКО ПРИБОР: подменить показание
   // ответом посетителя значит показать ему его же ответ и выдать за измерение.
@@ -25,6 +27,33 @@ export default function App() {
   // Телефон -- не «узкий экран», а другая раскладка: один столбец, свой
   // порядок блоков и свой график. См. ТЕЛЕФОН в scale.ts.
   const телефон = useТелефон();
+  // На телефоне опрос живёт в выдвижной панели, а не в потоке страницы.
+  const [опросОткрыт, setОпросОткрыт] = useState(false);
+
+  /**
+   * ВЫСОТА ПРАВОГО СТОЛБИКА -- ХРАПОВИК, ТОЛЬКО ВВЕРХ.
+   *
+   * Разбор недели у разных недель разной длины: между самой короткой и самой
+   * длинной 140 пикселей. Если позволить строке садиться по содержимому, то
+   * при ведении курсора по кривой график под курсором дышал бы вверх-вниз на
+   * эти 140 -- ровно то, из-за чего страницу и переставали читать.
+   *
+   * Поэтому запоминается САМАЯ БОЛЬШАЯ высота, какая встретилась, и строка
+   * ниже неё уже не опускается. Прокрутки внутри столбика нет: он всегда
+   * показан целиком, а место под него один раз занято и больше не двигается.
+   */
+  const правыйRef = useRef<HTMLDivElement>(null);
+  const [правыйМакс, setПравыйМакс] = useState(0);
+  useEffect(() => {
+    const el = правыйRef.current;
+    if (!el) return;
+    const о = new ResizeObserver(() => {
+      const h = Math.ceil(el.scrollHeight);
+      setПравыйМакс((был) => (h > был ? h : был));
+    });
+    о.observe(el);
+    return () => о.disconnect();
+  }, [телефон]);
 
 
   useEffect(() => {
@@ -170,10 +199,9 @@ export default function App() {
               }
             >
               <div className={телефон ? "w-full" : ""}>
+                {/* Надписи «прошедшая неделя» над числом больше нет: дата
+                    недели стоит прямо под числом и говорит то же самое. */}
                 <div className={телефон ? "flex flex-col" : "flex h-[76px] flex-col justify-end"}>
-                  <div className="text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
-                    {sel === SERIES.length - 1 ? T.now[lang] : T.week[lang]}
-                  </div>
                   <div className="flex items-end gap-2">
                     <span
                       ref={numRef}
@@ -246,7 +274,14 @@ export default function App() {
                     целую строку прямо над графиком, а он должен быть виден
                     сразу. Место держит и когда выключена: иначе нажатие
                     сдвигало график на её высоту, и он скакал. */}
-                <div style={{ visibility: showFom ? "visible" : "hidden" }}>
+                {/* На экране место под легенду держится всегда: иначе нажатие
+                    сдвигало бы график на её высоту. На телефоне она стоит
+                    отдельной строкой, и пустая строка перед графиком дороже
+                    маленького сдвига -- там её просто нет, пока опрос выключен. */}
+                <div
+                  style={{ visibility: showFom ? "visible" : "hidden" }}
+                  hidden={телефон && !showFom}
+                >
                   <div
                     className={
                       "flex flex-wrap items-center gap-y-1 " +
@@ -268,7 +303,13 @@ export default function App() {
               <EventSearch lang={lang} onPick={jumpTo} phone={телефон} />
             </div>
 
-            <Chart data={SERIES} lang={lang} sel={sel} onSel={setSel} showFom={showFom} phone={телефон} />
+            {/* График РАСТЯГИВАЕТСЯ на всю оставшуюся высоту карточки: она
+                тянется за правым столбиком, и слабина должна доставаться
+                кривой, а не пустоте под ней. --chart-h тут не жёсткая высота,
+                а НИЖНЯЯ граница. */}
+            <div className="flex min-h-[var(--chart-h,360px)] flex-1 flex-col">
+              <Chart data={SERIES} lang={lang} sel={sel} onSel={setSel} showFom={showFom} phone={телефон} />
+            </div>
 
             {/* Чтение недели -- сразу под кривой, в той же карточке: выбрал
                 неделю, тут же видно, что на ней читали. Заодно левая колонка
@@ -290,24 +331,28 @@ export default function App() {
                неделю. Чтение -- последним: это самая длинная часть, и листать
                её мимо вопроса было бы наоборот. */
             <>
-              <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} phone />
+              {/* Опроса здесь нет: на телефоне он выдвигается сбоку по кнопке
+                  внизу экрана. В потоке он вставал поперёк дороги к разбору, а
+                  свернуть его значило прятать то, ради чего человека и позвали. */}
               <Breakdown w={w} lang={lang} baseline={BASELINE} />
               <div className="card p-4">
                 <Reads w={w} lang={lang} />
               </div>
             </>
           ) : (
-            /* Высоту ряда задаёт ТОЛЬКО левая карточка. Содержимое правой
-               вынесено в абсолютный слой: иначе длинный разбор события тянул бы
-               строку вниз, и страница меняла высоту от недели к неделе. Что не
-               влезло -- прокручивается внутри разбора. */
-            <div className="relative min-h-0">
-              <div className="absolute inset-0 flex flex-col gap-3 overflow-hidden">
-                <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} />
-                <div className="flex min-h-0 flex-1 flex-col">
-                  <Breakdown w={w} lang={lang} baseline={BASELINE} />
-                </div>
-              </div>
+            /* ПРАВЫЙ СТОЛБИК ПОКАЗЫВАЕТСЯ ЦЕЛИКОМ. Прежде он стоял абсолютным
+               слоем с прокруткой внутри: так высота страницы не менялась от
+               недели к неделе, но длинный разбор приходилось прокручивать в
+               окошке. Теперь наоборот -- высоту ряда задаёт тот столбик,
+               который выше, а график слева забирает слабину и растёт вместе с
+               ним. Цена: страница меняет высоту от недели к неделе. */
+            <div
+              ref={правыйRef}
+              className="flex flex-col gap-3"
+              style={{ minHeight: правыйМакс || undefined }}
+            >
+              <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} />
+              <Breakdown w={w} lang={lang} baseline={BASELINE} />
             </div>
           )}
         </section>
@@ -322,6 +367,70 @@ export default function App() {
         <Methodology lang={lang} />
 
       </main>
+
+      {/* ВЫДВИЖНОЙ ОПРОС НА ТЕЛЕФОНЕ.
+          Кнопка держится внизу экрана и видна всегда -- на любой высоте
+          прокрутки, а не только там, куда человек долистал. Панель уезжает
+          вправо за край и возвращается по нажатию; когда опрос пройден, она
+          задвигается сама.
+          Панель нарисована ВСЕГДА, а не по условию: анимации нужен элемент,
+          который уже стоит на месте, иначе он появлялся бы рывком. */}
+      {телефон && (
+        <>
+          <button
+            type="button"
+            onClick={() => setОпросОткрыт(true)}
+            className="btn fixed bottom-4 right-3 z-40 px-4 py-2.5 text-[15px] font-semibold"
+            data-on={true}
+            style={{ boxShadow: "var(--shadow)" }}
+          >
+            {T.pollOpen[lang]}
+          </button>
+
+          <div
+            className="fixed inset-0 z-50"
+            style={{ pointerEvents: опросОткрыт ? "auto" : "none" }}
+            aria-hidden={!опросОткрыт}
+          >
+            <div
+              onClick={() => setОпросОткрыт(false)}
+              className="absolute inset-0"
+              style={{
+                background: "rgba(0,0,0,0.5)",
+                opacity: опросОткрыт ? 1 : 0,
+                transition: "opacity .28s ease",
+              }}
+            />
+            <div
+              className="absolute right-0 top-0 flex h-full w-[min(430px,94vw)] flex-col overflow-y-auto p-3"
+              style={{
+                background: "var(--bg)",
+                borderLeft: "1px solid var(--line-strong)",
+                transform: опросОткрыт ? "translateX(0)" : "translateX(102%)",
+                transition: "transform .28s ease",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setОпросОткрыт(false)}
+                className="mono mb-2 self-end px-2 py-1 text-[15px] underline-offset-4"
+                style={{ color: "var(--ink-3)", background: "none", border: "none", cursor: "pointer" }}
+              >
+                {T.pollClose[lang]} ✕
+              </button>
+              <Poll
+                weekDate={LATEST.date}
+                lang={lang}
+                onPreview={setPreview}
+                phone
+                /* Пауза перед закрытием -- чтобы человек успел увидеть, что
+                   ответ принят, а не смотрел, как панель исчезает в тот же миг. */
+                onFinished={() => window.setTimeout(() => setОпросОткрыт(false), 1100)}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

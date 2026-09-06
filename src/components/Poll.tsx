@@ -74,21 +74,24 @@ export default function Poll({
   lang,
   onPreview,
   phone = false,
+  onFinished,
 }: {
   weekDate: string;
   lang: Lang;
   /** Значение ползунка наверх, пока его ведут: силуэты у числа отзываются. */
   onPreview?: (v: number | null) => void;
   /**
-   * Телефонный вид: высота не закреплена, а заголовок сворачивает карточку.
-   * Закреплять высоту тут нельзя -- на телефоне опрос стоит между графиком и
-   * чтением недели, и пустой воздух под ним пришлось бы пролистывать. А
-   * сворачивание нужно тому, кто уже ответил или отвечать не хочет: иначе
-   * опрос стоит поперёк дороги к разбору.
+   * Телефонный вид: высота не закреплена. Закреплять её тут нельзя -- на
+   * телефоне опрос живёт в выдвижной панели, и закреплённая высота означала бы
+   * пустой воздух под ответом.
    */
   phone?: boolean;
+  /**
+   * Опрос пройден: ответ отправлен и доп-вопросы либо отвечены, либо
+   * пропущены. На телефоне по этому сигналу панель задвигается обратно.
+   */
+  onFinished?: () => void;
 }) {
-  const [открыт, setОткрыт] = useState(true);
   const [answers, setAnswers] = useState<Answers>(load);
   const [value, setValue] = useState(50);
   const [editing, setEditing] = useState(false);
@@ -122,6 +125,7 @@ export default function Poll({
       /* noop */
     }
     if (!asked) setAskMore(true);
+    else onFinished?.(); // доп-вопросы уже задавали -- на этом всё
     void отправить({ value }).then(setСводка);
   };
 
@@ -165,28 +169,8 @@ export default function Poll({
       />
       {/* Название -- в верхнем углу панели; всё остальное содержимое стоит
           по центру оставшейся высоты. */}
-      {phone ? (
-        <button
-          type="button"
-          onClick={() => setОткрыт((o) => !o)}
-          aria-expanded={открыт}
-          className="chip relative flex w-full items-center justify-between"
-          style={{ background: "none", cursor: "pointer" }}
-        >
-          <span>{T.poll[lang]}</span>
-          {/* Галочка вниз -- открыто, вправо -- закрыто. Поворотом, а не двумя
-              значками: так видно, что это одно и то же место. */}
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden
-               style={{ transform: открыт ? "rotate(90deg)" : "none", transition: "transform .18s ease" }}>
-            <path d="M4 2 L10 7 L4 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      ) : (
-        <div className="chip relative self-start">{T.poll[lang]}</div>
-      )}
+      <div className="chip relative self-start">{T.poll[lang]}</div>
 
-      {(!phone || открыт) && (
-        <>
       <div className="relative flex flex-1 flex-col justify-center">
         <p className="text-[18.5px] leading-snug" style={{ color: "var(--ink)" }}>
           {T.pollQ[lang]}
@@ -252,7 +236,7 @@ export default function Poll({
           {askMore ? (
             <div className="-mt-2">
               <p className="text-[16.5px] leading-snug">{T.thanks[lang]}</p>
-              <ProfileForm lang={lang} onDone={() => setAskMore(false)} />
+              <ProfileForm lang={lang} onDone={() => { setAskMore(false); onFinished?.(); }} />
             </div>
           ) : (
         <>
@@ -311,8 +295,6 @@ export default function Poll({
             ))}
           </div>
         </div>
-      )}
-        </>
       )}
     </div>
   );

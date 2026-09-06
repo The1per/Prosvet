@@ -135,6 +135,9 @@ export const T = {
         : `${100 - доля} out of 100 weeks in which FOM asked the same question were more anxious than your answer (${всего} such weeks in all).`;
     },
   },
+  /** Кнопка, которой на телефоне выдвигается опрос, и её закрытие. */
+  pollOpen: { ru: "Ответить на вопрос", en: "Answer the question" },
+  pollClose: { ru: "закрыть", en: "close" },
   pollDisclaimer: {
     ru: "Ваш ответ — про эту неделю. Число слева — про прошедшую, ту, по которой уже вышел опрос.",
     en: "Your answer is about this week. The number on the left is about the past week, the one the poll has already covered.",
@@ -187,10 +190,6 @@ export const T = {
     ru: "Неделя спокойная: читают почти то же, что и обычно.",
     en: "A calm week: people read much what they always read.",
   },
-  bgNote: {
-    ru: "Фоновое чтение показывает главное: даже в худшие недели большинство продолжает читать про сериалы и футбол. Тревога — тонкий, но резкий слой поверх обычной жизни.",
-    en: "Background reading shows the main thing: even in the worst weeks most people go on reading about TV series and football. Anxiety is a thin but sharp layer on top of ordinary life.",
-  },
 
   method: { ru: "Как это измерено", en: "How it is measured" },
   methodLead: {
@@ -217,8 +216,12 @@ export const T = {
   },
   scrollHint: { ru: "ниже — как это измерено", en: "below — how it is measured" },
   events: { ru: "Что было в эти недели", en: "What happened in these weeks" },
-  /** Отсечка на графике: правее прибор при настройке недель не видел. */
-  untuned: { ru: "дальше без настройки", en: "untuned from here" },
+  /**
+   * Отсечка на графике. «Дальше без настройки» понимал только тот, кто уже
+   * знает, что такое настройка. Здесь сказано, что это значит для читателя:
+   * правее прибор эти недели впервые видит и предсказывает вслепую.
+   */
+  untuned: { ru: "правее — вслепую, эти недели прибор не видел", en: "to the right — blind: weeks the instrument never saw" },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",
@@ -296,20 +299,20 @@ export const T = {
 /* ---------- корзины: внутренний ключ → человеческое имя ---------- */
 export const BASKET_LABEL: Record<BasketKey, Record<Lang, { name: string; hint: string }>> = {
   рамка: {
-    ru: { name: "Коснётся ли это меня", hint: "призыв, документы, отъезд" },
-    en: { name: "Will this reach me", hint: "the draft, paperwork, leaving" },
+    ru: { name: "Личные последствия", hint: "призыв, документы, выезд" },
+    en: { name: "Personal exposure", hint: "the draft, paperwork, leaving" },
   },
   выживание: {
-    ru: { name: "Надо подготовиться", hint: "аптечка, убежище, запасы, дозиметр" },
-    en: { name: "Time to prepare", hint: "first-aid kit, shelter, supplies, dosimeter" },
+    ru: { name: "Подготовка и защита", hint: "аптечка, убежище, запасы, дозиметр" },
+    en: { name: "Preparedness", hint: "first-aid kit, shelter, supplies, dosimeter" },
   },
   "конец света": {
-    ru: { name: "Чем это кончится", hint: "пророчества, предсказания, большие страхи" },
-    en: { name: "How will it end", hint: "prophecies, predictions, the big fears" },
+    ru: { name: "Катастрофические прогнозы", hint: "пророчества, предсказания, большие страхи" },
+    en: { name: "Catastrophic forecasts", hint: "prophecies, predictions, the big fears" },
   },
   вера: {
-    ru: { name: "За утешением", hint: "обряд, молитва, гадание, обереги" },
-    en: { name: "For comfort", hint: "ritual, prayer, fortune-telling, amulets" },
+    ru: { name: "Религиозное обращение", hint: "обряд, молитва, писание, обереги" },
+    en: { name: "Religious recourse", hint: "ritual, prayer, scripture, amulets" },
   },
 };
 

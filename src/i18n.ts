@@ -79,6 +79,16 @@ export const T = {
    * прибор показывает другую неделю. Это единственное честное сравнение,
    * которое у нас есть.
    */
+  youFewVisitors: {
+    ru: (всего: number) =>
+      всего <= 1
+        ? "Ваш ответ записан. Вы первый на этой неделе — сравнивать пока не с кем."
+        : `Ваш ответ записан. На этой неделе ответили ${всего} — слишком мало, чтобы сравнивать.`,
+    en: (всего: number) =>
+      всего <= 1
+        ? "Your answer is saved. You are the first this week — there is nobody to compare with yet."
+        : `Your answer is saved. ${всего} people answered this week — too few to compare.`,
+  },
   youVsVisitors: {
     ru: (всего: number, доля: number) =>
       `Из ${всего} ответивших здесь спокойнее вас сказали ${доля} из 100.`,

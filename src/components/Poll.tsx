@@ -230,9 +230,14 @@ export default function Poll({
             />
           </div>
 
-          {сводка && сводка.total > 1 && (
+          {/* При двух-трёх ответах доля ничего не значит, но и молчать нельзя:
+              человек ответил и вправе знать, что ответ дошёл. Поэтому до пяти
+              ответов говорим, сколько их, и прямо признаём, что сравнивать рано. */}
+          {сводка && (
             <p className="mt-3 text-[16.5px] leading-relaxed" style={{ color: "var(--ink-2)" }}>
-              {T.youVsVisitors[lang](сводка.total, доляНиже(сводка.buckets, mine!.v))}
+              {сводка.total >= 5
+                ? T.youVsVisitors[lang](сводка.total, доляНиже(сводка.buckets, mine!.v))
+                : T.youFewVisitors[lang](сводка.total)}
             </p>
           )}
           <p className="mt-4 text-[16.5px] leading-relaxed" style={{ color: "var(--ink-2)" }}>

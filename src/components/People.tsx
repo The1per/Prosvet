@@ -72,7 +72,7 @@ export default function People({ idx, lang, preview = null, part }: Props) {
 
   if (part === "подпись") {
     return (
-      <div className="space-y-1.5" style={{ maxWidth: PEOPLE_WIDTH + 110 }}>
+      <div className="space-y-1" style={{ maxWidth: PEOPLE_WIDTH + 110 }}>
         <div className="mono text-[17px]" style={{ color: "var(--ink-2)" }}>
           {label}
         </div>

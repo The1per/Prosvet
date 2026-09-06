@@ -102,7 +102,7 @@ export default function App() {
         className="sticky top-0 z-30 border-b backdrop-blur-xl"
         style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 76%, transparent)" }}
       >
-        <div className="mx-auto flex max-w-[1920px] items-center gap-3 px-2 py-2 sm:px-3">
+        <div className="mx-auto flex max-w-[1920px] items-center gap-3 px-2 py-1.5 sm:px-3">
           <Pulse idx={w.idx} />
           <h1 className="flex min-w-0 items-baseline gap-3 truncate text-[20px] font-bold tracking-tight sm:text-[26px]">
             {T.title[lang]}
@@ -118,7 +118,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-[1920px] px-2 pb-10 pt-3 sm:px-3 sm:pt-4">
+      <main className="relative z-10 mx-auto max-w-[1920px] px-2 pb-8 pt-2 sm:px-3">
         {/* Заголовка над числом больше нет: страница открывается показанием.
             Кто такие «мы» и почему не спрашиваем -- сказано ниже, в разделе
             «как это измерено», где этому и место. */}
@@ -128,7 +128,7 @@ export default function App() {
             экране 1024 её действующая ширина -- 1600, места на две колонки
             хватает. С порогом xl колонки схлопывались там, где не нужно. */}
         <section className="grid gap-3 md:grid-cols-[minmax(0,1fr)_400px]">
-          <div ref={heroRef} className="card reveal in flex h-full flex-col overflow-hidden p-4 sm:p-5">
+          <div ref={heroRef} className="card reveal in flex h-full flex-col overflow-hidden p-3 sm:p-4">
             {/* ПАРЫ «ЗНАЧЕНИЕ + ПОДПИСЬ», А НЕ СЕТКА. Прежде здесь была сетка с
                 жёсткими колонками (392+324+124+92 и просветы) -- на экране уже
                 1280 она вылезала за край и не переносилась в принципе.
@@ -136,58 +136,58 @@ export default function App() {
                 колонками, а ОДИНАКОВОЙ ВЫСОТОЙ верхней части у всех блоков:
                 значения садятся на общую линию, подписи начинаются на общей.
                 Такой ряд переносится сам и влезает в любую ширину. */}
-            <div className="mb-5 flex flex-wrap items-start gap-x-10 gap-y-5">
+            <div className="mb-3 flex flex-wrap items-start gap-x-7 gap-y-3">
               <div>
-                <div className="flex h-[104px] flex-col justify-end">
+                <div className="flex h-[76px] flex-col justify-end">
                   <div className="text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
                     {sel === SERIES.length - 1 ? T.now[lang] : T.week[lang]}
                   </div>
                   <div className="flex items-end gap-2">
                     <span
                       ref={numRef}
-                      className="mono text-[52px] font-bold leading-[0.86] sm:text-[68px] lg:text-[82px]"
+                      className="mono text-[44px] font-bold leading-[0.84] sm:text-[54px] lg:text-[64px]"
                       style={{ color, transition: "color 0.4s ease" }}
                     >
                       {shown.toFixed(1)}
                     </span>
-                    <span className="whitespace-nowrap pb-2 text-[17px]" style={{ color: "var(--ink-2)" }}>
+                    <span className="whitespace-nowrap pb-1 text-[17px]" style={{ color: "var(--ink-2)" }}>
                       % · {level}
                     </span>
                   </div>
                 </div>
-                <div className="mono mt-2">
-                  <div className="text-[19px] font-semibold sm:text-[21px]" style={{ color: "var(--ink)" }}>
+                <div className="mono mt-1.5">
+                  <div className="text-[19px] font-semibold sm:text-[20px]" style={{ color: "var(--ink)" }}>
                     {fmtWeek(w.date, lang)}
                   </div>
-                  <div className="mt-1 text-[16px]" style={{ color: "var(--ink-3)" }}>
+                  <div className="mt-0.5 text-[15.5px]" style={{ color: "var(--ink-3)" }}>
                     {T.phase[lang]}: {T.phases[lang][w.phase]} · {T.placeInEra[lang](место.место, место.всего, ранняя)}
                   </div>
                 </div>
               </div>
 
               <div>
-                <div className="flex h-[104px] items-end">
+                <div className="flex h-[76px] items-end">
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" />
                 </div>
-                <div className="mt-2">
+                <div className="mt-1.5">
                   <People idx={w.idx} lang={lang} preview={preview} part="подпись" />
                 </div>
               </div>
 
               <div>
-                <div className="flex h-[104px] items-end">
+                <div className="flex h-[76px] items-end">
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} />
                 </div>
-                <div className="mt-2 w-[124px]">
+                <div className="mt-1.5 w-[118px]">
                   <KpiLabel l={T.vsBaseline[lang]} />
                 </div>
               </div>
 
               <div>
-                <div className="flex h-[104px] items-end">
+                <div className="flex h-[76px] items-end">
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" />
                 </div>
-                <div className="mt-2 w-[124px]">
+                <div className="mt-1.5 w-[118px]">
                   <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} />
                 </div>
               </div>
@@ -198,14 +198,15 @@ export default function App() {
                 легенде не помощник. */}
             {/* Число опроса стоит рядом с кнопкой, которая его показывает:
                 это одно и то же -- «сколько дал опрос» и «покажи опрос». */}
-            <div className="mb-3 flex flex-wrap items-start gap-x-5 gap-y-3">
+            <div className="mb-2 flex flex-wrap items-center gap-x-5 gap-y-2">
               <FomNumber fom={w.fom} idx={w.idx} lang={lang} />
+              <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} />
               <div>
-                <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} />
-                {/* Легенда стоит ПОД своей кнопкой -- там пусто, а рядом она
-                    растягивала строку. Место держит и когда выключена: иначе
-                    нажатие сдвигало график на её высоту, и он скакал. */}
-                <div className="mt-1.5" style={{ visibility: showFom ? "visible" : "hidden" }}>
+                {/* Легенда стоит В СТРОКУ с кнопкой: под кнопкой она съедала
+                    целую строку прямо над графиком, а он должен быть виден
+                    сразу. Место держит и когда выключена: иначе нажатие
+                    сдвигало график на её высоту, и он скакал. */}
+                <div style={{ visibility: showFom ? "visible" : "hidden" }}>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px]" style={{ color: "var(--ink-3)" }}>
                     <span className="flex items-center gap-1.5">
                       <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--cool)" }} />
@@ -228,7 +229,7 @@ export default function App() {
                 догоняет правую по высоте, и они кончаются вровень. */}
             {/* Плотно к оси: между подписями лет и заголовком чтения место
                 было пустым. */}
-            <div className="-mt-2 border-t pt-3.5" style={{ borderColor: "var(--line)" }}>
+            <div className="-mt-3 border-t pt-3" style={{ borderColor: "var(--line)" }}>
               <Reads w={w} lang={lang} />
             </div>
           </div>

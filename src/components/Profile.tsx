@@ -20,7 +20,17 @@ const KEY = "pai.profile.v2";
 
 export type Profile = { age?: string; sex?: string; city?: string };
 
-const AGES = ["18–24", "25–34", "35–44", "45–59", "60+"];
+// Значение и подпись разведены только у младшей группы: в базу уходит
+// locale-независимое "<18", а на кнопке стоит слово. У остальных значение и
+// подпись совпадают, и трогать их нельзя -- по ним уже собраны ответы.
+const AGES: { v: string; ru: string; en: string }[] = [
+  { v: "<18", ru: "до 18", en: "under 18" },
+  { v: "18–24", ru: "18–24", en: "18–24" },
+  { v: "25–34", ru: "25–34", en: "25–34" },
+  { v: "35–44", ru: "35–44", en: "35–44" },
+  { v: "45–59", ru: "45–59", en: "45–59" },
+  { v: "60+", ru: "60+", en: "60+" },
+];
 
 export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () => void }) {
   const ru = lang === "ru";
@@ -60,8 +70,14 @@ export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () =
       <div className="mt-2 space-y-1.5">
         <Field label={ru ? "возраст" : "age"}>
           {AGES.map((a) => (
-            <button key={a} type="button" className="btn px-2.5 py-[3px] text-[17px]" data-on={p.age === a} onClick={() => set("age", a)}>
-              {a}
+            <button
+              key={a.v}
+              type="button"
+              className="btn whitespace-nowrap px-2 py-[3px] text-[17px]"
+              data-on={p.age === a.v}
+              onClick={() => set("age", a.v)}
+            >
+              {ru ? a.ru : a.en}
             </button>
           ))}
         </Field>

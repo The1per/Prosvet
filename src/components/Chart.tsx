@@ -50,7 +50,9 @@ const H_ПО_УМОЛЧАНИЮ = 430; // до первого измерения
 // нужно: рамка кончается на 35, табличка занимает 44 начиная с PAD.t - 52.
 // На телефоне таблички нет, зато подписи стоят в три ряда -- им нужно больше.
 const PAD_БАЗА = { l: 34, r: 12, t: 96, b: 30 };
-const PAD_ТЕЛ = { l: 30, r: 10, b: 26 };
+// Слева ровно столько, сколько нужно двузначному числу мелким кеглем;
+// справа -- почти ничего: кривая должна доходить до края.
+const PAD_ТЕЛ = { l: 22, r: 4, b: 26 };
 const LABEL_Y = 22; // верхний ряд подписей
 const ШАГ_РЯДА = 30; // между рядами подписей на телефоне
 const PADX_ТЕЛ = 14; // поля внутри рамки на телефоне -- уже, чем на экране
@@ -83,9 +85,15 @@ type Props = {
   onSel: (i: number) => void;
   showFom: boolean;
   phone?: boolean;
+  /**
+   * Что поставить в правый верхний угол ПОЛЯ КРИВОЙ (не полотна). Снаружи
+   * это место не вычислить: верхнее поле меняется от числа рядов подписей,
+   * а те -- от ширины экрана.
+   */
+  уголок?: React.ReactNode;
 };
 
-export default function Chart({ data, lang, sel, onSel, showFom, phone = false }: Props) {
+export default function Chart({ data, lang, sel, onSel, showFom, phone = false, уголок }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const [hovering, setHovering] = useState(false);
   /**
@@ -286,9 +294,10 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
      * пускает зажим по половине собственной ширины.
      * Справа оставлено место под кнопку поиска -- она сидит в углу графика.
      */
-    const УГОЛ = phone ? 40 : 46; // место под лупу
+    // Место под лупу здесь больше не резервируется: она уехала ВНИЗ, в угол
+    // поля кривой, и с рядом подписей уже не встречается.
     const лев = 2;
-    const прав = W - 2 - УГОЛ;
+    const прав = W - 2;
     const столбцов = Math.ceil(сырые.length / рядов);
     const шаг = (прав - лев) / столбцов;
     // Сперва размеры всех подписей, потом расстановка: раскладывать их можно
@@ -308,10 +317,28 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
         text,
         кегль,
         wid: text.length * кегль * ШИР_ЗНАКА + поля,
-        ряд: phone ? k % рядов : 0,
-        столбец: phone ? Math.floor(k / рядов) : k,
+        ряд: 0,
+        столбец: 0,
       };
     });
+    // СТОЛБЦЫ РАВНОЙ ВЫСОТЫ. Прежде подписи резались по рядов штук подряд, и
+    // при семи метках на три столбца выходило 3+3+1 -- последний столбец
+    // стоял одинокой меткой, а первые два кучей. Теперь остаток
+    // раскладывается по первым столбцам: 3+2+2.
+    if (phone) {
+      const базовый = Math.floor(мерки.length / столбцов);
+      const остаток = мерки.length % столбцов;
+      let i = 0;
+      for (let с = 0; с < столбцов; с++) {
+        const сколько = базовый + (с < остаток ? 1 : 0);
+        for (let р = 0; р < сколько; р++, i++) {
+          мерки[i].столбец = с;
+          мерки[i].ряд = р;
+        }
+      }
+    } else {
+      мерки.forEach((m, k) => (m.столбец = k));
+    }
     // Крайние подписи отступают от края на ПОЛОВИНУ САМОЙ ШИРОКОЙ, и уже
     // между этими двумя точками всё раскладывается поровну. Так ряд занимает
     // всю ширину, ни одна подпись не вылезает за полотно и расстояние между
@@ -389,6 +416,14 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
 
   return (
     <div className="relative flex w-full flex-1 select-none">
+      {уголок && (
+        <div
+          className="absolute z-20"
+          style={{ right: phone ? 4 : 8, top: `${(PAD.t / H) * 100}%`, marginTop: 6 }}
+        >
+          {уголок}
+        </div>
+      )}
       <svg
         ref={ref}
         viewBox={`0 0 ${W} ${H}`}
@@ -465,7 +500,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false }
         {TICKS.map((v) => (
           <g key={v}>
             <line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="var(--line)" strokeDasharray="3 7" />
-            <text x={PAD.l - 6} y={y(v) + 3} fontSize="16" textAnchor="end" fill="var(--ink-3)" className="mono">
+            <text x={PAD.l - 4} y={y(v) + 3} fontSize={phone ? 11 : 16} textAnchor="end" fill="var(--ink-3)" className="mono">
               {v}
             </text>
           </g>

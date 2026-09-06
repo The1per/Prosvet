@@ -85,9 +85,9 @@ export default function App() {
    * Дважды написанная разметка разъезжается при первой же правке.
    */
   const парФОМ = (
-    <div className={телефон ? "flex flex-col items-end gap-2" : "flex items-center gap-2"}>
-      <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
+    <div className="flex items-center gap-2">
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
+      <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
     </div>
   );
   const кнопкаОпроса = (
@@ -270,7 +270,11 @@ export default function App() {
                     </span>
                   </div>
                 </div>
-                <div className="mono mt-1.5">
+                {/* Пара ФОМа стоит НА УРОВНЕ СТРОКИ НЕДЕЛИ: вровень с числом
+                    она спорила с ним за верх карточки, а числа тут два разных
+                    и путать их нельзя. */}
+                <div className={"mono mt-1.5 " + (телефон ? "flex items-end justify-between gap-2" : "")}>
+                  <div>
                   {/* На телефоне дата мельче и НЕ ПЕРЕНОСИТСЯ: на длинных
                       датах она разъезжалась на две строки, и весь блок под
                       индексом прыгал от недели к неделе. */}
@@ -285,13 +289,10 @@ export default function App() {
                   <div className="mt-0.5 text-[15.5px]" style={{ color: "var(--ink-3)" }}>
                     {T.placeInEra[lang](место.место, место.всего, ранняя)}
                   </div>
+                  </div>
+                  {телефон && <div className="shrink-0">{парФОМ}</div>}
                 </div>
                 </div>
-                {/* Число опроса и кнопка к нему -- СПРАВА ОТ ИНДЕКСА: это два
-                    показания одной и той же недели, и стоять им положено
-                    рядом. Ниже, отдельной строкой, они читались как
-                    управление графиком, чем они только наполовину. */}
-                {телефон && <div className="shrink-0">{парФОМ}</div>}
               </div>
 
               <div className={телефон ? "w-full" : ""}>
@@ -355,11 +356,16 @@ export default function App() {
                 стоил высоты перед кривой, а полем во всю ширину -- ещё и
                 места в ряду показателей. Ряд подписей событий укорочен
                 справа ровно на его ширину, чтобы они не встретились. */}
-            <div className="relative flex h-[var(--chart-h,360px)] flex-none flex-col">
-              <Chart data={SERIES} lang={lang} sel={sel} onSel={setSel} showFom={showFom} phone={телефон} />
-              <div className="absolute right-1 top-0 z-20">
-                <EventSearch lang={lang} onPick={jumpTo} phone />
-              </div>
+            <div className="flex h-[var(--chart-h,360px)] flex-none flex-col">
+              <Chart
+                data={SERIES}
+                lang={lang}
+                sel={sel}
+                onSel={setSel}
+                showFom={showFom}
+                phone={телефон}
+                уголок={<EventSearch lang={lang} onPick={jumpTo} phone />}
+              />
             </div>
 
             {/* Чтение недели -- сразу под кривой, в той же карточке: выбрал
@@ -580,14 +586,30 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
  * вся проверка прибора. Ссылка ведёт на источник, чтобы читатель мог посмотреть
  * тот же ряд своими глазами, а не верить нам на слово.
  */
+/**
+ * Пояснение про ФОМ показывается ОДИН РАЗ ЗА ЗАГРУЗКУ СТРАНИЦЫ -- при первом
+ * включении кривой. Выключение кривой его закрывает; второе включение уже
+ * молчит. Прежде оно всплывало при каждом наведении, и человеку, знающему,
+ * что такое ФОМ, приходилось читать это снова и снова.
+ *
+ * Флаг живёт в модуле, а не в состоянии: он обязан пережить перерисовку
+ * кнопки и умереть вместе со страницей -- ровно «один раз за обновление».
+ */
+let пояснялиПроФОМ = false;
+
 function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: boolean; onToggle: () => void; phone?: boolean }) {
   const [tip, setTip] = useState(false);
+  useEffect(() => {
+    if (!on) {
+      setTip(false);
+      return;
+    }
+    if (пояснялиПроФОМ) return;
+    пояснялиПроФОМ = true;
+    setTip(true);
+  }, [on]);
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setTip(true)}
-      onMouseLeave={() => setTip(false)}
-    >
+    <div className="relative">
       {tip && (
         <div
           /* На телефоне кнопка стоит у ПРАВОГО края, и подсказка, привязанная
@@ -623,8 +645,6 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
         className={"btn " + (phone ? "px-3 py-1.5 text-[13px]" : "px-5 py-2.5 text-sm")}
         data-on={on}
         onClick={onToggle}
-        onFocus={() => setTip(true)}
-        onBlur={() => setTip(false)}
       >
         {T.fomOnShort[lang]}
       </button>

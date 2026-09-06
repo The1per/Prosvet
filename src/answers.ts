@@ -41,6 +41,59 @@ if (typeof console !== "undefined") {
 
 export type Сводка = { total: number; buckets: number[]; уже?: boolean };
 
+/**
+ * НОМЕР ГОСТЯ -- случайный, свой у каждого браузера, хранится у него же.
+ *
+ * Правило «один ответ в сутки» держалось на IP-адресе, и за одним домашним
+ * роутером, в одной конторе, у одного мобильного оператора он общий: отвечал
+ * первый, остальным сервер говорил «уже отвечали». Номер разводит устройства,
+ * ничего при этом о человеке не сообщая: это не отпечаток и не слежка, а
+ * просто случайное число, которое браузер придумал себе сам.
+ */
+function номерГостя(): string {
+  const КЛЮЧ = "pai.гость";
+  try {
+    const был = localStorage.getItem(КЛЮЧ);
+    if (был) return был;
+    const новый = (crypto.randomUUID?.() ?? String(Math.random()).slice(2) + Date.now());
+    localStorage.setItem(КЛЮЧ, новый);
+    return новый;
+  } catch {
+    // Хранилище закрыто -- шлём пусто, сервер вернётся к адресу.
+    return "";
+  }
+}
+
+/** Дозапись доп-вопросов к сегодняшнему ответу: запрос БЕЗ показания. */
+export async function отправитьПрофиль(п: {
+  age?: string;
+  sex?: string;
+  city?: string;
+}): Promise<boolean> {
+  if (!СБОР_ВКЛЮЧЁН) return false;
+  if (!п.age && !п.sex && !п.city) return false;
+  try {
+    const r = await fetch(АДРЕС!, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: КЛЮЧ!,
+        Authorization: `Bearer ${КЛЮЧ}`,
+      },
+      body: JSON.stringify({ ...п, гость: номерГостя() }),
+    });
+    if (!r.ok) {
+      console.warn("[опрос] доп-вопросы не записаны:", r.status, await r.text().catch(() => ""));
+      return false;
+    }
+    console.info("[опрос] доп-вопросы записаны");
+    return true;
+  } catch (e) {
+    console.warn("[опрос] доп-вопросы не ушли:", e);
+    return false;
+  }
+}
+
 export async function отправить(ответ: {
   value: number;
   age?: string;
@@ -63,7 +116,7 @@ export async function отправить(ответ: {
         apikey: КЛЮЧ!,
         Authorization: `Bearer ${КЛЮЧ}`,
       },
-      body: JSON.stringify({ ...ответ, среда }),
+      body: JSON.stringify({ ...ответ, среда, гость: номерГостя() }),
     });
     if (!r.ok) {
       console.warn("[опрос] сервер отказал:", r.status, await r.text().catch(() => ""));

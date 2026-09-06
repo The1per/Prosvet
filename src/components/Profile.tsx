@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { отправитьПрофиль } from "../answers";
 import type { Lang } from "../i18n";
 
 /**
@@ -49,6 +50,12 @@ export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () =
     } catch {
       /* noop */
     }
+    // ОТПРАВКА НА СЕРВЕР. Её здесь не было вовсе: форма складывала ответы в
+    // браузер и на том успокаивалась, а в базе возраст, пол и город стояли
+    // пустыми у каждой строки. Уходит отдельным запросом, без показания, --
+    // строка ответа к этому времени уже записана, и дозаписать в неё можно
+    // только так (backend/profil.sql).
+    void отправитьПрофиль(p);
     setSent(true);
     onDone();
   };

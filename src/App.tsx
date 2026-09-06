@@ -30,30 +30,6 @@ export default function App() {
   // На телефоне опрос живёт в выдвижной панели, а не в потоке страницы.
   const [опросОткрыт, setОпросОткрыт] = useState(false);
 
-  /**
-   * ВЫСОТА ПРАВОГО СТОЛБИКА -- ХРАПОВИК, ТОЛЬКО ВВЕРХ.
-   *
-   * Разбор недели у разных недель разной длины: между самой короткой и самой
-   * длинной 140 пикселей. Если позволить строке садиться по содержимому, то
-   * при ведении курсора по кривой график под курсором дышал бы вверх-вниз на
-   * эти 140 -- ровно то, из-за чего страницу и переставали читать.
-   *
-   * Поэтому запоминается САМАЯ БОЛЬШАЯ высота, какая встретилась, и строка
-   * ниже неё уже не опускается. Прокрутки внутри столбика нет: он всегда
-   * показан целиком, а место под него один раз занято и больше не двигается.
-   */
-  const правыйRef = useRef<HTMLDivElement>(null);
-  const [правыйМакс, setПравыйМакс] = useState(0);
-  useEffect(() => {
-    const el = правыйRef.current;
-    if (!el) return;
-    const о = new ResizeObserver(() => {
-      const h = Math.ceil(el.scrollHeight);
-      setПравыйМакс((был) => (h > был ? h : был));
-    });
-    о.observe(el);
-    return () => о.disconnect();
-  }, [телефон]);
 
 
   useEffect(() => {
@@ -228,10 +204,22 @@ export default function App() {
             хватает. С порогом xl колонки схлопывались там, где не нужно. */}
         <section
           className={
-            телефон ? "flex flex-col gap-3" : "grid gap-3 md:grid-cols-[minmax(0,1fr)_374px]"
+            телефон
+              ? "flex flex-col gap-3"
+              : // items-start -- СТОЛБЦЫ НЕ ТЯНУТСЯ ДРУГ ЗА ДРУГОМ. Разбор у
+                // разных недель разной длины: между самой короткой и самой
+                // длинной 444 пикселя. Пока столбцы были одной высоты, левая
+                // карточка прыгала на эти 444 при переходе на другую неделю --
+                // «плитка сначала небольшая, а потом сильно увеличивается».
+                // Теперь каждый столбик своей высоты: правый показан целиком и
+                // без прокрутки, левый неподвижен.
+                "grid items-start gap-3 md:grid-cols-[minmax(0,1fr)_374px]"
           }
         >
-          <div ref={heroRef} className="card reveal in flex h-full flex-col overflow-hidden p-3 sm:p-4">
+          <div ref={heroRef} /* h-full убран вместе с равной высотой столбцов: при align-items:start
+              высота 100% всё равно считается от строки сетки, то есть от более
+              высокого соседа, и карточка продолжала тянуться за разбором. */
+            className={"card reveal in flex flex-col overflow-hidden " + (телефон ? "p-2" : "p-3 sm:p-4")}>
             {/* ПАРЫ «ЗНАЧЕНИЕ + ПОДПИСЬ», А НЕ СЕТКА. Прежде здесь была сетка с
                 жёсткими колонками (392+324+124+92 и просветы) -- на экране уже
                 1280 она вылезала за край и не переносилась в принципе.
@@ -249,11 +237,17 @@ export default function App() {
                 (телефон ? "mb-2 gap-x-3 gap-y-2" : "mb-3 gap-x-5 gap-y-3")
               }
             >
-              <div className={телефон ? "flex w-full items-start justify-between gap-2" : ""}>
-                <div className={телефон ? "min-w-0" : ""}>
+              {/* Блок числа занимает всю ширину, но НЕ ЯВЛЯЕТСЯ рядом: пока
+                  он был флексом, колонка с датой сжималась по содержимому, и
+                  строка под ней ездила вправо-влево на длине даты вместе с
+                  кнопкой ФОМа. */}
+              <div className={телефон ? "w-full" : ""}>
+                <div>
                 {/* Надписи «прошедшая неделя» над числом больше нет: дата
                     недели стоит прямо под числом и говорит то же самое. */}
-                <div className={телефон ? "flex flex-col" : "flex h-[76px] flex-col justify-end"}>
+                {/* Число прижато к ВЕРХУ ряда, как и строй: прижатое к низу
+                    76-пиксельной коробки, оно оказывалось ниже человечков. */}
+                <div className="flex flex-col">
                   <div className="flex items-end gap-2">
                     <span
                       ref={numRef}
@@ -273,7 +267,7 @@ export default function App() {
                 {/* Пара ФОМа стоит НА УРОВНЕ СТРОКИ НЕДЕЛИ: вровень с числом
                     она спорила с ним за верх карточки, а числа тут два разных
                     и путать их нельзя. */}
-                <div className={"mono mt-1.5 " + (телефон ? "flex items-end justify-between gap-2" : "")}>
+                <div className="mono mt-1.5">
                   <div>
                   {/* На телефоне дата мельче и НЕ ПЕРЕНОСИТСЯ: на длинных
                       датах она разъезжалась на две строки, и весь блок под
@@ -286,11 +280,24 @@ export default function App() {
                   >
                     {fmtWeek(w.date, lang)}
                   </div>
-                  <div className="mt-0.5 text-[15.5px]" style={{ color: "var(--ink-3)" }}>
-                    {T.placeInEra[lang](место.место, место.всего, ранняя)}
+                  {/* Пара ФОМа стоит на строке МЕСТА, а не даты. На строке
+                      даты её выносило за край экрана: дата не переносится, а
+                      длина у неё гуляет на семьдесят пикселей от недели к
+                      неделе -- кнопка ездила следом. Строка места короткая и
+                      почти постоянная. */}
+                  <div
+                    className={
+                      "mt-0.5 " +
+                      (телефон
+                        ? "flex items-end justify-between gap-2 text-[13.5px]"
+                        : "text-[15.5px]")
+                    }
+                    style={{ color: "var(--ink-3)" }}
+                  >
+                    <span>{T.placeInEra[lang](место.место, место.всего, ранняя)}</span>
+                    {телефон && <span className="shrink-0">{парФОМ}</span>}
                   </div>
                   </div>
-                  {телефон && <div className="shrink-0">{парФОМ}</div>}
                 </div>
                 </div>
               </div>
@@ -403,11 +410,7 @@ export default function App() {
                окошке. Теперь наоборот -- высоту ряда задаёт тот столбик,
                который выше, а график слева забирает слабину и растёт вместе с
                ним. Цена: страница меняет высоту от недели к неделе. */
-            <div
-              ref={правыйRef}
-              className="flex flex-col gap-3"
-              style={{ minHeight: правыйМакс || undefined }}
-            >
+            <div className="flex flex-col gap-3">
               <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} />
               <Breakdown w={w} lang={lang} baseline={BASELINE} />
             </div>
@@ -642,7 +645,7 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
         </div>
       )}
       <button
-        className={"btn " + (phone ? "px-3 py-1.5 text-[13px]" : "px-5 py-2.5 text-sm")}
+        className={"btn " + (phone ? "px-2.5 py-1 text-[11.5px]" : "px-5 py-2.5 text-sm")}
         data-on={on}
         onClick={onToggle}
       >
@@ -679,8 +682,8 @@ function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx:
           и эта ширина втрое меньше: 96 пикселей там -- четверть строки, и из-за
           них кнопка с легендой не вставали в один ряд. */}
       <span
-        className={"mono font-bold leading-none " + (phone ? "text-[20px]" : "text-[40px]")}
-        style={{ color: "var(--ink-2)", width: phone ? 46 : 80, display: "inline-block" }}
+        className={"mono font-bold leading-none " + (phone ? "text-[17px]" : "text-[40px]")}
+        style={{ color: "var(--ink-2)", width: phone ? 38 : 80, display: "inline-block" }}
       >
         {fom == null ? "—" : `${fom.toFixed(0)}%`}
       </span>

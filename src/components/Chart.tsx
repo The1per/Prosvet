@@ -54,9 +54,9 @@ const PAD_БАЗА = { l: 34, r: 12, t: 96, b: 30 };
 // справа -- почти ничего: кривая должна доходить до края.
 const PAD_ТЕЛ = { l: 18, r: 2, b: 24 };
 const LABEL_Y = 22; // верхний ряд подписей
-const ШАГ_РЯДА = 30; // между рядами подписей на телефоне
+const ШАГ_РЯДА = 36; // между рядами подписей на телефоне (рамка -- 26)
 const PADX_ТЕЛ = 10; // поля внутри рамки на телефоне -- уже, чем на экране
-const КЕГЛЬ_ТЕЛ = 13; // и кегль там меньше: рамки уже, промежутки шире
+const КЕГЛЬ_ТЕЛ = 12; // и кегль там меньше: рамки уже, промежутки шире
 // Средняя ширина знака -- примерно 0.58 кегля для этого шрифта. Считаем
 // ширину рамки под текст, а если текст в свою долю не влезает -- УМЕНЬШАЕМ
 // КЕГЛЬ, а не режем рамку: обрезанная рамка и была причиной того, что буквы
@@ -413,7 +413,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
   const boxH = 44;
 
   return (
-    <div className="relative flex w-full flex-1 select-none">
+    <div className="relative flex w-full flex-1 select-none" draggable={false} onDragStart={(e) => e.preventDefault()}>
       {уголок && (
         <div
           className="absolute z-20"
@@ -428,6 +428,13 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
         ref={ref}
         viewBox={`0 0 ${W} ${H}`}
         className="w-full"
+        /**
+         * ПЕРЕТАСКИВАНИЕ ЗАПРЕЩЕНО. Нажатие на svg в браузере начинает
+         * системное перетаскивание картинки: пока оно идёт, движения мыши
+         * полотну не приходят, и точка замирает на графике до следующего
+         * нажатия. Ровно это и происходило, если щёлкнуть, ведя курсор.
+         */
+        onDragStart={(e) => e.preventDefault()}
         style={{
           height: "100%",
           overflow: "visible",
@@ -468,6 +475,10 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
         }}
         onPointerUp={(e) => {
           setHovering(false);
+          // Захват отпускаем сами: иначе он держится на элементе, который
+          // следующая перерисовка может убрать, и события ушли бы в никуда.
+          const t = e.target as Element;
+          if (t.hasPointerCapture?.(e.pointerId)) t.releasePointerCapture(e.pointerId);
           if (phone) {
             const н = начало.current;
             начало.current = null;

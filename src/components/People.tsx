@@ -49,9 +49,15 @@ type Props = {
   part: "строй" | "подпись";
   /** Телефонный вид: фигуры мельче, подписи мельче. */
   phone?: boolean;
+  /**
+   * Слово уровня («штиль», «напряжение»…). Стоит здесь, а не у числа: у числа
+   * оно меняло ширину блока и двигало весь верхний ряд, а тут блок постоянной
+   * ширины и подпись просто переносится.
+   */
+  level?: string;
 };
 
-export default function People({ idx, lang, preview = null, part, phone = false }: Props) {
+export default function People({ idx, lang, preview = null, part, phone = false, level }: Props) {
   const ш = phone ? W_ТЕЛ : W;
   const зазор = phone ? GAP_ТЕЛ : GAP;
   const ширина = 10 * ш + 9 * зазор;
@@ -89,6 +95,11 @@ export default function People({ idx, lang, preview = null, part, phone = false 
     return (
       <div className="space-y-1" style={{ maxWidth: phone ? "100%" : ширина }}>
         <div className={"mono " + (phone ? "text-[14px]" : "text-[17px]")} style={{ color: "var(--ink-2)" }}>
+          {level && (
+            <b className="font-semibold" style={{ color: "var(--ink)" }}>
+              {level[0].toUpperCase() + level.slice(1)} ·{" "}
+            </b>
+          )}
           {label}
         </div>
         <div

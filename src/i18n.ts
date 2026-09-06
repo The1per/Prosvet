@@ -64,6 +64,8 @@ export const T = {
     ru: "ФОМ каждую пятницу публикует, сколько людей называют настроение вокруг себя тревожным. На этом ряду прибор и проверяется:",
     en: "Every Friday FOM publishes the share of people who call the mood around them anxious. That is the series the instrument is checked against:",
   },
+  /** Постоянная подпись рядом с числом: на чём это число основано. */
+  basis: { ru: "по чтению", en: "from reading" },
   gapUp: { ru: "опрос выше", en: "poll higher" },
   gapDown: { ru: "прибор выше", en: "instrument higher" },
   chartHint: { ru: "Ведите по графику или нажмите:", en: "Drag across the chart, or jump to:" },
@@ -238,8 +240,8 @@ export const T = {
   steps: {
     ru: [
       {
-        t: "1. Поступок вместо слова",
-        d: "Прибор ничего не спрашивает. Он смотрит, что люди в стране читали на этой неделе — по открытой почасовой статистике просмотров. Годится не любое чтение, а только то, за которым стоит поступок себе во вред: ночью открыть статью про повестку, про аптечку, про то, чем всё это кончится. Про такое читают не из любопытства.",
+        t: "1. Чтение вместо ответа",
+        d: "Прибор никого не спрашивает. Он смотрит, что люди в стране читали на этой неделе — по открытой почасовой статистике просмотров. Годится не любое чтение, а такое, которое человеку невыгодно и неприятно: ночью открыть статью про повестку, про аптечку, про то, чем всё это кончится. Такое не читают из любопытства — читают, когда припекло.",
       },
       {
         t: "2. Только лишнее",
@@ -256,7 +258,7 @@ export const T = {
     ],
     en: [
       {
-        t: "1. Acts, not words",
+        t: "1. Reading, not an answer",
         d: "The instrument asks nothing. It watches what the country read that week, from open hourly pageview statistics. Not any reading counts — only reading that costs something to do: opening an article about call-up papers at night, about a first-aid kit, about how all this ends. Nobody reads that out of curiosity.",
       },
       {
@@ -276,24 +278,16 @@ export const T = {
 
   limitList: {
     ru: [
-      "Недели до 2020 года и после НЕ СРАВНИВАЮТСЯ между собой. До 2020-го прибор короче: одна из его осей — та, что мерит не чтение, а поступок, — существует только с 2020 года и ранние недели не судит вовсе. Измерено: до этих осей ранних недель в верхней двадцатке нет ни одной, после — половина. Поэтому место недели считается внутри своей эпохи — это написано под числом, строкой «место из N с 2020».",
       "Прибор видит внимание, а не чувство. Человек может читать про бомбоубежища из любопытства — и такие недели у прибора есть.",
       "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос поставил восьмой неделей, прибор — тридцать второй.",
-      "Википедия — не вся страна: она смещена в сторону городов и людей помоложе.",
       "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
-      "Последние недели помечены «живое»: они посчитаны сейчас и вперёд ещё никем не проверены.",
-      "Совпадение с опросом не означает причинность. Это два разных термометра в одной комнате.",
-      "Ответы посетителей сохраняются у нас — без имени, без адреса: только число и то, что человек указал сам. Они нигде не смешиваются с показаниями прибора и на индекс не влияют.",
+      "Ответы посетителей на индекс не влияют. Прибор считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
     ],
     en: [
-      "Weeks before and after 2020 are NOT compared with each other. Before 2020 the instrument is shorter: one of its axes — the one measuring an act rather than reading — exists only from 2020 and does not judge earlier weeks at all. Measured: before those axes not a single early week is in the top twenty; after them, half of it is. So a week’s rank is counted within its own era — it is stated under the number, in the line “Nth of M since 2020”.",
       "It sees attention, not feeling. A person can read about bomb shelters out of curiosity — and the instrument has such weeks.",
       "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the instrument thirty-second.",
-      "Wikipedia is not the whole country: it skews urban and younger.",
       "It does not measure regions and will not: there are no regional polls to check against, and without a truth there is nothing to check with.",
-      "The most recent weeks are marked 'live': they were computed now and nothing has yet validated them forward.",
-      "Agreement with the poll is not causation. These are two thermometers in one room.",
-      "Visitors’ answers are stored by us — no name, no address: just the number and whatever the person added themselves. They are never mixed with the instrument’s readings and do not affect the index.",
+      "Visitors’ answers do not affect the index. The instrument is computed from reading and knows nothing about them: it is a separate question to separate people, not part of the measurement.",
     ],
   },
 } as const;

@@ -33,8 +33,8 @@ const BODY =
 // 25/5, а не 27/6: строй стоит в одном ряду с числами и управлением, и
 // каждый лишний пиксель его ширины -- это пиксель, из-за которого ряд
 // рассыпается на две строки. Разницу в два пикселя на фигуру глаз не ловит.
-const W = 25;
-const GAP = 5;
+const W = 24;
+const GAP = 4;
 export const PEOPLE_WIDTH = 10 * W + 9 * GAP;
 // Телефон: строй ужат так, чтобы десять фигур влезли в 390 пикселей вместе с
 // полями карточки, и не забирали высоту у графика.
@@ -99,17 +99,20 @@ export default function People({ idx, lang, preview = null, part, phone = false,
             строку, а без заданной ширины -- перекладывало подпись на другое
             число строк, потому что «штиль» и «напряжение» разной длины.
             Ширина взята под самое длинное слово шкалы. */}
-        <div className={"mono " + (phone ? "text-[14px]" : "text-[17px]")} style={{ color: "var(--ink-2)" }}>
-          {level && (
-            <b
-              className="font-semibold"
-              style={{ color: "var(--ink)", display: "inline-block", width: phone ? 92 : 112 }}
-            >
-              {level[0].toUpperCase() + level.slice(1)}
-            </b>
-          )}
-          {label}
-        </div>
+        {/* На экране главная строка стоит СПРАВА ОТ ФИГУР (см. part="строй"),
+            и здесь остаётся только пол опроса -- иначе блок занимал на строку
+            больше и весь верхний ряд уезжал вниз. На телефоне места вбок нет,
+            и она по-прежнему тут. */}
+        {phone && (
+          <div className="mono text-[14px]" style={{ color: "var(--ink-2)" }}>
+            {level && (
+              <b className="font-semibold" style={{ color: "var(--ink)", display: "inline-block", width: 92 }}>
+                {level[0].toUpperCase() + level.slice(1)}
+              </b>
+            )}
+            {label}
+          </div>
+        )}
         <div
           className={"mono leading-snug " + (phone ? "text-[13px]" : "text-[17px]")}
           style={{ color: "var(--ink-3)" }}
@@ -121,6 +124,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
   }
 
   return (
+    <div className={phone ? "" : "flex items-start gap-3"}>
     <div className="relative inline-block" style={{ width: ширина }}>
       <div className="flex items-end" style={{ gap: зазор }} role="img" aria-label={label}>
         {Array.from({ length: 10 }, (_, i) => {
@@ -166,6 +170,20 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         style={{ width: floorPx, height: 8, borderColor: "var(--line-strong)" }}
         aria-hidden
       />
+    </div>
+    {/* Главная строка -- вплотную справа от фигур: она про них и есть.
+        Ширина задана, иначе блок растянулся бы на всю свободную ширину ряда
+        и вытолкнул из строки числа сравнения. */}
+    {!phone && (
+      <div className="mono text-[17px] leading-snug" style={{ color: "var(--ink-2)", width: 204 }}>
+        {level && (
+          <b className="block font-semibold" style={{ color: "var(--ink)" }}>
+            {level[0].toUpperCase() + level.slice(1)}
+          </b>
+        )}
+        {label}
+      </div>
+    )}
     </div>
   );
 }

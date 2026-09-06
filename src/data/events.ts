@@ -27,7 +27,7 @@ export type Ev = {
   whyRu: string;
   whyEn: string;
   /** Совпали ли прибор и опрос: это честная оценка, а не украшение. */
-  fit: "точно" | "мимо" | "молчат";
+  fit: "точно" | "мимо" | "молчат" | "врозь";
 };
 
 export const EVENTS: Ev[] = [
@@ -126,6 +126,21 @@ export const EVENTS: Ev[] = [
     whyEn:
       "On 6 August 2024 Ukrainian forces entered the Kursk region — the first fighting on undisputed Russian soil since 1941, with tens of thousands evacuated. The index ranked it 82nd of 302, the poll 120th: both restrained, but the index rose markedly higher.",
     fit: "точно",
+  },
+  {
+    date: "2026-07-06",
+    ru: "Эскалация войны, июль 2026",
+    en: "War escalation, July 2026",
+    shortRu: "Эскалация",
+    shortEn: "Escalation",
+    // ЧТО ЗДЕСЬ НАПИСАНО. Только то, что видно в самих числах: какие темы
+    // поднялись, насколько и в каком порядке. Названия события в новостях мы
+    // не приводим -- индекс его не знает, он знает, что люди читали.
+    whyRu:
+      "Пятая по тревожности неделя из 355 — и первая такая после мобилизации 2022 года. Поднялось не чтение вообще, а именно то, за чем стоит решение о себе: «Мобилизация» дала 541 просмотр сверх обычного, следом «Военное положение» и «Комендантский час». Через неделю они поменялись местами — «Военное положение» вышло вперёд с 514, — а ещё через неделю добавились «Бомбоубежище» и «Йодид калия». Три недели подряд не ниже 55: так ведёт себя не одна новость, а нарастание. Опрос ФОМа в те же недели стоял на 53 % — 37-е место из 302: расхождение здесь одно из крупнейших за весь ряд.",
+    whyEn:
+      "The fifth most anxious week of 355 — and the first of its kind since the 2022 mobilisation. What rose was not reading in general but the kind that precedes a decision about oneself: ‘Mobilisation’ gave 541 views above normal, then ‘Martial law’ and ‘Curfew’. A week later they swapped places — ‘Martial law’ took the lead with 514 — and a week after that ‘Bomb shelter’ and ‘Potassium iodide’ joined in. Three weeks above 55 in a row: that is not one piece of news but a build-up. The FOM poll stood at 53% through those weeks — 37th of 302: one of the largest disagreements in the whole series.",
+    fit: "врозь",
   },
 ];
 

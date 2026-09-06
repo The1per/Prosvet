@@ -195,7 +195,7 @@ export const T = {
     en: "A calm week: people read much what they always read.",
   },
 
-  method: { ru: "Как это измерено", en: "How it is measured" },
+  method: { ru: "Как это работает", en: "How it works" },
   methodLead: {
     ru: "Индекс смотрит не на то, что люди говорят о своём настроении, а на то, что они в это время делают руками.",
     en: "The index watches not what people say about their mood, but what they do with their hands at the time.",
@@ -218,14 +218,14 @@ export const T = {
       живое: "computed now, not yet validated forward",
     },
   },
-  scrollHint: { ru: "ниже — как это измерено", en: "below — how it is measured" },
+  scrollHint: { ru: "ниже — как это работает", en: "below — how it works" },
   events: { ru: "Что было в эти недели", en: "What happened in these weeks" },
   /**
    * Отсечка на графике. «Дальше без настройки» понимал только тот, кто уже
    * знает, что такое настройка. Здесь сказано, что это значит для читателя:
    * правее прибор эти недели впервые видит и предсказывает вслепую.
    */
-  untuned: { ru: "начало работы индекса", en: "the index goes live here" },
+  untuned: { ru: "эти недели индекс видит впервые", en: "weeks the index is seeing for the first time" },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",
@@ -235,15 +235,15 @@ export const T = {
     en: ["calm", "background", "tension", "alarm", "panic"],
   },
   fit: {
-    ru: { точно: "индекс попал", мимо: "индекс промахнулся", молчат: "обе меры молчат" },
-    en: { точно: "the index hit it", мимо: "the index missed", молчат: "both measures were silent" },
+    ru: { точно: "индекс попал", мимо: "индекс промахнулся", молчат: "обе меры молчат", врозь: "меры разошлись" },
+    en: { точно: "the index hit it", мимо: "the index missed", молчат: "both measures were silent", врозь: "the measures disagree" },
   },
 
   steps: {
     ru: [
       {
         t: "1. Следы вместо ответов",
-        d: "Мы не собираем социологию — с ней в стране большие проблемы. Индекс считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, чем прикрывались в сети, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно. На него идут не из любопытства, а когда припекло.",
+        d: "Мы не собираем социологию — с ней в стране большие проблемы. Индекс считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, как часто пытались что-то скрыть, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно: на него не идут из любопытства.",
       },
       {
         t: "2. На что он отзывается",
@@ -251,17 +251,17 @@ export const T = {
       },
       {
         t: "3. Только лишнее",
-        d: "У каждого следа есть свой обычный уровень, и он гуляет по временам года и дням недели. Индекс считает не уровень, а превышение над спокойной такой же неделей: обычное вычитается целиком. Крупная новость поднимает мир весь сразу — мировой подъём меряется отдельно и вычитается тоже, чтобы не выдать чужое событие за здешнюю тревогу.",
+        d: "У каждого следа есть свой обычный уровень, и он гуляет по временам года и дням недели. Индекс считает не уровень, а превышение над спокойной такой же неделей: обычное вычитается целиком. Отдельно вычитается и мировой подъём — тот, что случается сразу везде. Сериал «Чернобыль» поднял чтение про радиацию по всему свету, фильм «Оппенгеймер» — про атомную бомбу; в индексе от таких недель не остаётся ничего.",
       },
       {
         t: "4. Проверка опросом ФОМа",
-        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100 — и на тех неделях, которые он при настройке не видел, тоже.",
+        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100 — и на тех неделях, которые он при настройке не видел, тоже. Там, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 38-й из 302, а опрос по уровню — 141-й; неделю боёв в Курской области — 82-й против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
       },
     ],
     en: [
       {
         t: "1. Traces, not answers",
-        d: "We do not collect survey data — surveying in Russia has troubles of its own. The index counts open statistics of what the country did that week: what people read, what they searched for, what they hid behind online, how they handled cash. Not every action counts — only the kind that costs something. People do it not out of curiosity but when it burns.",
+        d: "We do not collect survey data — surveying in Russia has troubles of its own. The index counts open statistics of what the country did that week: what people read, what they searched for, how often they tried to hide something, how they handled cash. Not every action counts — only the kind that costs something: nobody does it out of curiosity.",
       },
       {
         t: "2. What it responds to",
@@ -269,11 +269,11 @@ export const T = {
       },
       {
         t: "3. Only the excess",
-        d: "Every trace has its own ordinary level, and that level drifts with the seasons and the days of the week. The index counts not the level but the excess over a calm week like this one: the ordinary is subtracted entirely. A big story lifts the whole world at once — that world-wide rise is measured separately and subtracted too, so that someone else’s event is not passed off as anxiety here.",
+        d: "Every trace has its own ordinary level, and that level drifts with the seasons and the days of the week. The index counts not the level but the excess over a calm week like this one: the ordinary is subtracted entirely. The world-wide rise — the kind that happens everywhere at once — is subtracted as well. The TV series Chernobyl lifted reading about radiation across the planet, the film Oppenheimer about the atomic bomb; weeks like those leave nothing in the index.",
       },
       {
         t: "4. Checked against the poll",
-        d: "The finished curve is checked against the weekly poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100 — including on weeks it never saw while being tuned.",
+        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100 — including on weeks it never saw while being tuned. Where the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 38th of 302 while the poll by level ranks it 141st; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
       },
     ],
   },
@@ -281,14 +281,12 @@ export const T = {
   limitList: {
     ru: [
       "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое чужой громкой новостью, иногда проходит за здешнюю тревогу.",
-      "Расходясь с опросом ФОМа, индекс не всегда неправ. Неделя «Крокуса» у него 38-я из 302, у опроса по уровню — 141-я; неделя боёв в Курской области — 82-я против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
       "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос ФОМа поставил восьмой неделей, индекс — тридцать второй.",
       "По регионам он не считает и считать не будет: региональных опросов ФОМа, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
       "Ответы посетителей на индекс не влияют. Индекс считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
     ],
     en: [
       "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by someone else’s loud news sometimes passes for anxiety here.",
-      "When the index disagrees with the poll, it is not always the index that is wrong. The Crocus week ranks 38th of 302 for the index and 141st for the poll by level; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which of the two is closer to the truth on such weeks cannot be checked: the poll is the truth being checked against.",
       "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the index thirty-second.",
       "It does not measure regions and will not: there are no regional polls to check against, and without a truth there is nothing to check with.",
       "Visitors’ answers do not affect the index. The index is computed from reading and knows nothing about them: it is a separate question to separate people, not part of the measurement.",

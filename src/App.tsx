@@ -3,7 +3,7 @@ import Chart from "./components/Chart";
 import People from "./components/People";
 import Poll from "./components/Poll";
 import { Breakdown, Methodology, Reads } from "./components/Panels";
-import { BASELINE, LATEST, SERIES, ГРАНИЦА_ЭПОХ, местоВЭпохе, пикЭпохи } from "./data/series";
+import { BASELINE, LATEST, SERIES, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе, пикЭпохи } from "./data/series";
 import { EVENT_BY_DATE } from "./data/events";
 import { T, fmtWeek, type Lang } from "./i18n";
 import { moodColor, moodGlow, levelIndex, moodT } from "./mood";
@@ -67,12 +67,15 @@ export default function App() {
     <div
       style={{ visibility: showFom ? "visible" : "hidden" }}
       hidden={телефон && !showFom}
-      className={телефон ? "absolute left-0 top-[calc(100%+4px)] z-30" : ""}
+      className="absolute left-0 top-[calc(100%+6px)] z-30"
     >
       <div
         className={
-          "flex flex-wrap items-center gap-y-1 " +
-          (телефон ? "gap-x-2.5 text-[12.5px]" : "gap-x-4 text-[15px]")
+          // На экране легенда стоит СТОЛБИКОМ: в строку она была 270 пикселей
+          // шириной и ровно на них раздувала блок, из-за чего числам и строю
+          // не хватало места в ряду.
+          "flex gap-y-0.5 " +
+          (телефон ? "flex-wrap items-center gap-x-2.5 text-[12.5px]" : "flex-col text-[14.5px]")
         }
         style={{ color: "var(--ink-3)" }}
       >
@@ -94,10 +97,10 @@ export default function App() {
    * Дважды написанная разметка разъезжается при первой же правке.
    */
   const парФОМ = (
-    <div className={"flex items-center gap-2 " + (телефон ? "relative" : "")}>
+    <div className="relative flex items-center gap-2">
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
       <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
-      {телефон && легенда}
+      {легенда}
     </div>
   );
   const кнопкаОпроса = (
@@ -322,15 +325,13 @@ export default function App() {
                       почти постоянная. */}
                   <div
                     className={
-                      "mt-0.5 " +
-                      (телефон
-                        ? "flex items-end justify-between gap-2 text-[13.5px]"
-                        : "text-[15.5px]")
+                      "mt-0.5 flex items-end justify-between gap-3 " +
+                      (телефон ? "text-[13.5px]" : "text-[15.5px]")
                     }
                     style={{ color: "var(--ink-3)" }}
                   >
                     <span>{T.placeInEra[lang](место.место, место.всего, ранняя)}</span>
-                    {телефон && <span className="shrink-0">{парФОМ}</span>}
+                    <span className="shrink-0">{парФОМ}</span>
                   </div>
                   </div>
                 </div>
@@ -339,7 +340,7 @@ export default function App() {
 
               <div className={телефон ? "w-full" : ""}>
                 <div className={телефон ? "flex items-end" : "flex items-end"}>
-                  <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} />
+                  <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
                 </div>
                 {/* Отступ больше обычного: под строем идёт пунктирная скобка
                     пола опроса, и слово уровня ложилось прямо на неё. */}
@@ -377,16 +378,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* НА ЭКРАНЕ управление стоит в том же ряду, что и числа: своей
-                  строкой под ними оно отодвигало график, а сказать хотело то
-                  же самое -- «вот другое показание этой недели, вот как его
-                  показать, вот как найти неделю». */}
-              {!телефон && (
-                <div>
-                  <div className="flex h-[76px] items-end">{парФОМ}</div>
-                  <div className="mt-1.5">{легенда}</div>
-                </div>
-              )}
             </div>
 
             {/* НА ТЕЛЕФОНЕ над графиком остаётся только лупа и, когда опрос
@@ -529,6 +520,76 @@ export default function App() {
   );
 }
 
+/**
+ * РАЗБОР ДНЯ ИЗ СТРОКИ ПОИСКА.
+ *
+ * Понимает то, как человек пишет дату на самом деле: «24.08.2026», «2026-08-24»,
+ * «24 августа 2026», «август 2026», «2026». Месяц принимается и в
+ * именительном, и в родительном падеже, и по первым трём буквам -- «авг».
+ * Год без месяца -- это первое января, месяц без дня -- первое число: дальше
+ * всё равно ищется НЕДЕЛЯ, в которую этот день попал.
+ *
+ * Возвращает ISO-день или null, если дату разобрать не удалось.
+ */
+const МЕСЯЦЫ: Record<string, string[]> = {
+  ru: [
+    "янв", "фев", "мар", "апр", "мая май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек",
+  ],
+  en: [
+    "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec",
+  ],
+};
+
+function номерМесяца(слово: string, lang: Lang): number | null {
+  const w = слово.toLowerCase();
+  const список = МЕСЯЦЫ[lang] ?? МЕСЯЦЫ.ru;
+  for (let i = 0; i < 12; i++) if (список[i].split(" ").some((k) => w.startsWith(k))) return i + 1;
+  // Другой язык тоже принимаем: человек может писать «august» в русской версии
+  const другой = lang === "ru" ? МЕСЯЦЫ.en : МЕСЯЦЫ.ru;
+  for (let i = 0; i < 12; i++) if (другой[i].split(" ").some((k) => w.startsWith(k))) return i + 1;
+  return null;
+}
+
+const дв = (n: number) => String(n).padStart(2, "0");
+
+/** Последний день недели, начавшейся в этот понедельник. */
+function конецНедели(понедельник: string): string {
+  const d = new Date(понедельник + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + 6);
+  return d.toISOString().slice(0, 10);
+}
+
+function разобратьДень(s: string, lang: Lang): string | null {
+  const t = s.trim();
+
+  // 2026-08-24 и 2026/08/24
+  let m = t.match(/^(\d{4})[-./](\d{1,2})(?:[-./](\d{1,2}))?$/);
+  if (m) return `${m[1]}-${дв(+m[2])}-${дв(+(m[3] ?? 1))}`;
+
+  // 24.08.2026 и 24/8/26
+  m = t.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{2,4})$/);
+  if (m) {
+    const г = +m[3] < 100 ? 2000 + +m[3] : +m[3];
+    return `${г}-${дв(+m[2])}-${дв(+m[1])}`;
+  }
+
+  // 24 августа 2026 / августа 2026 / август 26
+  m = t.match(/^(?:(\d{1,2})\s+)?([a-zа-яё]{3,})\.?\s+(\d{2,4})$/i);
+  if (m) {
+    const мес = номерМесяца(m[2], lang);
+    if (мес) {
+      const г = +m[3] < 100 ? 2000 + +m[3] : +m[3];
+      return `${г}-${дв(мес)}-${дв(+(m[1] ?? 1))}`;
+    }
+  }
+
+  // просто год
+  m = t.match(/^(20\d{2})$/);
+  if (m) return `${m[1]}-01-01`;
+
+  return null;
+}
+
 /* ---------------- поиск по событию ---------------- */
 function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: string) => void; phone?: boolean }) {
   const [q, setQ] = useState("");
@@ -542,8 +603,38 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
   const hits = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return [];
+
+    // СНАЧАЛА ДАТА. Если в строке разобралась дата, ответ ровно один -- та
+    // неделя, в которую этот день попал. Искать по названиям в этом случае
+    // бессмысленно: человек спросил про день, а не про слово.
+    const день = разобратьДень(s, lang);
+    if (день) {
+      // За пределами ряда искать нечего -- честнее сказать «не нашлось», чем
+      // отдать первую попавшуюся неделю.
+      if (день < SERIES[0].date || день > конецНедели(SERIES[SERIES.length - 1].date)) return [];
+      let i = indexOfDate(день);
+      // В ряду есть дыры: новогодние недели из него вырезаны. Если день попал
+      // в дыру -- показываем ближайшую следующую неделю, а не пустоту: человек
+      // спросил «что было около этого дня», и это ближайшее, что у нас есть.
+      if (день > конецНедели(SERIES[i].date) && i + 1 < SERIES.length) i += 1;
+      const w = SERIES[i];
+      const ev = EVENT_BY_DATE[w.date];
+      return [
+        {
+          d: w.date,
+          // Без приставки с годом-месяцем: она уже есть в самой подписи недели
+          дата: true,
+          n:
+            (lang === "ru" ? "неделя " : "week of ") +
+            fmtWeek(w.date, lang) +
+            (ev ? " · " + (lang === "ru" ? ev.ru : ev.en) : w.note ? " · " + w.note : ""),
+        },
+      ];
+    }
+
     const named = SERIES.filter((w) => w.note || EVENT_BY_DATE[w.date]).map((w) => ({
       d: w.date,
+      дата: false,
       n: EVENT_BY_DATE[w.date] ? (lang === "ru" ? EVENT_BY_DATE[w.date].ru : EVENT_BY_DATE[w.date].en) : w.note!,
     }));
     return named.filter((h) => h.n.toLowerCase().includes(s) || h.d.includes(s)).slice(0, 8);
@@ -613,9 +704,11 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
                   setOpen(false);
                 }}
               >
-                <span className="mono mr-2" style={{ color: "var(--ink-3)" }}>
-                  {h.d.slice(0, 7)}
-                </span>
+                {!h.дата && (
+                  <span className="mono mr-2" style={{ color: "var(--ink-3)" }}>
+                    {h.d.slice(0, 7)}
+                  </span>
+                )}
                 {h.n}
               </button>
             ))
@@ -735,7 +828,9 @@ function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx:
           и эта ширина втрое меньше: 96 пикселей там -- четверть строки, и из-за
           них кнопка с легендой не вставали в один ряд. */}
       <span
-        className={"mono font-bold leading-none " + (phone ? "text-[17px]" : "text-[40px]")}
+        // Число опроса опущено на несколько пикселей: вровень с кнопкой оно
+        // спорило с ней за внимание, а это разные вещи -- показание и переключатель.
+        className={"mono font-bold leading-none " + (phone ? "text-[17px]" : "relative top-[6px] text-[40px]")}
         style={{ color: "var(--ink-2)", width: phone ? 38 : 80, display: "inline-block" }}
       >
         {fom == null ? "—" : `${fom.toFixed(0)}%`}

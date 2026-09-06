@@ -342,9 +342,9 @@ export default function App() {
                 <div className={телефон ? "flex items-end" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
                 </div>
-                {/* Отступ больше обычного: под строем идёт пунктирная скобка
-                    пола опроса, и слово уровня ложилось прямо на неё. */}
-                <div className="mt-3">
+                {/* Ровно столько, чтобы не сесть на пунктирную скобку пола
+                    опроса, которая висит на восемь пикселей ниже фигур. */}
+                <div className="mt-2">
                   <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone={телефон} level={level} />
                 </div>
               </div>

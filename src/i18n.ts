@@ -71,7 +71,7 @@ export const T = {
   gapUp: { ru: "опрос выше", en: "poll higher" },
   gapDown: { ru: "индекс выше", en: "index higher" },
   chartHint: { ru: "Ведите по графику или нажмите:", en: "Drag across the chart, or jump to:" },
-  search: { ru: "поиск по событию", en: "search an event" },
+  search: { ru: "поиск: событие или дата", en: "search: event or date" },
   searchNone: { ru: "ничего не нашлось", en: "nothing found" },
 
   poll: { ru: "А что вокруг вас?", en: "And around you?" },
@@ -225,7 +225,10 @@ export const T = {
    * знает, что такое настройка. Здесь сказано, что это значит для читателя:
    * правее прибор эти недели впервые видит и предсказывает вслепую.
    */
-  untuned: { ru: "эти недели индекс видит впервые", en: "weeks the index is seeing for the first time" },
+  untuned: {
+    ru: ["Контрольные недели", "индекс на них не обучался"],
+    en: ["Control weeks", "the index was not trained on them"],
+  },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",

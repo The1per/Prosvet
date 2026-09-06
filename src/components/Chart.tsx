@@ -148,7 +148,9 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
     const длина = Math.max(
       ...data.filter((d) => EVENT_BY_DATE[d.date]).map((d) => {
         const ev = EVENT_BY_DATE[d.date];
-        return (lang === "ru" ? ev.shortRu : ev.shortEn).length;
+        // +3 на приписанный год: столбцы считаются по той же длине, что
+        // потом рисуется, иначе рамки не помещаются и наезжают.
+        return (lang === "ru" ? ev.shortRu : ev.shortEn).length + 3;
       }),
     );
     // На телефоне подписи можно сжать до 10: «COVID, 2-я волна» при 11
@@ -302,7 +304,10 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
     // только зная САМУЮ ШИРОКУЮ -- от неё зависит, где встанут крайние.
     const мерки = сырые.map((o, k) => {
       const ev = EVENT_BY_DATE[o.d.date];
-      const text = lang === "ru" ? ev.shortRu : ev.shortEn;
+      // На телефоне выносок нет, и метка сама говорит, куда показывает:
+      // к ней приписан год недели. Двух знаков хватает -- ряд короче века.
+      const имя = lang === "ru" ? ev.shortRu : ev.shortEn;
+      const text = phone ? имя + " ’" + o.d.date.slice(2, 4) : имя;
       const поля = phone ? PADX_ТЕЛ : PADX;
       const место = шаг - (phone ? 5 : 8);
       const кегль = Math.max(
@@ -564,23 +569,24 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
                 Правее черты недель прибор при настройке не видел -- значит
                 там он не подогнан, а угадывает. Сторона выбирается по месту:
                 у правого края текст не помещается и встаёт слева. */}
+            {/* ПОДПИСЬ ВНУТРИ САМОЙ ПОЛОСЫ. Полоса и есть то, о чём речь:
+                недели правее черты индекс при настройке не видел ни одной, и
+                подпись должна лежать на них, а не рядом. Двумя строками --
+                иначе в ширину полосы не помещается. */}
             {(() => {
-              const t = T.untuned[lang];
-              const кегль = phone ? 11 : 14;
-              const шир = t.length * кегль * 0.58;
-              const справа = W - PAD.r - liveX > шир + 16;
+              const [первая, вторая] = T.untuned[lang];
+              const кегль = phone ? 10 : 13;
+              // Подпись прижата к ПРАВОМУ краю поля -- туда же, куда и полоса.
+              // На экране она целиком помещается внутрь полосы; на телефоне
+              // полоса всего в шестьдесят пикселей, и подпись неизбежно
+              // выходит из неё влево. Лучше так, чем обрезать слова.
+              const x = W - PAD.r - 6;
               return (
-                <text
-                  x={справа ? liveX + 6 : liveX - 6}
-                  // У САМОЙ ОСИ, а не наверху. Наверху подпись ложилась на
-                  // выноски меток, а главное -- стояла посреди поля кривой и
-                  // ловила курсор: наведение на неё выбирало неделю под ней.
-                  y={H - PAD.b - 8}
-                  fontSize={кегль}
-                  textAnchor={справа ? "start" : "end"}
-                  fill="var(--ink-3)"
-                >
-                  {t}
+                <text x={x} y={PAD.t + кегль + 8} fontSize={кегль} textAnchor="end" fill="var(--ink-3)" className="mono">
+                  <tspan x={x}>{первая}</tspan>
+                  <tspan x={x} dy={кегль + 3}>
+                    {вторая}
+                  </tspan>
                 </text>
               );
             })()}
@@ -616,21 +622,22 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
             целиком, мы клали выноску соседа под следующую рамку -- на телефоне,
             где рамки стоят в три-четыре ряда, палочки пропадали за ними.
             Теперь сперва все линии, потом все рамки. */}
-        {markers.map((m) => {
-          const низ = m.ly + 13;
-          const плечо = Math.min(low(m.y) - 14, низ + 26);
-          const on = sel === m.i;
-          return (
-            <polyline
-              key={"в" + m.i}
-              points={`${m.lx},${низ} ${m.lx},${плечо} ${m.x},${плечо + 12} ${m.x},${m.y - 6}`}
-              fill="none"
-              stroke="var(--accent-2)"
-              strokeWidth={on ? 1.5 : 1}
-              opacity={on ? 0.9 : 0.32}
-            />
-          );
-        })}
+        {!phone &&
+          markers.map((m) => {
+            const низ = m.ly + 13;
+            const плечо = Math.min(low(m.y) - 14, низ + 26);
+            const on = sel === m.i;
+            return (
+              <polyline
+                key={"в" + m.i}
+                points={`${m.lx},${низ} ${m.lx},${плечо} ${m.x},${плечо + 12} ${m.x},${m.y - 6}`}
+                fill="none"
+                stroke="var(--accent-2)"
+                strokeWidth={on ? 1.5 : 1}
+                opacity={on ? 0.9 : 0.32}
+              />
+            );
+          })}
 
         {markers.map((m) => {
           const on = sel === m.i;

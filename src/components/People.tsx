@@ -123,8 +123,11 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     );
   }
 
+  // items-start: главная строка начинается на одной высоте с фигурами. По
+  // центру она садилась ниже них и переставала читаться как подпись к строю.
   return (
     <div className={phone ? "" : "flex items-start gap-3"}>
+    <div>
     <div className="relative inline-block" style={{ width: ширина }}>
       <div className="flex items-end" style={{ gap: зазор }} role="img" aria-label={label}>
         {Array.from({ length: 10 }, (_, i) => {
@@ -171,9 +174,18 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         aria-hidden
       />
     </div>
-    {/* Главная строка -- вплотную справа от фигур: она про них и есть.
-        Ширина задана, иначе блок растянулся бы на всю свободную ширину ряда
-        и вытолкнул из строки числа сравнения. */}
+    {/* ПОЛ ОПРОСА -- ПРЯМО ПОД ФИГУРАМИ. Он про них: столько тревожных даже в
+        самую спокойную неделю, и пунктирная скобка под строем показывает ту же
+        величину. Стоя ниже главной строки, он отрывался от того, что объясняет. */}
+    {!phone && (
+      <div className="mono mt-3 text-[15.5px] leading-snug" style={{ color: "var(--ink-3)", width: ширина }}>
+        ↳ {floorLabel}
+      </div>
+    )}
+    </div>
+    {/* Главная строка -- вплотную справа от фигур и вровень с ними: она про
+        них и есть. Ширина задана, иначе блок растянулся бы на всю свободную
+        ширину ряда и вытолкнул из строки числа сравнения. */}
     {!phone && (
       <div className="mono text-[17px] leading-snug" style={{ color: "var(--ink-2)", width: 204 }}>
         {level && (

@@ -69,7 +69,7 @@ export default function App() {
     <div
       style={{ visibility: showFom ? "visible" : "hidden" }}
       hidden={телефон && !showFom}
-      className="absolute left-0 top-[calc(100%+6px)] z-30"
+      className={телефон ? "" : "absolute left-0 top-[calc(100%+6px)] z-30"}
     >
       <div
         className={
@@ -102,7 +102,7 @@ export default function App() {
     <div className="relative flex items-center gap-2">
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
       <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
-      {легенда}
+      {!телефон && легенда}
     </div>
   );
   const кнопкаОпроса = (
@@ -197,7 +197,19 @@ export default function App() {
               {T.titleParts[lang].map(([буква, хвост], i) => (
                 <span key={буква + i}>
                   {i > 0 ? " " : ""}
-                  <span style={{ color: "var(--accent)" }}>{буква}</span>
+                  {/* Цвет кривой, а не акцента: красный на имени читался как
+                      тревога. Чтобы ИКС всё-таки собиралось взглядом, буквы
+                      крупнее остальных и слегка светятся -- тем же светом, что
+                      и сама кривая. */}
+                  <span
+                    style={{
+                      color: "var(--curve)",
+                      fontSize: "1.18em",
+                      textShadow: "0 0 10px color-mix(in srgb, var(--curve) 55%, transparent)",
+                    }}
+                  >
+                    {буква}
+                  </span>
                   {хвост}
                 </span>
               ))}
@@ -357,6 +369,11 @@ export default function App() {
                     <span>{T.placeInEra[lang](место.место, место.всего, ранняя)}</span>
                     <span className="shrink-0">{парФОМ}</span>
                   </div>
+                  {/* Легенда -- отдельной строкой под кнопкой, справа. Слоем
+                      поверх она ложилась на строй человечков; своей строкой
+                      она сдвигает то, что ниже, всего на её высоту и только
+                      пока кривая включена. */}
+                  {телефон && showFom && <div className="mt-1 flex justify-end">{легенда}</div>}
                   </div>
                 </div>
                 </div>
@@ -366,11 +383,15 @@ export default function App() {
                 <div className={телефон ? "flex items-end" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
                 </div>
-                {/* Ровно столько, чтобы не сесть на пунктирную скобку пола
-                    опроса, которая висит на восемь пикселей ниже фигур. */}
-                <div className="mt-2">
-                  <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone={телефон} level={level} />
-                </div>
+                {/* На экране подписи здесь нет вовсе: и главная строка, и пол
+                    опроса стоят внутри part="строй" -- одна справа от фигур,
+                    другой прямо под ними. Иначе между фигурами и полом
+                    оставался провал в высоту главной строки. */}
+                {телефон && (
+                  <div className="mt-2">
+                    <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone level={level} />
+                  </div>
+                )}
               </div>
 
               <div>

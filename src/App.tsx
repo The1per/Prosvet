@@ -69,15 +69,14 @@ export default function App() {
     <div
       style={{ visibility: showFom ? "visible" : "hidden" }}
       hidden={телефон && !showFom}
-      className={телефон ? "" : "absolute left-0 top-[calc(100%+6px)] z-30"}
+      className={телефон ? "absolute right-0 top-[calc(100%+6px)] z-30" : ""}
     >
       <div
         className={
           // На экране легенда стоит СТОЛБИКОМ: в строку она была 270 пикселей
           // шириной и ровно на них раздувала блок, из-за чего числам и строю
           // не хватало места в ряду.
-          "flex gap-y-0.5 " +
-          (телефон ? "flex-wrap items-center gap-x-2.5 text-[12.5px]" : "flex-col text-[14.5px]")
+          "flex flex-col gap-y-0.5 " + (телефон ? "items-end text-[12px]" : "text-[14.5px]")
         }
         style={{ color: "var(--ink-3)" }}
       >
@@ -102,7 +101,7 @@ export default function App() {
     <div className="relative flex items-center gap-2">
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
       <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
-      {!телефон && легенда}
+      {телефон && легенда}
     </div>
   );
   const кнопкаОпроса = (
@@ -197,15 +196,17 @@ export default function App() {
               {T.titleParts[lang].map(([буква, хвост], i) => (
                 <span key={буква + i}>
                   {i > 0 ? " " : ""}
-                  {/* Цвет кривой, а не акцента: красный на имени читался как
-                      тревога. Чтобы ИКС всё-таки собиралось взглядом, буквы
-                      крупнее остальных и слегка светятся -- тем же светом, что
-                      и сама кривая. */}
+                  {/* Буквы не перекрашены -- они ПОМЕЧЕНЫ: крупнее остальных и
+                      с чертой снизу. Одним цветом кривой на серебряном тексте
+                      разницы не видно вовсе, а черта под буквой -- обычный
+                      знак аббревиатуры, и читается сразу. */}
                   <span
                     style={{
                       color: "var(--curve)",
-                      fontSize: "1.18em",
-                      textShadow: "0 0 10px color-mix(in srgb, var(--curve) 55%, transparent)",
+                      fontSize: "1.22em",
+                      borderBottom: "2px solid var(--accent)",
+                      paddingBottom: "1px",
+                      textShadow: "0 0 12px color-mix(in srgb, var(--curve) 60%, transparent)",
                     }}
                   >
                     {буква}
@@ -328,8 +329,8 @@ export default function App() {
                             ?.scrollIntoView({ behavior: "smooth", block: "start" })
                         }
                         className={
-                          "underline decoration-dotted underline-offset-4 " +
-                          (телефон ? "text-[16px]" : "text-[18.5px]")
+                          "underline decoration-dotted underline-offset-4 font-medium " +
+                          (телефон ? "text-[18px]" : "text-[21px]")
                         }
                         style={{ background: "none", border: "none", padding: 0, color: "var(--ink)", cursor: "pointer" }}
                       >
@@ -369,11 +370,6 @@ export default function App() {
                     <span>{T.placeInEra[lang](место.место, место.всего, ранняя)}</span>
                     <span className="shrink-0">{парФОМ}</span>
                   </div>
-                  {/* Легенда -- отдельной строкой под кнопкой, справа. Слоем
-                      поверх она ложилась на строй человечков; своей строкой
-                      она сдвигает то, что ниже, всего на её высоту и только
-                      пока кривая включена. */}
-                  {телефон && showFom && <div className="mt-1 flex justify-end">{легенда}</div>}
                   </div>
                 </div>
                 </div>
@@ -448,7 +444,15 @@ export default function App() {
                 onSel={setSel}
                 showFom={showFom}
                 phone={телефон}
-                уголок={<EventSearch lang={lang} onPick={jumpTo} phone />}
+                уголок={
+                  <div className="flex flex-col items-start gap-2">
+                    <EventSearch lang={lang} onPick={jumpTo} phone />
+                    {/* Легенда стоит ПОД ЛУПОЙ, в углу самого поля: она про
+                        кривую, и место ей рядом с кривой, а не в строке с
+                        числами. */}
+                    {!телефон && легенда}
+                  </div>
+                }
               />
             </div>
 
@@ -462,7 +466,7 @@ export default function App() {
                 коробке, -- и отступ стал вычитать не пустоту, а сами подписи
                 годов: они уходили под заголовок «Что читали в эту неделю». */}
             {!телефон && (
-              <div className="mt-auto border-t pt-3" style={{ borderColor: "var(--line)" }}>
+              <div className="mt-3 border-t pt-3" style={{ borderColor: "var(--line)" }}>
                 <Reads w={w} lang={lang} />
               </div>
             )}

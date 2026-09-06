@@ -247,10 +247,7 @@ export const T = {
    * знает, что такое настройка. Здесь сказано, что это значит для читателя:
    * правее прибор эти недели впервые видит и предсказывает вслепую.
    */
-  untuned: {
-    ru: ["Контрольные недели", "индекс на них не обучался"],
-    en: ["Control weeks", "the index was not trained on them"],
-  },
+  untuned: { ru: "Прогноз вслепую", en: "Blind forecast" },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",
@@ -268,7 +265,7 @@ export const T = {
     ru: [
       {
         t: "1. Следы вместо ответов",
-        d: "Мы не собираем социологию — с ней в стране большие проблемы. Индекс считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, как часто пытались что-то скрыть, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно: на него не идут из любопытства.",
+        d: "Опросы легко исказить: люди умеют молчать убедительнее, чем говорить, — особенно там, где ответ помнят дольше, чем вопрос. Поведение так не умеет: цифровой след остаётся и там, где язык выбрал тишину. Индекс считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, как часто пытались что-то скрыть, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно: на него не идут из любопытства.",
       },
       {
         t: "2. На что он отзывается",
@@ -286,7 +283,7 @@ export const T = {
     en: [
       {
         t: "1. Traces, not answers",
-        d: "We do not collect survey data — surveying in Russia has troubles of its own. The index counts open statistics of what the country did that week: what people read, what they searched for, how often they tried to hide something, how they handled cash. Not every action counts — only the kind that costs something: nobody does it out of curiosity.",
+        d: "Surveys are easy to distort: people are better at staying silent than at speaking — especially where an answer is remembered longer than the question. Behaviour cannot do that: a digital trace remains even where the tongue chose silence. The index counts open statistics of what the country did that week: what people read, what they searched for, how often they tried to hide something, how they handled cash. Not every action counts — only the kind that costs something: nobody does it out of curiosity.",
       },
       {
         t: "2. What it responds to",
@@ -307,7 +304,7 @@ export const T = {
     ru: [
       "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое чужой громкой новостью, иногда проходит за здешнюю тревогу.",
       "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос ФОМа поставил восьмой неделей, индекс — тридцать второй.",
-      "По регионам он не считает и считать не будет: региональных опросов ФОМа, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
+      "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
       "Ответы посетителей на индекс не влияют. Индекс считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
     ],
     en: [

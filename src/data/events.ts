@@ -77,7 +77,10 @@ export const EVENTS: Ev[] = [
       "24 февраля 2022-го началось вторжение; в те же дни рухнул рубль, закрылось небо и легли Visa и Mastercard. Индекс ставит эту неделю восьмой, опрос ФОМа — пятьдесят девятой: чтение вспыхнуло сразу, а настроение по опросу поднялось только к осени.",
     whyEn:
       "The invasion began on 24 February 2022; in those same days the rouble collapsed, airspace closed and Visa and Mastercard stopped working. The index ranks this week eighth, the poll fifty-ninth: reading flared at once, while the polled mood only rose by autumn.",
-    fit: "мимо",
+    // Не «промахнулся»: индекс поставил неделю восьмой, опрос ФОМа --
+    // пятьдесят девятой. Меры разошлись, и кто ближе к правде, проверить
+    // нечем; называть это промахом индекса нечестно.
+    fit: "врозь",
   },
   {
     date: "2022-09-19",

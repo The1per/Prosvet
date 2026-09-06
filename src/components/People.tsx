@@ -103,15 +103,22 @@ export default function People({ idx, lang, preview = null, part, phone = false,
             и здесь остаётся только пол опроса -- иначе блок занимал на строку
             больше и весь верхний ряд уезжал вниз. На телефоне места вбок нет,
             и она по-прежнему тут. */}
+        {/* НА ТЕЛЕФОНЕ ПОДПИСЬ НЕ ПЕРЕНОСИТСЯ. Одной строкой с уровнем она
+            не помещалась ни при каком кегле, и слово «тревожно» уезжало вниз.
+            Уровень встал своей строкой -- он короткий и не переносится, --
+            а подпись целиком идёт следом одной строкой мельче. Высота от
+            недели к неделе не меняется: длина обеих строк постоянна. */}
         {phone && (
-          <div className="mono text-[14px]" style={{ color: "var(--ink-2)" }}>
+          <>
             {level && (
-              <b className="font-semibold" style={{ color: "var(--ink)", display: "inline-block", width: 92 }}>
+              <div className="mono whitespace-nowrap text-[14px] font-semibold" style={{ color: "var(--ink)" }}>
                 {level[0].toUpperCase() + level.slice(1)}
-              </b>
+              </div>
             )}
-            {label}
-          </div>
+            <div className="mono whitespace-nowrap text-[12.5px]" style={{ color: "var(--ink-2)" }}>
+              {label}
+            </div>
+          </>
         )}
         <div
           className={"mono leading-snug " + (phone ? "text-[13px]" : "text-[17px]")}

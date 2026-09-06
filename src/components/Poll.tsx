@@ -169,7 +169,7 @@ export default function Poll({
       />
       {/* Название -- в верхнем углу панели; всё остальное содержимое стоит
           по центру оставшейся высоты. */}
-      <div className="chip relative self-start">{T.poll[lang]}</div>
+      <div className="chip relative mb-2 self-start">{T.poll[lang]}</div>
 
       <div className="relative flex flex-1 flex-col justify-center">
         <p className="text-[18.5px] leading-snug" style={{ color: "var(--ink)" }}>

@@ -85,7 +85,11 @@ type Props = {
   sel: number;
   onSel: (i: number) => void;
   showFom: boolean;
-  /** Простой вид: без свечения кривой. Настройка читателя, не прибора. */
+  /**
+   * Простой вид: БЕЛОЕ свечение кривой выключено. Цветного свечения важных
+   * дат это не касается -- оно не украшение, а способ отличить событие от
+   * обычной недели.
+   */
   простой?: boolean;
   /** Показывать ли саму кривую индекса. Выключают, чтобы смотреть один опрос. */
   индекс?: boolean;
@@ -566,9 +570,12 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
         }}
       >
         <defs>
+          {/* Заливка под кривой -- ТОЖЕ свечение, и в простом виде она
+              бледнеет впятеро. Без этого «простой вид» не выглядел простым:
+              размытие с линии снималось, а светлая дымка под ней оставалась. */}
           <linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={CURVE} stopOpacity="0.4" />
-            <stop offset="60%" stopColor={CURVE} stopOpacity="0.11" />
+            <stop offset="0%" stopColor={CURVE} stopOpacity={простой ? "0.08" : "0.4"} />
+            <stop offset="60%" stopColor={CURVE} stopOpacity={простой ? "0.02" : "0.11"} />
             <stop offset="100%" stopColor={CURVE} stopOpacity="0" />
           </linearGradient>
           <filter id="glow" x="-30%" y="-60%" width="160%" height="260%">
@@ -654,7 +661,9 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
             strokeLinecap="round"
             strokeLinejoin="round"
             opacity={sel === п.i ? 1 : 0.85}
-            filter={простой ? undefined : "url(#glow)"}
+            /* Всегда со свечением: цвет события -- это показание, а не
+               оформление, и гасить его переключателем нельзя. */
+            filter="url(#glow)"
           />
         ))}
 

@@ -266,6 +266,10 @@ export default function App() {
   const пред = sel > 0 ? SERIES[sel - 1] : null;
   const дельтаНед = пред ? Math.round(((w.idx - пред.idx) / пред.idx) * 100) : null;
   const level = T.levels[lang][levelIndex(w.idx)];
+  /* МЕСТО НЕДЕЛИ объявлено здесь, до блока сравнений: он показывает его третьим
+     числом, а разметка строится при отрисовке -- объявленное ниже читалось бы
+     до заведения, и страница падала бы целиком. */
+  const место = местоВЭпохе(w.date);
   /* СТОИТ ПОСЛЕ delta и дельтаНед: разметка строится при отрисовке, и блок,
      поставленный выше них, читал ещё не заведённые переменные -- страница
      падала целиком. Тот же случай уже был с чтением ответа посетителя. */
@@ -306,6 +310,21 @@ export default function App() {
           <KpiLabel l={T.vsPrev[lang]} phone={телефон} />
         </div>
       </div>
+
+      {/* МЕСТО НЕДЕЛИ В ИСТОРИИ -- ТРЕТЬИМ БЛОКОМ К СРАВНЕНИЯМ, а не под датой.
+          Оно того же рода, что «к обычной неделе» и «к прошлой»: все три
+          отвечают, много это или мало. Под датой оно к тому же удлиняло левый
+          столбец, а по нему держится весь верхний ряд. */}
+      {!телефон && (
+        <div className="shrink-0">
+          <div className="flex items-start">
+            <Kpi v={`${место.место}-я`} c="var(--ink)" phone={телефон} />
+          </div>
+          <div className="mt-1.5 w-[108px]">
+            <KpiLabel l={T.ofTotal[lang](место.всего)} phone={телефон} />
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -315,7 +334,7 @@ export default function App() {
   // Пик и место считаются ВНУТРИ эпохи недели: до 2020-го прибор короче, и
   // ранжировать через эту границу нельзя. См. ГРАНИЦА_ЭПОХ в data/series.
   const ранняя = w.date < ГРАНИЦА_ЭПОХ;
-  const место = местоВЭпохе(w.date);
+
   const glow = moodGlow(w.idx);
   const color = moodColor(w.idx, 6);
 
@@ -580,11 +599,6 @@ export default function App() {
                     style={{ color: "var(--ink)" }}
                   >
                     <span className="whitespace-nowrap">{fmtWeek(w.date, lang)}</span>
-                    {!телефон && (
-                      <span className="mono whitespace-nowrap font-normal tabular-nums text-[17px]" style={{ color: "var(--ink-2)" }}>
-                        {T.placeShort[lang](место.место, место.всего)}
-                      </span>
-                    )}
                   </div>
                   {/* Пара ФОМа стоит на строке МЕСТА, а не даты. На строке
                       даты её выносило за край экрана: дата не переносится, а
@@ -727,12 +741,19 @@ export default function App() {
 
                 Кнопка ушла под слова -- она короткая, и её строка стоит дешевле
                 скачущего блока. */}
+            {/* ПАРА ФОМа СЛЕВА, СЛОВА НЕДЕЛИ СПРАВА ОТ НЕЁ -- одной строкой,
+                сразу под числом и датой. Словам достаётся 877 пикселей, и
+                кегль подобран так, чтобы в них влезала САМАЯ ДЛИННАЯ неделя:
+                иначе у половины недель «Люди» уезжали бы на вторую строку и
+                блок дёргался при перелистывании. */}
             {!телефон && (
-              <div className="mt-1 w-full">
-                <СловаНедели w={w} lang={lang} />
+              <div className="mt-1.5 flex items-start gap-6">
+                <div className="shrink-0">{парФОМ}</div>
+                <div className="min-w-0 flex-1">
+                  <СловаНедели w={w} lang={lang} />
+                </div>
               </div>
             )}
-            {!телефон && <div className="mt-1 flex">{парФОМ}</div>}
 
             {/* СЛОВА НЕДЕЛИ СТОЯТ ВЫШЕ ПАРЫ ФОМа -- прямо под верхним
                 рядом: под числом, строем, напряжением и обоими
@@ -1441,7 +1462,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
            кончаются раньше правого, а заголовок висел посреди того, что
            осталось, и связь между ним и словами читалась не сразу. */
         className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
-        style={{ color: "var(--ink)", fontSize: phone ? 15 : 26 }}
+        style={{ color: "var(--ink)", fontSize: phone ? 15 : 20 }}
         onClick={() => setПодсказка((v) => !v)}
         onMouseEnter={phone ? undefined : () => setПодсказка(true)}
         onMouseLeave={phone ? undefined : () => setПодсказка(false)}
@@ -1498,7 +1519,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                    за край на семьдесят три пикселя. 14 -- наибольший кегль, при
                    котором влезает и она. */
                 color: "var(--ink-3)",
-                fontSize: phone ? 14 : 26,
+                fontSize: phone ? 14 : 20,
                 width: phone ? 62 : undefined,
               }}
             >
@@ -1508,7 +1529,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
               className="font-semibold"
               style={{
                 color: р.д ? "var(--ink)" : "var(--ink-3)",
-                fontSize: phone ? 14 : 26,
+                fontSize: phone ? 14 : 20,
                 lineHeight: 1.25,
                 /* Сила отрыва -- яркостью, а не вторым числом: 1.5 это десятая
                    часть недель снизу, 3.6 -- девятая десятая сверху. Иначе

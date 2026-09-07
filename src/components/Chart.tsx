@@ -770,8 +770,11 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
             над графиком крупным числом -- неделю и показание, -- а места
             стоила бы столько же, сколько ряд подписей. */}
         {!phone && hovering && (
-          <g transform={`translate(${Math.max(PAD.l, Math.min(flip ? cx - 262 : cx + 14, W - PAD.r - 250))}, ${boxY})`}>
-            <rect width="250" height={boxH} rx="12" fill="var(--bg-2)" stroke="var(--line-strong)" opacity="0.98" />
+          /* ШИРИНА 300, А НЕ 250. У недели без опроса во второй строке стоит
+             «опроса ФОМа не было» -- девятнадцать знаков, и они не умещались:
+             строка начинается на 74 и уходила за правый край рамки. */
+          <g transform={`translate(${Math.max(PAD.l, Math.min(flip ? cx - 312 : cx + 14, W - PAD.r - 300))}, ${boxY})`}>
+            <rect width="300" height={boxH} rx="12" fill="var(--bg-2)" stroke="var(--line-strong)" opacity="0.98" />
             <text x="14" y="18" fontSize="16" fill="var(--ink-3)" className="mono">
               {fmtWeek(cur.date, lang)}
             </text>

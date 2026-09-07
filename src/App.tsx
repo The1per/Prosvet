@@ -747,9 +747,15 @@ export default function App() {
                 иначе у половины недель «Люди» уезжали бы на вторую строку и
                 блок дёргался при перелистывании. */}
             {!телефон && (
-              <div className="mt-1.5 flex items-start gap-6">
+              <div className="mt-0.5 flex items-start gap-4">
                 <div className="shrink-0">{парФОМ}</div>
-                <div className="min-w-0 flex-1">
+                {/* ВЫСОТА ОТВЕДЕНА ПОД ДВЕ СТРОКИ. При кегле 22 в отведённые
+                    885 пикселей не влезают 15 недель из 400 -- самые длинные, и
+                    у них «Люди» уходят на вторую строку. Без отведённой высоты
+                    на такой неделе подпрыгивал бы весь график под блоком; с ней
+                    не двигается ничего. Цена -- тридцать пикселей на остальных
+                    96 % недель, и она меньше, чем цена дёргающейся страницы. */}
+                <div className="min-w-0 flex-1" style={{ minHeight: 104 }}>
                   <СловаНедели w={w} lang={lang} />
                 </div>
               </div>
@@ -1462,13 +1468,13 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
            кончаются раньше правого, а заголовок висел посреди того, что
            осталось, и связь между ним и словами читалась не сразу. */
         className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
-        style={{ color: "var(--ink)", fontSize: phone ? 15 : 20 }}
+        style={{ color: "var(--ink)", fontSize: phone ? 15 : 23 }}
         onClick={() => setПодсказка((v) => !v)}
         onMouseEnter={phone ? undefined : () => setПодсказка(true)}
         onMouseLeave={phone ? undefined : () => setПодсказка(false)}
         role="button"
       >
-        {ru ? "слова недели" : "words of the week"}
+        {ru ? "Слова недели" : "Words of the week"}
       </div>
       {подсказка && (
         <div
@@ -1501,11 +1507,11 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           тревожна неделя, и это уже сказано числом, строем и кривой. */}
       <div
         className={
-          "mt-0.5 flex " + (phone ? "flex-col gap-0.5" : "flex-row items-baseline gap-6")
+          "flex " + (phone ? "mt-0.5 flex-col gap-0.5" : "flex-row flex-wrap items-baseline gap-x-4 gap-y-0")
         }
       >
         {ряды.map((р) => (
-          <div key={р.к} className="flex items-baseline gap-2">
+          <div key={р.к} className={"flex items-baseline " + (phone ? "gap-2" : "gap-1.5")}>
             <span
               className="mono shrink-0 text-right"
               style={{
@@ -1519,7 +1525,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                    за край на семьдесят три пикселя. 14 -- наибольший кегль, при
                    котором влезает и она. */
                 color: "var(--ink-3)",
-                fontSize: phone ? 14 : 20,
+                fontSize: phone ? 14 : 22,
                 width: phone ? 62 : undefined,
               }}
             >
@@ -1529,7 +1535,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
               className="font-semibold"
               style={{
                 color: р.д ? "var(--ink)" : "var(--ink-3)",
-                fontSize: phone ? 14 : 20,
+                fontSize: phone ? 14 : 22,
                 lineHeight: 1.25,
                 /* Сила отрыва -- яркостью, а не вторым числом: 1.5 это десятая
                    часть недель снизу, 3.6 -- девятая десятая сверху. Иначе

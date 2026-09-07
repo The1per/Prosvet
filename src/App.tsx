@@ -261,6 +261,46 @@ export default function App() {
   const пред = sel > 0 ? SERIES[sel - 1] : null;
   const дельтаНед = пред ? Math.round(((w.idx - пред.idx) / пред.idx) * 100) : null;
   const level = T.levels[lang][levelIndex(w.idx)];
+  /* СТОИТ ПОСЛЕ delta и дельтаНед: разметка строится при отрисовке, и блок,
+     поставленный выше них, читал ещё не заведённые переменные -- страница
+     падала целиком. Тот же случай уже был с чтением ответа посетителя. */
+  /**
+   * СРАВНЕНИЯ -- к обычной неделе и к прошлой. Заведены один раз, стоят в
+   * разных местах: на экране двумя блоками общего ряда, на телефоне -- прямо
+   * под «Тревожны 5,8 из 10», в её же столбце.
+   */
+  const сравнения = (
+    <>
+      {/* НА ТЕЛЕФОНЕ В СТОЛБИК, число слева, подпись справа от него. Рядом они
+          занимали две трети ширины экрана и подписи вставали в две строки
+          каждая; в столбик обе читаются одной строкой. */}
+      <div className={телефон ? "mt-1.5 flex items-baseline gap-2" : "shrink-0"}>
+        {/* Прижаты к ВЕРХУ ряда, как число и строй: в коробке на 76 пикселей с
+            прижатием к низу они висели заметно ниже всего остального и
+            читались как приписка. */}
+        <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
+          <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
+        </div>
+        <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
+          <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
+        </div>
+      </div>
+
+      <div className={телефон ? "mt-1 flex items-baseline gap-2" : "shrink-0"}>
+        <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
+          <Kpi
+            v={`${дельтаНед == null ? "—" : (дельтаНед > 0 ? "+" : "") + дельтаНед}%`}
+            c={дельтаНед == null ? "var(--ink-3)" : moodColor(w.idx, 6)}
+            phone={телефон}
+          />
+        </div>
+        <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
+          <KpiLabel l={T.vsPrev[lang]} phone={телефон} />
+        </div>
+      </div>
+    </>
+  );
+
   // Свет за индексом ведёт ТОЛЬКО прибор. У опроса свой свет -- внутри его
   // карточки, и его ведёт ползунок: два разных показания не должны светить
   // одним и тем же цветом из одного места.
@@ -470,12 +510,15 @@ export default function App() {
                     {/* НА ТЕЛЕФОНЕ подпись отодвинута вправо и опущена: она
                         стояла вплотную к числу и вровень с его верхом, отчего
                         читалась продолжением цифры, а не именем величины. */}
-                    <span className={"whitespace-nowrap " + (телефон ? "pt-2 pl-1 text-[15px]" : "pb-1 text-[17px]")} style={{ color: "var(--ink-2)" }}>
+                    <span className={"whitespace-nowrap " + (телефон ? "pt-2 pl-4 text-[15px]" : "pb-1 text-[17px]")} style={{ color: "var(--ink-2)" }}>
                       {/* ЗНАЧКА ПРОЦЕНТА БОЛЬШЕ НЕТ. Показание -- не доля
                           чего-либо: это место недели в истории, приведённое к
                           шкале опроса. Процент рядом с ним обещал долю и
                           обещал зря. */}
-                      ·{" "}
+                      {/* ТОЧКИ ПЕРЕД ПОДПИСЬЮ БОЛЬШЕ НЕТ. Она ставилась
+                          разделителем между числом и его именем, а читалась
+                          соринкой: одинокая точка на уровне середины строки,
+                          ничего не значащая. Между ними и так отступ. */}
                       {/* Подпись -- ссылка вниз, к разбору метода: человек,
                           который спросит «по каким ещё следам?», получает
                           ответ в одно нажатие, а не поиском по странице.
@@ -495,7 +538,10 @@ export default function App() {
                         style={{ background: "none", border: "none", padding: 0, color: "var(--ink)", cursor: "pointer" }}
                       >
                         <span className="block">{T.basis[lang]}</span>
-                        <span className="block">{T.basis2[lang]}*</span>
+                        {/* ЗВЁЗДОЧКИ НЕТ. Она обещала сноску, а сноски внизу
+                            нет: подпись сама и есть ссылка на разбор, и это
+                            сказано пунктиром под ней. */}
+                        <span className="block">{T.basis2[lang]}</span>
                       </button>
                     </span>
                   </div>
@@ -596,47 +642,26 @@ export default function App() {
                      правый край выше строя -- и подпись уезжала вниз на три
                      строки. Здесь ряд ровно такой высоты, как выше из двух, и
                      эта высота от недели не зависит: слов всегда три. */
-                  <div className="mt-2 flex items-start justify-between gap-1 pr-0">
-                    <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone level={level} />
-                    {/* ШИРЕ КОЛОНКИ КНОПОК И ЛЕВЕЕ ЕЁ: слова бывают до
-                        пятнадцати букв, и в 118 пикселей самое длинное не
-                        влезает. Место слева свободно -- подпись строя коротка.
-                        Заголовок едет вместе со словами, они одно целое. */}
-                    <div className="w-[172px] shrink-0">
+                  <div className="mt-2 flex items-start justify-between gap-1">
+                    {/* СРАВНЕНИЯ ПРЯМО ПОД «Тревожны 5,8 из 10», в её столбце.
+                        Отдельной полосой ниже они начинались уже под словами
+                        недели -- а те выше подписи на две строки, и между
+                        «Тревожны» и «+29 %» зиял просвет. */}
+                    <div className="min-w-0">
+                      <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone level={level} />
+                      {сравнения}
+                    </div>
+                    {/* СТОЛБЕЦ ТОЙ ЖЕ ШИРИНЫ, ЧТО У КНОПОК, и точно под ними:
+                        «Опрос ФОМ», «Тревожно ли вокруг вас» и слова недели
+                        стоят на одной вертикали и читаются одним столбцом. */}
+                    <div className="w-[118px] shrink-0">
                       <СловаНедели w={w} lang={lang} phone />
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* НА ТЕЛЕФОНЕ СРАВНЕНИЯ СТОЯТ В СТОЛБИК, число слева, подпись
-                  справа от него. Рядом они занимали две трети ширины экрана и
-                  подписи вставали в две строки каждая; в столбик обе читаются
-                  одной строкой, а высота выходит та же. */}
-              <div className={телефон ? "flex items-baseline gap-2" : "shrink-0"}>
-                {/* Прижаты к ВЕРХУ ряда, как число и строй: в коробке на 76
-                    пикселей с прижатием к низу они висели заметно ниже всего
-                    остального и читались как приписка. */}
-                <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
-                  <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
-                </div>
-                <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
-                  <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
-                </div>
-              </div>
-
-              <div className={телефон ? "mt-1 flex items-baseline gap-2" : "shrink-0"}>
-                <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
-                  <Kpi
-                    v={`${дельтаНед == null ? "—" : (дельтаНед > 0 ? "+" : "") + дельтаНед}%`}
-                    c={дельтаНед == null ? "var(--ink-3)" : moodColor(w.idx, 6)}
-                    phone={телефон}
-                  />
-                </div>
-                <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
-                  <KpiLabel l={T.vsPrev[lang]} phone={телефон} />
-                </div>
-              </div>
+              {!телефон && сравнения}
 
             </div>
 
@@ -1301,36 +1326,49 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
   useЗакрытьСнаружи(коробка, подсказка, () => setПодсказка(false));
   if (!w.слово || !w.слово.с.length) return null;
   const ru = lang === "ru";
-  /* ОБЪЯСНЕНИЕ КОРОТКОЕ НАРОЧНО: подсказка читается на лету, а не изучается.
-     Как считается -- подробно сказано в разборе метода. */
+  /* ОБЪЯСНЕНИЕ ЧЕЛОВЕЧЕСКИМ ЯЗЫКОМ. Прежде тут стояло «сказано намного чаще
+     обычного для самого этого слова» -- верно и непонятно: читатель не знает,
+     что за «обычное» и чьё оно. Здесь сказано то, что важно знать: это не
+     заголовки и не наши слова, а то, что люди сами написали друг другу, и
+     показаны те слова, которых на этой неделе стало заметно больше. */
   const текст = ru
-    ? "Сказано намного чаще обычного для самого этого слова"
-    : "Said far more often than this word usually is";
+    ? "Это слова из комментариев людей в городских пабликах — не из новостей. "
+      + "На этой неделе их писали заметно чаще обычного."
+    : "Words from people's own comments in city groups — not from the news. "
+      + "This week they wrote them far more often than usual.";
   return (
     <div className="relative" ref={коробка}>
-      {/* НА ТЕЛЕФОНЕ ПОДСКАЗКА ПО НАЖАТИЮ. Атрибут title там не показывается
-          вовсе: наведения на телефоне нет, а долгое нажатие браузер тратит на
-          своё меню. Поэтому подпись здесь -- кнопка, и она открывает то же
-          объяснение рядом. Гасится нажатием куда угодно мимо. */}
+      {/* ПОДСКАЗКА ОКНОМ, И НА ЭКРАНЕ ТОЖЕ. Атрибут title на телефоне не
+          показывается вовсе (наведения там нет, долгое нажатие браузер тратит
+          на своё меню), а на экране он выглядит подсказкой операционной
+          системы, а не частью страницы, и появляется с секундной задержкой.
+          Одно окно на обе раскладки: на экране по наведению, на телефоне по
+          нажатию. Гасится нажатием куда угодно мимо. */}
       <div
         className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
-        style={{ color: "var(--ink)", fontSize: phone ? 15 : 18 }}
-        title={phone ? undefined : текст}
-        onClick={phone ? () => setПодсказка((v) => !v) : undefined}
-        role={phone ? "button" : undefined}
+        style={{ color: "var(--ink)", fontSize: phone ? 14 : 18 }}
+        onClick={() => setПодсказка((v) => !v)}
+        onMouseEnter={phone ? undefined : () => setПодсказка(true)}
+        onMouseLeave={phone ? undefined : () => setПодсказка(false)}
+        role="button"
       >
         {ru ? "слова недели" : "words of the week"}
       </div>
-      {phone && подсказка && (
+      {подсказка && (
         <div
-          className="absolute right-0 top-[calc(100%+6px)] z-40 rounded-xl border p-2.5 leading-snug"
+          className={
+            "absolute top-[calc(100%+6px)] z-40 rounded-xl border p-3 leading-snug "
+            + (phone ? "right-0" : "left-0")
+          }
           style={{
             borderColor: "var(--line-strong)",
             background: "var(--bg-2)",
             color: "var(--ink-2)",
             boxShadow: "var(--shadow)",
-            width: "min(250px, calc(100vw - 32px))",
-            fontSize: 13,
+            width: phone ? "min(250px, calc(100vw - 32px))" : 330,
+            fontSize: phone ? 13 : 15,
+            textAlign: "left",
+            whiteSpace: "normal",
           }}
         >
           {текст}
@@ -1341,10 +1379,13 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           кривой. Крася в тот же цвет ещё и слова, мы повторяли бы показание
           там, где его нет: слово недели прибором не меряется. */}
       <div
-        className={phone ? "flex flex-col items-start" : "flex items-baseline gap-2"}
+        className={phone ? "flex flex-col items-center" : "flex items-baseline gap-2"}
         style={{
           color: "var(--ink)",
-          fontSize: phone ? 16 : 22,
+          // 14 на телефоне: столбец 118 пикселей, а самое длинное слово ряда --
+          // «ответственность». Кегль один для всех слов и всех недель: подгонка
+          // под длину дёргала страницу при перелистывании.
+          fontSize: phone ? 14 : 22,
           lineHeight: 1.2,
           /* Сила отрыва -- яркостью: 1.5 это десятая часть недель снизу, 3.6 --
              девятая десятая сверху. Иначе «война» и «интернет» выглядели бы

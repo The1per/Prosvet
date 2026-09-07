@@ -1,5 +1,5 @@
 import { anxiousOfTen, moodColor, moodT } from "../mood";
-import { FLOOR_FOM } from "../data/series";
+import { FLOOR_FOM, PEAK_FOM } from "../data/series";
 import type { Lang } from "../i18n";
 
 /**
@@ -68,9 +68,16 @@ export default function People({ idx, lang, preview = null, part, phone = false,
   const shiver = preview !== null && live >= 70;
   const calm = preview !== null && live < 45;
 
-  const floor = FLOOR_FOM / 10; // 3.2 -- измеренный пол опроса
-  const whole = Math.floor(floor);
-  const floorPx = whole * (ш + зазор) + (floor - whole) * ш;
+  // ПОЛ И ПОТОЛОК ОПРОСА -- измеренные, не назначенные: за одиннадцать лет
+  // опрос не опускался ниже 32 % и не поднимался выше 70 %.
+  const floor = FLOOR_FOM / 10;
+  const peak = PEAK_FOM / 10;
+  const вМестах = (v: number) => {
+    const ц = Math.floor(v);
+    return ц * (ш + зазор) + (v - ц) * ш;
+  };
+  const floorPx = вМестах(floor);
+  const peakPx = вМестах(peak);
 
   const shown = (Math.round(v * 10) / 10).toFixed(1);
   const ru = lang === "ru";
@@ -97,7 +104,6 @@ export default function People({ idx, lang, preview = null, part, phone = false,
   // БЕЗ ЧИСЛА. Величину пола показывает пунктирная скобка под строем -- она
   // и есть число, нарисованное. Повторять его цифрой значило говорить дважды
   // об одном, а строка от этого росла втрое.
-  const floorLabel = ru ? "минимум за всё время" : "the all-time minimum";
 
   if (part === "подпись") {
     // Подпись НЕ ШИРЕ САМОГО СТРОЯ: со свободными 110 пикселями блок выходил
@@ -136,12 +142,8 @@ export default function People({ idx, lang, preview = null, part, phone = false,
             {label}
           </div>
         )}
-        <div
-          className={"mono leading-snug " + (phone ? "text-[13px]" : "text-[17px]")}
-          style={{ color: "var(--ink-3)" }}
-        >
-          ↳ {floorLabel}
-        </div>
+        {/* Строки про пол опроса здесь больше нет: пределы показаны
+            отсечками под строем, в part="строй". */}
       </div>
     );
   }
@@ -195,12 +197,28 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         })}
       </div>
 
-      {/* пол опроса: столько тревожных даже в самую спокойную неделю */}
-      <div
-        className="pointer-events-none absolute bottom-[-8px] left-0 border-b border-l border-r border-dashed"
-        style={{ width: floorPx, height: 8, borderColor: "var(--line-strong)" }}
-        aria-hidden
-      />
+      {/* ПРЕДЕЛЫ ОПРОСА -- ДВЕ ОТСЕЧКИ ПОД СТРОЕМ вместо подписи словами.
+          Прежде пол показывался и скобкой, и строкой «минимум за всё время»:
+          одно и то же говорилось дважды, а строка занимала место. Теперь
+          обе границы нарисованы: докуда опрос опускался и докуда поднимался
+          за одиннадцать лет. Читателю это говорит, широка ли шкала, на
+          которой стоит сегодняшнее число. */}
+      {[["мин.", floorPx], ["макс.", peakPx]].map(([метка, x]) => (
+        <div
+          key={метка as string}
+          className="pointer-events-none absolute bottom-[-8px]"
+          style={{ left: (x as number) - 0.5, height: 8 }}
+          aria-hidden
+        >
+          <div style={{ width: 1, height: 8, background: "var(--line-strong)" }} />
+          <div
+            className="mono absolute top-[9px] -translate-x-1/2 whitespace-nowrap"
+            style={{ left: 0, fontSize: phone ? 11 : 13, color: "var(--ink-3)" }}
+          >
+            {метка}
+          </div>
+        </div>
+      ))}
     </div>
     {/* ПОЛ ОПРОСА -- ПРЯМО ПОД ФИГУРАМИ и вплотную к ним: он про них, и
         пунктирная скобка под строем показывает ту же величину. Кегль тот же,
@@ -228,15 +246,6 @@ export default function People({ idx, lang, preview = null, part, phone = false,
       </div>
     )}
     </div>
-    {/* ПОЛ ОПРОСА -- СВОЕЙ СТРОКОЙ ПОД РЯДОМ, вплотную. Начинается под
-        фигурами и свободно тянется вправо: в ширину одних фигур строка в
-        кегле раздела не укладывается, а внутри левого столбца она раздувала
-        бы весь блок и выталкивала числа сравнений из ряда. */}
-    {!phone && (
-      <div className="mono mt-2 whitespace-nowrap text-[19px] leading-snug" style={{ color: "var(--ink-3)" }}>
-        ↳ {floorLabel}
-      </div>
-    )}
     </div>
   );
 }

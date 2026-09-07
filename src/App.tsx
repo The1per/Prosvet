@@ -127,7 +127,16 @@ export default function App() {
     // на строке места, а кнопка падала под неё -- будто это разные вещи.
     <div className="relative flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap">
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
-      <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
+      {/* НА ТЕЛЕФОНЕ обе кнопки стоят в коробках ОДНОЙ ширины: так их
+          середины приходятся на одну вертикаль, и они читаются как пара.
+          Прежде каждая была шириной по своему тексту и они расходились. */}
+      {телефон ? (
+        <span className="flex w-[111px] shrink-0 justify-center">
+          <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone />
+        </span>
+      ) : (
+        <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
+      )}
     </div>
   );
   const кнопкаОпроса = (
@@ -363,7 +372,10 @@ export default function App() {
                         первого блока -- и весь ряд ездил вбок. Слово уровня
                         переехало к строю: там оно живёт внутри блока
                         постоянной ширины и ничего не двигает. */}
-                    <span className={"whitespace-nowrap pb-1 " + (телефон ? "text-[15px]" : "text-[17px]")} style={{ color: "var(--ink-2)" }}>
+                    {/* НА ТЕЛЕФОНЕ подпись отодвинута вправо и опущена: она
+                        стояла вплотную к числу и вровень с его верхом, отчего
+                        читалась продолжением цифры, а не именем величины. */}
+                    <span className={"whitespace-nowrap " + (телефон ? "pt-2 pl-1 text-[15px]" : "pb-1 text-[17px]")} style={{ color: "var(--ink-2)" }}>
                       {/* ЗНАЧКА ПРОЦЕНТА БОЛЬШЕ НЕТ. Показание -- не доля
                           чего-либо: это место недели в истории, приведённое к
                           шкале опроса. Процент рядом с ним обещал долю и
@@ -416,12 +428,19 @@ export default function App() {
                       почти постоянная. */}
                   <div
                     className={
-                      "mt-0.5 flex items-end justify-between gap-3 " +
-                      (телефон ? "text-[13.5px]" : "text-[19px]")
+                      "mt-0.5 flex justify-between gap-3 " +
+                      (телефон ? "items-center text-[13.5px]" : "items-end text-[19px]")
                     }
                     style={{ color: "var(--ink-3)" }}
                   >
-                    <span className="whitespace-nowrap tabular-nums">{T.placeInEra[lang](место.место, место.всего, ранняя)}</span>
+                    {/* НА ТЕЛЕФОНЕ БЕЗ ЭПОХИ. «с 2020» занимает четверть
+                        короткой строки, а сказано то же самое словами под
+                        числом. На экране место есть, и там эпоха остаётся. */}
+                    <span className="whitespace-nowrap tabular-nums">
+                      {телефон
+                        ? T.placeShort[lang](место.место, место.всего)
+                        : T.placeInEra[lang](место.место, место.всего, ранняя)}
+                    </span>
                     {телефон && <span className="shrink-0">{парФОМ}</span>}
                   </div>
                   {/* НА ЭКРАНЕ ПАРА ФОМа СТОИТ СВОЕЙ СТРОКОЙ. Кнопку увеличили,

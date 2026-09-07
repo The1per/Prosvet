@@ -80,6 +80,11 @@ export const T = {
     en: (м: number, всего: number, ранняя: boolean) =>
       `${м} of ${всего} ${ранняя ? "before 2020" : "since 2020"}`,
   },
+  /** То же место, но без имени эпохи -- для телефона, где строка коротка. */
+  placeShort: {
+    ru: (м: number, всего: number) => `${м}-я из ${всего}`,
+    en: (м: number, всего: number) => `${м} of ${всего}`,
+  },
   peakAll: { ru: "Пик за 11 лет", en: "11-year peak" },
   fomLabel: { ru: "Опрос той недели", en: "Poll that week" },
   fomNone: { ru: "опроса ФОМа не было", en: "no poll" },

@@ -3,7 +3,7 @@ import Chart from "./components/Chart";
 import People from "./components/People";
 import Poll from "./components/Poll";
 import { Breakdown, Methodology, Reads } from "./components/Panels";
-import { BASELINE, LATEST, SERIES, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе } from "./data/series";
+import { BASELINE, LATEST, SERIES, type Week, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе } from "./data/series";
 import { EVENT_BY_DATE } from "./data/events";
 import { T, fmtWeek, type Lang } from "./i18n";
 import { moodColor, moodGlow, levelIndex, moodT } from "./mood";
@@ -497,7 +497,15 @@ export default function App() {
                       сама, а число оставалось наверху, будто это разные вещи.
                       Своей строкой пара держится вместе и читается как одно
                       целое: показание опроса и переключатель его кривой. */}
-                  {!телефон && <div className="mt-2 flex">{парФОМ}</div>}
+                  {/* СЛОВО НЕДЕЛИ -- справа от пары ФОМа и НА РАССТОЯНИИ:
+                      это не часть опроса, а отдельное наблюдение рядом.
+                      Вплотную оно читалось бы как подпись к кнопке. */}
+                  {!телефон && (
+                    <div className="mt-2 flex items-center gap-9">
+                      {парФОМ}
+                      <СловоНедели w={w} lang={lang} />
+                    </div>
+                  )}
                   </div>
                 </div>
                 </div>
@@ -508,9 +516,19 @@ export default function App() {
                     кнопкой ФОМа строкой выше: две кнопки в столбик читаются
                     как пара. Прежде она стояла в ряду сравнений, через две
                     строки от той, с которой её и надо сравнивать глазом. */}
-                <div className={телефон ? "flex items-center justify-between gap-3" : "flex items-end"}>
+                <div className={телефон ? "flex items-start justify-between gap-3" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
-                  {телефон && <div className="flex w-[111px] shrink-0 justify-center">{кнопкаОпроса}</div>}
+                  {/* ОБЕ КНОПКИ ПОДНЯТЫ И ЧИТАЮТСЯ ПАРОЙ: «Опрос ФОМ» с числом
+                      опроса стоит строкой выше, «Тревожно ли вокруг вас» --
+                      прямо под ней, в коробке той же ширины. Слово недели --
+                      под ними обеими: оно про ту же неделю, но к опросу
+                      отношения не имеет. */}
+                  {телефон && (
+                    <div className="-mt-2 flex w-[111px] shrink-0 flex-col items-center gap-2">
+                      {кнопкаОпроса}
+                      <СловоНедели w={w} lang={lang} phone />
+                    </div>
+                  )}
                 </div>
                 {/* На экране подписи здесь нет вовсе: и главная строка, и пол
                     опроса стоят внутри part="строй" -- одна справа от фигур,
@@ -814,6 +832,10 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
   const [развёрнут, setРазвёрнут] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const поле = useRef<HTMLInputElement>(null);
+  useЗакрытьСнаружи(box, open || развёрнут, () => {
+    setOpen(false);
+    setРазвёрнут(false);
+  });
 
   const hits = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -982,6 +1004,12 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
             color: "var(--ink-2)",
             boxShadow: "var(--shadow)",
             width: phone ? "min(280px, calc(100vw - 32px))" : 340,
+            /* ПЕРЕНОС ЯВНО. Кнопка стоит в ряду показателей, а тому ряду
+               задано whitespace-nowrap, чтобы он не ломался пополам, -- и
+               подсказка наследовала запрет переноса. Текст вставал в одну
+               строку шириной 1142 пикселя внутри коробки в 338 и вылезал
+               наружу. */
+            whiteSpace: "normal",
           }}
         >
           {T.fomWhat[lang]}{" "}
@@ -1110,13 +1138,15 @@ function НастройкиВида({
   lang: Lang;
 }) {
   const ru = lang === "ru";
+  const коробка = useRef<HTMLDivElement>(null);
+  useЗакрытьСнаружи(коробка, открыто, () => setОткрыто(false));
   const ряды: { к: "простой" | "индекс" | "фом"; знак: string; имя: string; вкл: boolean }[] = [
     { к: "индекс", знак: "∿", имя: ru ? "кривая индекса" : "index curve", вкл: значения.индекс },
     { к: "фом", знак: "▦", имя: ru ? "кривая опроса" : "poll curve", вкл: значения.фом },
     { к: "простой", знак: "✳", имя: ru ? "свечение" : "glow", вкл: !значения.простой },
   ];
   return (
-    <div className="relative">
+    <div className="relative" ref={коробка}>
       <button
         type="button"
         aria-label={ru ? "вид графика" : "chart view"}
@@ -1156,6 +1186,177 @@ function НастройкиВида({
 }
 
 /**
+ * СЛОВО НЕДЕЛИ.
+ *
+ * Какое слово в эту неделю говорили в городских пабликах заметно чаще, чем
+ * обычно в этом месяце. Считается отдельно от прибора и НА ПОКАЗАНИЕ НЕ
+ * ВЛИЯЕТ: речь проверялась как ось четыре раза и четыре раза отвергнута.
+ *
+ * ЕСТЬ НЕ КАЖДУЮ НЕДЕЛЮ, и это главное. Слово показывается, только если оно
+ * превысило свою обычную долю впятеро; таких недель тридцать восемь из
+ * трёхсот пятидесяти пяти. В остальные не выделялось ничего -- и написать там
+ * что-нибудь значило бы выдумать.
+ *
+ * Пустая неделя не оставляет и пустого места: блока просто нет.
+ */
+function СловоНедели({ w, lang, phone = false }: { w: Week; lang: Lang; phone?: boolean }) {
+  if (!w.слово) return null;
+  const ru = lang === "ru";
+  return (
+    <div className={phone ? "text-center" : ""}>
+      <div
+        className="mono whitespace-nowrap"
+        style={{ color: "var(--ink-3)", fontSize: phone ? 13 : 15 }}
+      >
+        {ru ? "слово недели" : "word of the week"}
+      </div>
+      <div
+        className="font-semibold whitespace-nowrap"
+        style={{
+          color: moodColor(w.idx, 6),
+          fontSize: phone ? 17 : 24,
+          lineHeight: 1.15,
+          transition: "color 0.12s linear",
+        }}
+        title={ru
+          ? `в ${w.слово.раз.toFixed(1)} раза чаще обычного для этого месяца`
+          : `${w.слово.раз.toFixed(1)}x more often than usual for this month`}
+      >
+        {w.слово.с}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ЗАКРЫВАТЬ ПО ЩЕЛЧКУ СНАРУЖИ.
+ *
+ * Три всплывающих поля у графика -- поиск, настройки вида и диапазон. Каждое
+ * закрывалось только своей же кнопкой, и открытые они висели поверх кривой,
+ * пока о них не вспомнишь. Теперь любой щелчок мимо поля его закрывает.
+ *
+ * Слушаем pointerdown, а не click: до того, как щелчок дойдёт до кнопки
+ * внутри поля, и до того, как страница успеет что-нибудь перерисовать.
+ * Проверка -- по вхождению цели в коробку поля, поэтому щелчок по самому полю
+ * (и по его же кнопке) ничего не закрывает.
+ */
+function useЗакрытьСнаружи(
+  коробка: React.RefObject<HTMLElement | null>,
+  открыто: boolean,
+  закрыть: () => void,
+) {
+  useEffect(() => {
+    if (!открыто) return;
+    const мимо = (e: PointerEvent) => {
+      const el = коробка.current;
+      if (el && !el.contains(e.target as Node)) закрыть();
+    };
+    document.addEventListener("pointerdown", мимо);
+    return () => document.removeEventListener("pointerdown", мимо);
+  }, [открыто, коробка, закрыть]);
+}
+
+/** Высота одной строки барабана. Три строки видны, средняя -- выбранная. */
+const БАРАБАН_ШАГ = 26;
+
+/**
+ * БАРАБАН ГОДОВ. Прокручивается пальцем или колесом, средняя строка -- выбор.
+ *
+ * Ряд кнопок с восемью годами занимал всю ширину меню дважды -- по разу на
+ * каждую границу. Барабан занимает сорок шесть пикселей и показывает соседние
+ * годы над и под выбранным, то есть сам говорит, что его крутят.
+ *
+ * ВЫБОР ПО ОСТАНОВКЕ, а не по каждому кадру прокрутки. Иначе, пролистывая от
+ * 2019 к 2026, читатель перерисовывал бы кривую восемь раз подряд.
+ */
+function Барабан({
+  годы, знач, подпись, менять,
+}: {
+  годы: number[];
+  знач: number;
+  подпись: string;
+  менять: (г: number) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const таймер = useRef<number | null>(null);
+  // Своя же прокрутка не должна возвращаться обратно как выбор: пока катимся
+  // к заданному году, обработчик остановки молчит.
+  const ведём = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const k = Math.max(0, годы.indexOf(знач));
+    const цель = k * БАРАБАН_ШАГ;
+    if (Math.abs(el.scrollTop - цель) < 2) return;
+    ведём.current = true;
+    el.scrollTo({ top: цель, behavior: "smooth" });
+    window.setTimeout(() => (ведём.current = false), 350);
+  }, [знач, годы]);
+
+  return (
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="mono" style={{ color: "var(--ink-3)", fontSize: 11 }}>{подпись}</span>
+      <div className="relative" style={{ height: БАРАБАН_ШАГ * 3, width: 46 }}>
+        {/* Рамка выбранной строки -- НАД содержимым и мимо касаний: она
+            показывает, где середина, и прокрутке мешать не должна. */}
+        <div
+          className="pointer-events-none absolute left-0 right-0 rounded-md border"
+          style={{ top: БАРАБАН_ШАГ, height: БАРАБАН_ШАГ, borderColor: "var(--curve)" }}
+          aria-hidden
+        />
+        <div
+          ref={ref}
+          className="барабан h-full overflow-y-auto"
+          /* ПОЛЯ, А НЕ ПУСТЫЕ СТРОКИ. С пустыми строками первая точка
+             прилипания стояла на высоте строки, а в нуле её не было вовсе --
+             браузер тут же доворачивал барабан на строку вниз, и выбранный год
+             оказывался над рамкой, а не в ней. Поля дают то же место сверху и
+             снизу, но точка прилипания у каждой строки своя, по её середине. */
+          style={{
+            scrollSnapType: "y mandatory",
+            paddingTop: БАРАБАН_ШАГ,
+            paddingBottom: БАРАБАН_ШАГ,
+          }}
+          onScroll={() => {
+            if (ведём.current) return;
+            if (таймер.current) window.clearTimeout(таймер.current);
+            таймер.current = window.setTimeout(() => {
+              const el = ref.current;
+              if (!el) return;
+              const k = Math.round(el.scrollTop / БАРАБАН_ШАГ);
+              const г = годы[Math.max(0, Math.min(годы.length - 1, k))];
+              if (г !== знач) менять(г);
+            }, 110);
+          }}
+        >
+          {годы.map((г) => (
+            <button
+              key={г}
+              type="button"
+              onClick={() => менять(г)}
+              className="mono flex w-full items-center justify-center"
+              style={{
+                height: БАРАБАН_ШАГ,
+                scrollSnapAlign: "center",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 14,
+                color: г === знач ? "var(--ink)" : "var(--ink-3)",
+                opacity: г === знач ? 1 : 0.6,
+              }}
+            >
+              {г}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * ДИАПАЗОН ШКАЛЫ -- поле рядом с настройками вида.
  *
  * Ряд длиной в семь с половиной лет: неделя занимает на нём три пикселя, и
@@ -1183,6 +1384,8 @@ function ДиапазонШкалы({
 }) {
   const ru = lang === "ru";
   const [точно, setТочно] = useState(false);
+  const коробка = useRef<HTMLDivElement>(null);
+  useЗакрытьСнаружи(коробка, открыто, () => setОткрыто(false));
   const первая = SERIES[0].date;
   const последняя = SERIES[SERIES.length - 1].date;
   const годы = useMemo(() => {
@@ -1205,7 +1408,7 @@ function ДиапазонШкалы({
     cursor: "pointer",
   } as const;
   return (
-    <div className="relative">
+    <div className="relative" ref={коробка}>
       <button
         type="button"
         aria-label={ru ? "диапазон лет" : "year range"}
@@ -1267,44 +1470,25 @@ function ДиапазонШкалы({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-1.5">
-              {([["от", от], ["до", до]] as const).map(([что, знач]) => (
-                <div key={что} className="flex items-center gap-1">
-                  <span className="mono" style={{ width: 22, color: "var(--ink-3)", fontSize: 13 }}>
-                    {ru ? (что === "от" ? "с" : "по") : що(что)}
-                  </span>
-                  {годы.map((г) => {
-                    const выбран = Number(знач.slice(0, 4)) === г;
-                    return (
-                      <button
-                        key={г}
-                        type="button"
-                        aria-label={`${что === "от" ? "с" : "по"} ${г}`}
-                        onClick={() => {
-                          /* Границу двигаем к КРАЮ выбранного года: «с 2022»
-                             значит с первого января, «по 2022» -- по тридцать
-                             первое декабря. Иначе год выбирался наполовину. */
-                          const a = что === "от" ? `${г}-01-01` : от;
-                          const b = что === "до" ? `${г}-12-31` : до;
-                          /* Перевёрнутый диапазон не даём завести вовсе:
-                             двигаем вторую границу следом за первой. */
-                          менять(a <= b ? a : b, a <= b ? b : a);
-                        }}
-                        className="mono rounded-md px-1.5 py-1"
-                        style={{
-                          border: "1px solid " + (выбран ? "var(--curve)" : "transparent"),
-                          background: выбран ? "var(--bg-3, transparent)" : "none",
-                          color: выбран ? "var(--ink)" : "var(--ink-3)",
-                          cursor: "pointer",
-                          fontSize: 13,
-                        }}
-                      >
-                        {String(г).slice(2)}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
+            <div className="flex items-center gap-2">
+              <Барабан
+                годы={годы}
+                знач={Number(от.slice(0, 4))}
+                подпись={ru ? "с" : "from"}
+                менять={(г) => {
+                  const a = `${г}-01-01`;
+                  менять(a, a <= до ? до : `${г}-12-31`);
+                }}
+              />
+              <Барабан
+                годы={годы}
+                знач={Number(до.slice(0, 4))}
+                подпись={ru ? "по" : "to"}
+                менять={(г) => {
+                  const b = `${г}-12-31`;
+                  менять(от <= b ? от : `${г}-01-01`, b);
+                }}
+              />
             </div>
           )}
           <button

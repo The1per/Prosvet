@@ -636,3 +636,14 @@ html[data-theme="light"] .pollglow {
     transparent 100%
   );
 }
+
+/* Барабан годов в поле диапазона: полосы прокрутки не видно, а крутится он
+   всё равно -- пальцем, колесом и щелчком по строке. */
+.барабан {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.барабан::-webkit-scrollbar {
+  display: none;
+}

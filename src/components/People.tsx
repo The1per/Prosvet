@@ -95,8 +95,8 @@ export default function People({ idx, lang, preview = null, part, phone = false,
   // фигурами три строки, а сказано в ней одно -- столько тревожных бывает и в
   // самую спокойную неделю.
   const floorLabel = ru
-    ? `${floor.toFixed(1).replace(".", ",")} из 10 — в самую спокойную неделю`
-    : `${floor.toFixed(1)} in 10 — in the calmest week`;
+    ? `${floor.toFixed(1).replace(".", ",")} из 10 — минимум за всё время`
+    : `${floor.toFixed(1)} in 10 — the all-time minimum`;
 
   if (part === "подпись") {
     // Подпись НЕ ШИРЕ САМОГО СТРОЯ: со свободными 110 пикселями блок выходил
@@ -153,7 +153,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     // раздела строка не влезала под фигуры и распирала весь ряд. Растянутый на
     // весь блок, он укладывается в одну строку и ничего не двигает.
     <div className={phone ? "" : ""}>
-    <div className={phone ? "" : "flex items-start gap-3"}>
+    <div className={phone ? "" : "flex items-start gap-5"}>
     <div>
     <div className="relative inline-block" style={{ width: ширина }}>
       <div className="flex items-end" style={{ gap: зазор }} role="img" aria-label={label}>
@@ -205,11 +205,6 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         пунктирная скобка под строем показывает ту же величину. Кегль тот же,
         что у строки справа, -- это две подписи одного веса, а не подпись и
         приписка к ней. */}
-    {!phone && (
-      <div className="mono mt-2 text-[19px] leading-snug" style={{ color: "var(--ink-3)", width: ширина }}>
-        ↳ {floorLabel}
-      </div>
-    )}
     </div>
 
     {/* Главная строка -- вплотную справа от фигур и вровень с ними: она про
@@ -222,7 +217,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
       // Слово уровня СТОИТ В СТРОКУ с подписью, а не отдельной строкой над
       // ней: отдельной строкой вся подпись занимала четыре строки при трёх
       // словах смысла. Коробка шире прежней ровно настолько, чтобы вышло две.
-      <div className="mono text-[19px] leading-snug" style={{ color: "var(--ink-2)", width: 285 }}>
+      <div className="mono text-[19px] leading-snug" style={{ color: "var(--ink-2)", width: 272 }}>
         {level && (
           <b className="font-semibold" style={{ color: "var(--ink)" }}>
             {level[0].toUpperCase() + level.slice(1)}{" "}
@@ -232,6 +227,15 @@ export default function People({ idx, lang, preview = null, part, phone = false,
       </div>
     )}
     </div>
+    {/* ПОЛ ОПРОСА -- СВОЕЙ СТРОКОЙ ПОД РЯДОМ, вплотную. Начинается под
+        фигурами и свободно тянется вправо: в ширину одних фигур строка в
+        кегле раздела не укладывается, а внутри левого столбца она раздувала
+        бы весь блок и выталкивала числа сравнений из ряда. */}
+    {!phone && (
+      <div className="mono mt-2 whitespace-nowrap text-[19px] leading-snug" style={{ color: "var(--ink-3)" }}>
+        ↳ {floorLabel}
+      </div>
+    )}
     </div>
   );
 }

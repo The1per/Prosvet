@@ -3,7 +3,7 @@ import Chart from "./components/Chart";
 import People from "./components/People";
 import Poll from "./components/Poll";
 import { Breakdown, Methodology, Reads } from "./components/Panels";
-import { BASELINE, LATEST, SERIES, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе, пикЭпохи } from "./data/series";
+import { BASELINE, LATEST, SERIES, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе } from "./data/series";
 import { EVENT_BY_DATE } from "./data/events";
 import { T, fmtWeek, type Lang } from "./i18n";
 import { moodColor, moodGlow, levelIndex, moodT } from "./mood";
@@ -152,6 +152,12 @@ export default function App() {
   // отставать от курсора -- иначе кажется, что оно не поспевает за неделей.
   const shown = useCounter(w.idx, 140);
   const delta = Math.round(((w.idx - BASELINE) / BASELINE) * 100);
+  /**
+   * Изменение к ПРЕДЫДУЩЕЙ неделе, в процентах. У самой первой недели ряда
+   * предыдущей нет -- там прочерк, а не ноль: ноль означал бы «не изменилось».
+   */
+  const пред = sel > 0 ? SERIES[sel - 1] : null;
+  const дельтаНед = пред ? Math.round(((w.idx - пред.idx) / пред.idx) * 100) : null;
   const level = T.levels[lang][levelIndex(w.idx)];
   // Свет за индексом ведёт ТОЛЬКО прибор. У опроса свой свет -- внутри его
   // карточки, и его ведёт ползунок: два разных показания не должны светить
@@ -159,7 +165,6 @@ export default function App() {
   // Пик и место считаются ВНУТРИ эпохи недели: до 2020-го прибор короче, и
   // ранжировать через эту границу нельзя. См. ГРАНИЦА_ЭПОХ в data/series.
   const ранняя = w.date < ГРАНИЦА_ЭПОХ;
-  const пик = пикЭпохи(w.date);
   const место = местоВЭпохе(w.date);
   const glow = moodGlow(w.idx);
   const color = moodColor(w.idx, 6);
@@ -357,7 +362,11 @@ export default function App() {
                         переехало к строю: там оно живёт внутри блока
                         постоянной ширины и ничего не двигает. */}
                     <span className={"whitespace-nowrap pb-1 " + (телефон ? "text-[15px]" : "text-[17px]")} style={{ color: "var(--ink-2)" }}>
-                      % ·{" "}
+                      {/* ЗНАЧКА ПРОЦЕНТА БОЛЬШЕ НЕТ. Показание -- не доля
+                          чего-либо: это место недели в истории, приведённое к
+                          шкале опроса. Процент рядом с ним обещал долю и
+                          обещал зря. */}
+                      ·{" "}
                       {/* Подпись -- ссылка вниз, к разбору метода: человек,
                           который спросит «по каким ещё следам?», получает
                           ответ в одно нажатие, а не поиском по странице.
@@ -406,7 +415,7 @@ export default function App() {
                   <div
                     className={
                       "mt-0.5 flex items-end justify-between gap-3 " +
-                      (телефон ? "text-[13.5px]" : "text-[15.5px]")
+                      (телефон ? "text-[13.5px]" : "text-[19px]")
                     }
                     style={{ color: "var(--ink-3)" }}
                   >
@@ -452,17 +461,21 @@ export default function App() {
                 <div className="flex items-start">
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[108px]"}>
                   <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
                 </div>
               </div>
 
               <div className={телефон ? "" : "shrink-0"}>
                 <div className="flex items-start">
-                  <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
+                  <Kpi
+                    v={`${дельтаНед == null ? "—" : (дельтаНед > 0 ? "+" : "") + дельтаНед}%`}
+                    c={дельтаНед == null ? "var(--ink-3)" : moodColor(w.idx, 6)}
+                    phone={телефон}
+                  />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
-                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[108px]"}>
+                  <KpiLabel l={T.vsPrev[lang]} phone={телефон} />
                 </div>
               </div>
 
@@ -931,7 +944,7 @@ const ПОРОГ_СОГЛАСИЯ = 5;
  * рядом с числом опроса, знаком расхождения и кнопкой. Меньше -- строка места
  * налезает на кнопку, больше -- между блоком и строем зияет пустота.
  */
-const ШИРИНА_ЧИСЛА = 380;
+const ШИРИНА_ЧИСЛА = 356;
 
 /**
  * Лента важных дат для телефона.

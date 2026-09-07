@@ -518,6 +518,14 @@ html[data-theme="light"] .pollglow {
   }
 }
 
+/* ЗОВ ЗАГОЛОВКА ОПРОСА. Та же пульсация, что у кнопки на телефоне, и теми же
+   переменными: заголовок и кнопка спрашивают об одном и том же, светиться им
+   положено одинаково. Останавливается, как только человек ответил, -- дальше
+   там ровное свечение цветом его ответа, и ставит его разметка. */
+.chip-zovet {
+  animation: pollpulse 2.6s ease-in-out infinite;
+}
+
 .pollbtn {
   background: var(--card);
   border: 1px solid var(--line-strong);
@@ -590,7 +598,8 @@ html[data-theme="light"] .pollglow {
   }
 }
 
-.pollbtn {
+.chip-zovet,
+  .pollbtn {
     animation: none;
     box-shadow: 0 0 14px var(--pulse-3, rgba(245, 183, 49, 0.36));
     border-color: var(--pulse-4, rgba(245, 183, 49, 0.75));

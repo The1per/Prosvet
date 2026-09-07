@@ -441,7 +441,7 @@ export default function App() {
                 <div className="flex items-start">
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[104px]"}>
                   <KpiLabel l={T.vsBaseline[lang]} phone={телефон} имя="база" {...подписи} />
                 </div>
               </div>
@@ -450,7 +450,7 @@ export default function App() {
                 <div className="flex items-start">
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[104px]"}>
                   <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} имя="пик" {...подписи} />
                 </div>
               </div>
@@ -545,7 +545,7 @@ export default function App() {
                который выше, а график слева забирает слабину и растёт вместе с
                ним. Цена: страница меняет высоту от недели к неделе. */
             <div className="flex flex-col gap-3">
-              <Poll weekDate={LATEST.date} lang={lang} onPreview={setPreview} />
+              <Poll idx={w.idx} weekDate={LATEST.date} lang={lang} onPreview={setPreview} />
               <Breakdown w={w} lang={lang} baseline={BASELINE} />
             </div>
           )}
@@ -603,6 +603,7 @@ export default function App() {
                 {T.pollClose[lang]} ✕
               </button>
               <Poll
+                idx={w.idx}
                 weekDate={LATEST.date}
                 lang={lang}
                 onPreview={setPreview}
@@ -892,7 +893,7 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
       <button
         className={
           "btn " +
-          (phone ? "px-2.5 py-1 text-[11.5px]" : "px-6 py-3 text-[15px] font-semibold") +
+          (phone ? "px-2.5 py-1 text-[12px]" : "px-6 py-3 text-[15px] font-semibold") +
           // Перелив идёт, только пока кривую не включили.
           (on ? "" : " fombtn-idle")
         }
@@ -924,7 +925,7 @@ const ПОРОГ_СОГЛАСИЯ = 5;
  * рядом с числом опроса, знаком расхождения и кнопкой. Меньше -- строка места
  * налезает на кнопку, больше -- между блоком и строем зияет пустота.
  */
-const ШИРИНА_ЧИСЛА = 412;
+const ШИРИНА_ЧИСЛА = 396;
 
 function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx: number; lang: Lang; phone?: boolean }) {
   const d = fom == null ? 0 : fom - idx;
@@ -1002,7 +1003,11 @@ function useОбщийКегль() {
 
 /** Кегль подписи, когда места хватает; ниже него не опускаемся никогда. */
 const ПОДПИСЬ_КЕГЛЬ = { экран: 15, телефон: 12 };
-const ПОДПИСЬ_МИНИМУМ = 9;
+// Ниже двенадцати на странице не опускается НИЧТО: меньше -- уже не подпись, а
+// след от подписи. Если в двенадцати строка не помещается даже в свою коробку,
+// она переносится -- перенос честнее нечитаемого кегля. Так бывает только в
+// английском, где «Peak since 2020, 2022» длиннее русского на треть.
+const ПОДПИСЬ_МИНИМУМ = 12;
 
 /**
  * Подпись под числом сравнения. ВСЕГДА В ОДНУ СТРОКУ.
@@ -1048,6 +1053,8 @@ function KpiLabel({
     const нужно = надо > есть && надо > 0
       ? Math.max(ПОДПИСЬ_МИНИМУМ, Math.floor((база * есть) / надо))
       : база;
+    // Не влезает даже в минимальном кегле -- разрешаем перенос именно ей.
+    el.style.whiteSpace = надо * (нужно / база) > есть ? "normal" : "nowrap";
     // Вернуть кегль ОБЯЗАТЕЛЬНО. Замер сделан правкой стиля напрямую, и React
     // об этой правке не знает: он считает, что уже поставил нужный кегль, и
     // второй раз его не поставит. Без этой строки подпись навсегда оставалась

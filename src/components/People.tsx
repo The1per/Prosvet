@@ -84,9 +84,12 @@ export default function People({ idx, lang, preview = null, part, phone = false,
       : ru
         ? `${shown.replace(".", ",")} из 10 говорят, что вокруг тревожно`
         : `${shown} in 10 say the mood around them is anxious`;
+  // КОРОЧЕ ПРЕЖНЕГО. Было «...даже в самую спокойную неделю за всё время
+  // опроса»: строка занимала три строки под фигурами и читалась дольше, чем
+  // стоит подпись. «За всё время опроса» и так следует из «самой спокойной».
   const floorLabel = ru
-    ? `${floor.toFixed(1).replace(".", ",")} из 10 — даже в самую спокойную неделю за всё время опроса`
-    : `${floor.toFixed(1)} in 10 — even in the calmest week the poll has seen`;
+    ? `${floor.toFixed(1).replace(".", ",")} из 10 — даже в самую спокойную неделю`
+    : `${floor.toFixed(1)} in 10 — even in the calmest week`;
 
   if (part === "подпись") {
     // Подпись НЕ ШИРЕ САМОГО СТРОЯ: со свободными 110 пикселями блок выходил
@@ -112,7 +115,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         {phone && (
           <div
             className="mono whitespace-nowrap"
-            style={{ color: "var(--ink-2)", fontSize: "clamp(9px, 3vw, 12px)" }}
+            style={{ color: "var(--ink-2)", fontSize: "clamp(12px, 3vw, 13px)" }}
           >
             {level && (
               <b

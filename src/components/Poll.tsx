@@ -103,12 +103,15 @@ function load(): Answers {
 }
 
 export default function Poll({
+  idx,
   weekDate,
   lang,
   onPreview,
   phone = false,
   onFinished,
 }: {
+  /** Показание недели -- им пульсирует заголовок, пока не ответили. */
+  idx?: number;
   weekDate: string;
   lang: Lang;
   /** Значение ползунка наверх, пока его ведут: силуэты у числа отзываются. */
@@ -220,7 +223,7 @@ export default function Poll({
     <div
       className={
         "card relative flex flex-col overflow-hidden " +
-        (phone ? "p-4" : "h-[548px] flex-none p-5 pb-6 sm:p-6 sm:pb-6")
+        (phone ? "p-4" : "h-[560px] flex-none p-5 pb-6 sm:p-6 sm:pb-6")
       }
     >
       {/* СВЕТ ОПРОСА идёт от точки бегунка и едет вместе с ним, а после ответа
@@ -239,7 +242,27 @@ export default function Poll({
       />
       {/* Название -- в верхнем углу панели; всё остальное содержимое стоит
           по центру оставшейся высоты. */}
-      <div className="chip relative mb-2 self-start">{T.poll[lang]}</div>
+      {/* ЗАГОЛОВОК ПУЛЬСИРУЕТ, пока не ответили, -- тем же цветом, каким горит
+          кнопка опроса на телефоне, то есть показанием недели. Ответил --
+          пульс останавливается и остаётся ровное свечение ЦВЕТОМ ОТВЕТА: до
+          ответа зовёт страница, после ответа говорит сам человек. */}
+      <div
+        className={"chip relative mb-2 self-start " + (answered ? "" : "chip-zovet")}
+        style={{
+          ["--pulse-1" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.34),
+          ["--pulse-2" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.16),
+          ["--pulse-3" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.4),
+          ["--pulse-4" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.75),
+          ...(answered
+            ? {
+                boxShadow: `0 0 14px ${moodColor(mine!.v, 6, 0.4)}`,
+                borderColor: moodColor(mine!.v, 6, 0.75),
+              }
+            : {}),
+        }}
+      >
+        {T.poll[lang]}
+      </div>
 
       <div className="relative flex flex-1 flex-col justify-center">
         <p className="text-[18.5px] leading-snug" style={{ color: "var(--ink)" }}>

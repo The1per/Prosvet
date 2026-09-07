@@ -65,7 +65,7 @@ const ШИР_ЗНАКА = 0.58;
 const PADX = 22; // поля внутри рамки
 const КЕГЛЬ = 15; // желаемый; уменьшается только если иначе не влезть
 const КЕГЛЬ_МИН = 11;
-const КЕГЛЬ_ТЕЛ_МИН = 10;
+const КЕГЛЬ_ТЕЛ_МИН = 12;  // минимальный кегль на странице -- 12, см. ПОЛ
 
 const LO = 26;
 const HI = 76;
@@ -186,7 +186,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
     let мин = Infinity;
     for (let i = 1; i + 2 < т.length; i++) мин = Math.min(мин, т[i + 1].x - т[i].x);
     if (!isFinite(мин)) мин = шир;
-    const ПОЛ = 9;
+    const ПОЛ = 12;   // минимальный кегль на странице; ниже не опускаемся нигде
     const потолок = phone ? 13 : 16;
     // Средняя подпись -- три знака («’21»), крайняя -- четыре.
     const кегль = Math.max(ПОЛ, Math.min(потолок, (мин - 4) / (3 * ШИР_ЗНАКА)));
@@ -577,7 +577,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
         {TICKS.map((v) => (
           <g key={v}>
             <line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="var(--line)" strokeDasharray="3 7" />
-            <text x={PAD.l - 4} y={y(v) + 3} fontSize={phone ? 11 : 16} textAnchor="end" fill="var(--ink-3)" className="mono">
+            <text x={PAD.l - 4} y={y(v) + 3} fontSize={phone ? 12 : 16} textAnchor="end" fill="var(--ink-3)" className="mono">
               {v}
             </text>
           </g>
@@ -632,7 +632,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
                 и они не спорят с кривой за место наверху. */}
             {(() => {
               const t = T.untuned[lang];
-              const кегль = phone ? 10 : 13;
+              const кегль = phone ? 12 : 13;
               const шир = t.length * кегль * 0.6;
               // Если справа от черты места нет -- подпись уходит влево от неё.
               const справа = W - PAD.r - liveX > шир + 12;

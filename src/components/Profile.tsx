@@ -62,7 +62,7 @@ export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () =
 
   if (sent) {
     return (
-      <p className="mono mt-3 text-[17px]" style={{ color: "var(--ink-3)" }}>
+      <p className="mono mt-3 text-[15px]" style={{ color: "var(--ink-3)" }}>
         {ru ? "Записано. Спасибо. Ответить снова можно завтра." : "Saved. Thank you. You can answer again tomorrow."}
       </p>
     );
@@ -70,7 +70,7 @@ export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () =
 
   return (
     <div className="mt-2 border-t pt-2" style={{ borderColor: "var(--line)" }}>
-      <p className="text-[16.5px] leading-snug" style={{ color: "var(--ink-2)" }}>
+      <p className="text-[14px] leading-snug" style={{ color: "var(--ink-2)" }}>
         {ru ? "Ещё три вопроса — любой можно пропустить." : "Three more questions — any can be skipped."}
       </p>
 
@@ -78,51 +78,69 @@ export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () =
           высоту карточки. Карточка не имеет права расти вниз: ответ удлинял
           страницу на три сотни пикселей. Поэтому здесь всё тесно нарочно. */}
       <div className="mt-2 space-y-1.5">
+        {/* ВОЗРАСТ -- СЕТКОЙ, а не потоком. Шесть кнопок разной длины («до 18»
+            против «60+») стояли вразнобой и переносились по-разному на каждой
+            ширине. В сетке из трёх столбцов они одного размера и стоят ровно;
+            кегль меньше прежнего (14 против 17), чтобы длинные не жались. */}
         <Field label={ru ? "возраст" : "age"}>
-          {AGES.map((a) => (
-            <button
-              key={a.v}
-              type="button"
-              className="btn whitespace-nowrap px-2 py-[3px] text-[17px]"
-              data-on={p.age === a.v}
-              onClick={() => set("age", a.v)}
-            >
-              {ru ? a.ru : a.en}
-            </button>
-          ))}
+          {/* ТРИ СТОЛБЦА ВСЕГДА, а не шесть на широком экране: широкий здесь --
+              экран, а не карточка. Карточка опроса узкая в обеих раскладках
+              (около 350 пикселей), и в шести столбцах подписи налезали друг на
+              друга: «до 18 18-24 25-34» читалось одной строкой. */}
+          <div className="grid w-full grid-cols-3 gap-1.5">
+            {AGES.map((a) => (
+              <button
+                key={a.v}
+                type="button"
+                className="btn w-full whitespace-nowrap px-1 py-[4px] text-[14px]"
+                data-on={p.age === a.v}
+                onClick={() => set("age", a.v)}
+              >
+                {ru ? a.ru : a.en}
+              </button>
+            ))}
+          </div>
         </Field>
 
+        {/* «Не скажу» убрано: это и есть пропуск, а пропустить можно, просто
+            ничего не нажав. Отдельная кнопка для «ничего» только просит
+            нажать на неё зря. */}
         <Field label={ru ? "пол" : "sex"}>
-          {(ru ? ["женский", "мужской", "не скажу"] : ["female", "male", "prefer not to say"]).map((v) => (
-            <button key={v} type="button" className="btn px-2.5 py-[3px] text-[17px]" data-on={p.sex === v} onClick={() => set("sex", v)}>
-              {v}
-            </button>
-          ))}
+          <div className="grid w-full grid-cols-2 gap-1.5">
+            {(ru ? ["женский", "мужской"] : ["female", "male"]).map((v) => (
+              <button key={v} type="button" className="btn w-full px-3 py-[4px] text-[14px]" data-on={p.sex === v} onClick={() => set("sex", v)}>
+                {v}
+              </button>
+            ))}
+          </div>
         </Field>
 
-        <div className="flex items-baseline gap-3">
+        {/* ГОРОД -- ВО ВСЮ ШИРИНУ И СВОЕЙ СТРОКОЙ, кнопка под ним. Прежде поле
+            делило строку с двумя кнопками и сжималось до полоски, в которую не
+            влезало «Ростов-на-Дону»: человек вводил вслепую. Название города --
+            единственный ответ здесь, который печатают руками, и места ему надо
+            больше всех. */}
+        <div>
           <label className="sr-only" htmlFor="city">
             {ru ? "город или область" : "city or region"}
           </label>
-          {/* Город и кнопки в один ряд: столбиком форма не влезала в высоту
-              карточки, а расти вниз ей нельзя. */}
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <input
-              id="city"
-              type="text"
-              value={p.city ?? ""}
-              onChange={(e) => setP((o) => ({ ...o, city: e.target.value }))}
-              placeholder={ru ? "город или область" : "city or region"}
-              className="mono min-w-0 flex-1 rounded-xl border px-2.5 py-1.5 text-[16px] outline-none"
-              style={{ borderColor: "var(--line)", background: "var(--card-2)", color: "var(--ink)" }}
-            />
-            <button type="button" onClick={send} className="btn shrink-0 px-4 py-1.5 text-[16px]" data-on={true}>
+          <input
+            id="city"
+            type="text"
+            value={p.city ?? ""}
+            onChange={(e) => setP((o) => ({ ...o, city: e.target.value }))}
+            placeholder={ru ? "город или область" : "city or region"}
+            className="mono w-full rounded-xl border px-3 py-2 text-[15px] outline-none"
+            style={{ borderColor: "var(--line)", background: "var(--card-2)", color: "var(--ink)" }}
+          />
+          <div className="mt-2 flex items-center gap-3">
+            <button type="button" onClick={send} className="btn flex-1 px-4 py-2 text-[15px]" data-on={true}>
               {ru ? "отправить" : "send"}
             </button>
             <button
               type="button"
               onClick={onDone}
-              className="mono shrink-0 text-[15px] underline-offset-4 hover:underline"
+              className="mono shrink-0 text-[13px] underline-offset-4 hover:underline"
               style={{ color: "var(--ink-3)", background: "none", border: "none", cursor: "pointer" }}
             >
               {ru ? "пропустить" : "skip"}
@@ -141,13 +159,13 @@ export default function ProfileForm({ lang, onDone }: { lang: Lang; onDone: () =
  */
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-baseline gap-3">
+    <div className="flex items-center gap-3">
       {/* Ширина под самое длинное слово («возраст» в верхнем регистре с
           разрядкой), иначе подпись налезала на первую кнопку. */}
-      <div className="mono w-[92px] shrink-0 text-[15px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+      <div className="mono w-[76px] shrink-0 text-[13px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
         {label}
       </div>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }

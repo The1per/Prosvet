@@ -209,18 +209,21 @@ export default function People({ idx, lang, preview = null, part, phone = false,
           в шести пикселях ниже фигур -- на телефоне это отодвигало всё, что
           под строем. Теперь черта занимает последние пять пикселей ПРОМЕЖУТКА
           МЕЖДУ ФИГУРАМИ, где всё равно пусто, и кончается ровно на их низе, а
-          подпись садится в двух пикселях под ними: ближе некуда, не касаясь. */}
+          подпись садится ВРОВЕНЬ С НИЗОМ ФИГУР. Выше поднять уже нельзя: в
+          силуэте под ногами есть три пикселя пустоты, туда черта и уходит, а
+          межстрочный просвет у подписи снят (lineHeight 1) -- он и держал те
+          пять пикселей, из-за которых подпись висела в стороне от строя. */}
       {[["мин.", вПромежуток(floor)], ["макс.", вПромежуток(peak)]].map(([метка, x]) => (
         <div
           key={метка as string}
-          className="pointer-events-none absolute bottom-0"
-          style={{ left: (x as number) - 0.5, height: 5 }}
+          className="pointer-events-none absolute bottom-[2px]"
+          style={{ left: (x as number) - 0.5, height: 4 }}
           aria-hidden
         >
-          <div style={{ width: 1, height: 5, background: "var(--ink)" }} />
+          <div style={{ width: 1, height: 4, background: "var(--ink)" }} />
           <div
-            className="mono absolute top-[7px] -translate-x-1/2 whitespace-nowrap"
-            style={{ left: 0, fontSize: phone ? 15 : 19, color: "var(--ink)" }}
+            className="mono absolute top-[5px] -translate-x-1/2 whitespace-nowrap"
+            style={{ left: 0, fontSize: phone ? 15 : 19, lineHeight: 1, color: "var(--ink)" }}
           >
             {метка}
           </div>

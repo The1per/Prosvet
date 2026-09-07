@@ -324,7 +324,7 @@ export default function App() {
               переходе на другую неделю. */}
           <div
             ref={heroRef}
-            className={"card reveal in flex h-full flex-col " + (телефон ? "p-2" : "overflow-hidden p-3 sm:p-4")}
+            className={"card reveal in flex h-full flex-col overflow-hidden " + (телефон ? "p-2" : "p-3 sm:p-4")}
           >
             {/* ПАРЫ «ЗНАЧЕНИЕ + ПОДПИСЬ», А НЕ СЕТКА. Прежде здесь была сетка с
                 жёсткими колонками (392+324+124+92 и просветы) -- на экране уже
@@ -1013,6 +1013,12 @@ const ШИРИНА_ЧИСЛА = 356;
  *
  * Полосок прокрутки нет нарочно (см. .lenta в index.css): на телефоне их и не
  * показывают, а место они занимают.
+ *
+ * КРАЙ МЯГКИЙ, А НЕ РЕЗАНЫЙ. Лента остаётся внутри панели -- выпускать её за
+ * край экрана пробовали, и вышло хуже: фишка обрывалась о самый край стекла,
+ * будто страница сломана. Теперь панель по-прежнему держит ленту, но последние
+ * пятнадцать пикселей с обеих сторон растворяются (маска в .lenta-край), и
+ * уезжающая фишка не обрезается, а тает.
  */
 function ПолосаСобытий({ lang, sel, onSel }: { lang: Lang; sel: number; onSel: (i: number) => void }) {
   const события = useMemo(
@@ -1021,7 +1027,7 @@ function ПолосаСобытий({ lang, sel, onSel }: { lang: Lang; sel: num
     [],
   );
   return (
-    <div className="lenta -mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-1">
+    <div className="lenta lenta-край -mx-1 mb-2 flex gap-2 overflow-x-auto px-1 pb-1">
       {события.map(({ w, i, ev }) => {
         const on = sel === i;
         const c = moodColor(w.idx, 6);

@@ -616,3 +616,23 @@ html[data-theme="light"] .pollglow {
 .lenta::-webkit-scrollbar {
   display: none;
 }
+
+/* Мягкий край ленты: фишка не обрывается о панель, а тает на подходе к ней.
+   Маска, а не градиент поверх: под лентой лежит стекло карточки со своим
+   фоном, и накладка нужного цвета там не подбирается. */
+.lenta-край {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 15px,
+    #000 calc(100% - 15px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 15px,
+    #000 calc(100% - 15px),
+    transparent 100%
+  );
+}

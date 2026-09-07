@@ -270,35 +270,38 @@ export default function App() {
    * под «Тревожны 5,8 из 10», в её же столбце.
    */
   const сравнения = (
-    <>
-      {/* НА ТЕЛЕФОНЕ В СТОЛБИК, число слева, подпись справа от него. Рядом они
-          занимали две трети ширины экрана и подписи вставали в две строки
-          каждая; в столбик обе читаются одной строкой. */}
-      <div className={телефон ? "mt-1.5 flex items-baseline gap-2" : "shrink-0"}>
+    <div className={телефон ? "mt-2 flex items-start gap-5" : "contents"}>
+      {/* ОБА СРАВНЕНИЯ РЯДОМ, И В КАЖДОМ ЧИСЛО НАД ПОДПИСЬЮ. Числом слева и
+          подписью справа они в строку экрана не встают: «к обычной неделе» при
+          наименьшем кегле страницы просит 136 пикселей, и вдвоём с числами
+          выходит 400 при доступных 358 -- подписи ломались надвое. Столбиком
+          подпись занимает всю ширину своей половины и умещается целиком, а
+          сравнивать по-прежнему можно глазом, а не памятью. */}
+      <div className="shrink-0">
         {/* Прижаты к ВЕРХУ ряда, как число и строй: в коробке на 76 пикселей с
             прижатием к низу они висели заметно ниже всего остального и
             читались как приписка. */}
-        <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
+        <div className="flex items-start">
           <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
         </div>
-        <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
+        <div className={телефон ? "mt-0.5" : "mt-1.5 w-[108px]"}>
           <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
         </div>
       </div>
 
-      <div className={телефон ? "mt-1 flex items-baseline gap-2" : "shrink-0"}>
-        <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
+      <div className="shrink-0">
+        <div className="flex items-start">
           <Kpi
             v={`${дельтаНед == null ? "—" : (дельтаНед > 0 ? "+" : "") + дельтаНед}%`}
             c={дельтаНед == null ? "var(--ink-3)" : moodColor(w.idx, 6)}
             phone={телефон}
           />
         </div>
-        <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
+        <div className={телефон ? "mt-0.5" : "mt-1.5 w-[108px]"}>
           <KpiLabel l={T.vsPrev[lang]} phone={телефон} />
         </div>
       </div>
-    </>
+    </div>
   );
 
   // Свет за индексом ведёт ТОЛЬКО прибор. У опроса свой свет -- внутри его
@@ -596,12 +599,7 @@ export default function App() {
                   {/* СЛОВО НЕДЕЛИ -- справа от пары ФОМа и НА РАССТОЯНИИ:
                       это не часть опроса, а отдельное наблюдение рядом.
                       Вплотную оно читалось бы как подпись к кнопке. */}
-                  {!телефон && (
-                    <div className="mt-2 flex items-center gap-9">
-                      {парФОМ}
-                      <СловаНедели w={w} lang={lang} />
-                    </div>
-                  )}
+                  {!телефон && <div className="mt-2 flex">{парФОМ}</div>}
                   </div>
                 </div>
                 </div>
@@ -670,6 +668,18 @@ export default function App() {
               {!телефон && сравнения}
 
             </div>
+
+            {/* СЛОВА НЕДЕЛИ -- СВОЕЙ СТРОКОЙ ВО ВСЮ ШИРИНУ КАРТОЧКИ. Рядом с
+                парой ФОМа им доставалось около половины, а обе строки в один
+                ряд просят почти всю: «новости повестки · частичной ·
+                мобилизации   люди мобилизации · повестки · возвращайтесь» --
+                это семьсот пикселей, и хвост уходил за край. Своей строкой
+                места хватает, и заголовок над ними встаёт по центру. */}
+            {!телефон && (
+              <div className="mt-3 flex justify-center">
+                <СловаНедели w={w} lang={lang} />
+              </div>
+            )}
 
             {/* НА ТЕЛЕФОНЕ над графиком остаётся только лупа и, когда опрос
                 включён, его легенда. Всё остальное управление разошлось по
@@ -1352,8 +1362,11 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           на своё меню), а на экране он выглядит подсказкой операционной
           системы, а не частью страницы. */}
       <div
-        className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
-        style={{ color: "var(--ink)", fontSize: phone ? 14 : 18 }}
+        className={
+          "mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4 "
+          + (phone ? "" : "text-center")
+        }
+        style={{ color: "var(--ink)", fontSize: phone ? 16 : 20 }}
         onClick={() => setПодсказка((v) => !v)}
         onMouseEnter={phone ? undefined : () => setПодсказка(true)}
         onMouseLeave={phone ? undefined : () => setПодсказка(false)}
@@ -1363,7 +1376,10 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
       </div>
       {подсказка && (
         <div
-          className="absolute left-0 top-[calc(100%+6px)] z-40 rounded-xl border p-3 leading-snug"
+          className={
+            "absolute top-[calc(100%+6px)] z-40 rounded-xl border p-3 leading-snug "
+            + (phone ? "left-0" : "left-1/2 -translate-x-1/2")
+          }
           style={{
             borderColor: "var(--line-strong)",
             background: "var(--bg-2)",
@@ -1380,16 +1396,30 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
       )}
       {/* ДВЕ СТРОКИ, И ПОДПИСЬ У КАЖДОЙ. Без подписи читатель видит шесть слов
           и не знает, что первые три написала редакция, а вторые -- люди; а вся
-          польза второй строки именно в этой разнице. Подписи узкой колонкой
-          постоянной ширины: слова обеих строк начинаются на одной вертикали.
+          польза второй строки именно в этой разнице.
+
+          НА ЭКРАНЕ ОБЕ ИДУТ В ОДИН РЯД, заголовок стоит по центру над ними: там
+          ширины хватает, и рядом разницу видно с одного взгляда, без движения
+          глаз вниз. На телефоне -- друг под другом: в строку они не встают ни
+          при каком кегле, а подписи узкой колонкой постоянной ширины держат
+          слова обеих строк на одной вертикали.
+
           СЛОВА ВСЕГДА БЕЛЫЕ -- цветом на странице сказано ровно одно, насколько
           тревожна неделя, и это уже сказано числом, строем и кривой. */}
-      <div className="mt-0.5 flex flex-col gap-0.5">
+      <div
+        className={
+          "mt-0.5 flex " + (phone ? "flex-col gap-0.5" : "flex-row items-baseline gap-7")
+        }
+      >
         {ряды.map((р) => (
           <div key={р.к} className="flex items-baseline gap-2">
             <span
-              className="mono shrink-0 text-right"
-              style={{ color: "var(--ink-3)", fontSize: phone ? 12.5 : 15, width: phone ? 52 : 66 }}
+              className={"mono shrink-0 " + (phone ? "text-right" : "")}
+              style={{
+                color: "var(--ink-3)",
+                fontSize: phone ? 14 : 17,
+                width: phone ? 56 : undefined,
+              }}
             >
               {р.имя}
             </span>
@@ -1397,7 +1427,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
               className="font-semibold"
               style={{
                 color: "var(--ink)",
-                fontSize: phone ? 14 : 20,
+                fontSize: phone ? 16 : 22,
                 lineHeight: 1.25,
                 /* Сила отрыва -- яркостью, а не вторым числом: 1.5 это десятая
                    часть недель снизу, 3.6 -- девятая десятая сверху. Иначе
@@ -1830,7 +1860,11 @@ function KpiLabel({ l, phone = false }: { l: string; phone?: boolean }) {
     // Цвет БЕЛЫЙ, а не серый: подпись объясняет число рядом, и серым она
     // читалась хуже самого числа, ради которого стоит.
     <div
-      className="w-full leading-snug"
+      /* nowrap ТОЛЬКО НА ТЕЛЕФОНЕ. Там подпись стоит под своим числом и имеет
+         всю ширину половины экрана. На экране она сидит в коробке 108 пикселей
+         внутри общего ряда, и запрет переноса выносил её за коробку -- соседние
+         подписи наезжали друг на друга. */
+      className={"leading-snug " + (phone ? "whitespace-nowrap" : "w-full")}
       style={{ color: "var(--ink)", fontSize: phone ? ПОДПИСЬ_КЕГЛЬ.телефон : ПОДПИСЬ_КЕГЛЬ.экран }}
     >
       {l}

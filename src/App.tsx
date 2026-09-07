@@ -35,6 +35,35 @@ export default function App() {
     простой: true, индекс: true,
   });
   const [менюОткрыто, setМенюОткрыто] = useState(false);
+  const [диапОткрыт, setДиапОткрыт] = useState(false);
+  /**
+   * ДИАПАЗОН ШКАЛЫ. Держится в состоянии, а НЕ в localStorage: сузив ряд один
+   * раз, читатель не должен через неделю открыть страницу и увидеть её уже
+   * обрезанной, не помня почему. Страница всегда открывается всем рядом.
+   */
+  const [диап, setДиап] = useState({
+    от: SERIES[0].date,
+    до: SERIES[SERIES.length - 1].date,
+  });
+  /**
+   * СРЕЗ РЯДА. Кривая рисуется по куску, а sel по-прежнему считается по
+   * ПОЛНОМУ ряду -- на него завязано всё остальное на странице: место недели в
+   * истории, сравнения, разбор, лента событий. Поэтому здесь только сдвиг: в
+   * график уходит sel минус начало среза, обратно приходит с прибавкой.
+   */
+  const срез = useMemo(() => {
+    let a = SERIES.findIndex((x) => x.date >= диап.от);
+    if (a < 0) a = 0;
+    let b = SERIES.length - 1;
+    while (b > a && SERIES[b].date > диап.до) b--;
+    return { данные: SERIES.slice(a, b + 1), сдвиг: a, конец: b };
+  }, [диап]);
+  /* Выбранная неделя обязана быть внутри среза: иначе разбор справа говорит об
+     одной неделе, а точка на кривой стоит на другой. */
+  useEffect(() => {
+    if (sel < срез.сдвиг) setSel(срез.сдвиг);
+    else if (sel > срез.конец) setSel(срез.конец);
+  }, [срез, sel]);
 
   const lang = prefs.lang;
   const w = SERIES[sel];
@@ -548,10 +577,10 @@ export default function App() {
 
             <div className="flex h-[var(--chart-h,360px)] flex-none flex-col">
               <Chart
-                data={SERIES}
+                data={срез.данные}
                 lang={lang}
-                sel={sel}
-                onSel={setSel}
+                sel={Math.max(0, Math.min(срез.данные.length - 1, sel - срез.сдвиг))}
+                onSel={(i) => setSel(i + срез.сдвиг)}
                 showFom={showFom}
                 простой={настройки.простой}
                 индекс={настройки.индекс}
@@ -567,6 +596,14 @@ export default function App() {
                         менять={(к, v) =>
                           к === "фом" ? setShowFom(v) : setНастройки({ ...настройки, [к]: v })
                         }
+                        lang={lang}
+                      />
+                      <ДиапазонШкалы
+                        открыто={диапОткрыт}
+                        setОткрыто={setДиапОткрыт}
+                        от={диап.от}
+                        до={диап.до}
+                        менять={(от, до) => setДиап({ от, до })}
                         lang={lang}
                       />
                     </div>
@@ -1116,6 +1153,180 @@ function НастройкиВида({
       )}
     </div>
   );
+}
+
+/**
+ * ДИАПАЗОН ШКАЛЫ -- поле рядом с настройками вида.
+ *
+ * Ряд длиной в семь с половиной лет: неделя занимает на нём три пикселя, и
+ * разглядеть внутри одного года, что там происходило, нельзя вовсе. Поле
+ * диапазона режет шкалу -- и кривая растягивается на выбранный отрезок.
+ *
+ * ДВА СПОСОБА ЗАДАТЬ ГРАНИЦЫ, и это нарочно. Годами -- один щелчок, и так
+ * задают девять раз из десяти. Календарём -- точная дата, когда нужен
+ * конкретный месяц или неделя вокруг события. Значок календаря переключает
+ * между ними и ничего не сбрасывает.
+ *
+ * ПОКАЗАНИЯ ОТ ДИАПАЗОНА НЕ МЕНЯЮТСЯ. Место недели в истории, сравнение с
+ * обычной неделей и с прошлой -- всё это считается по ПОЛНОМУ ряду и написано
+ * в числах слева. Диапазон -- увеличительное стекло, а не другой прибор.
+ */
+function ДиапазонШкалы({
+  открыто, setОткрыто, от, до, менять, lang,
+}: {
+  открыто: boolean;
+  setОткрыто: (v: boolean) => void;
+  от: string;
+  до: string;
+  менять: (от: string, до: string) => void;
+  lang: Lang;
+}) {
+  const ru = lang === "ru";
+  const [точно, setТочно] = useState(false);
+  const первая = SERIES[0].date;
+  const последняя = SERIES[SERIES.length - 1].date;
+  const годы = useMemo(() => {
+    const a = Number(первая.slice(0, 4));
+    const b = Number(последняя.slice(0, 4));
+    return Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  }, [первая, последняя]);
+  const весь = от <= первая && до >= последняя;
+  // Подпись КОРОТКАЯ: она стоит в углу графика, а не в строке чисел. Годами --
+  // «2019—2026»; точными датами -- день и месяц, год и так виден в паре.
+  const подпись = весь
+    ? `${годы[0]}—${годы[годы.length - 1]}`
+    : точно
+      ? `${от.slice(8, 10)}.${от.slice(5, 7)}.${от.slice(2, 4)}—${до.slice(8, 10)}.${до.slice(5, 7)}.${до.slice(2, 4)}`
+      : `${от.slice(0, 4)}—${до.slice(0, 4)}`;
+  const рамка = {
+    borderColor: "var(--line-strong)",
+    background: "var(--bg-2)",
+    color: "var(--ink-2)",
+    cursor: "pointer",
+  } as const;
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        aria-label={ru ? "диапазон лет" : "year range"}
+        onClick={() => setОткрыто(!открыто)}
+        className="mono flex h-8 items-center rounded-full border px-2.5"
+        style={{ ...рамка, fontSize: 13, color: весь ? "var(--ink-2)" : "var(--ink)" }}
+      >
+        {подпись}
+      </button>
+      {открыто && (
+        <div
+          className="absolute left-0 top-[calc(100%+6px)] z-40 rounded-xl border p-2"
+          style={{ borderColor: "var(--line-strong)", background: "var(--bg-2)", boxShadow: "var(--shadow)" }}
+        >
+          <div className="mb-1.5 flex items-center gap-2">
+            <span className="whitespace-nowrap" style={{ color: "var(--ink-3)", fontSize: 13 }}>
+              {ru ? "показывать" : "show"}
+            </span>
+            <button
+              type="button"
+              aria-label={ru ? "точные границы" : "exact bounds"}
+              title={ru ? "точные границы" : "exact bounds"}
+              onClick={() => setТочно(!точно)}
+              className="ml-auto flex h-6 w-6 items-center justify-center rounded-md border"
+              style={{ ...рамка, fontSize: 12, color: точно ? "var(--ink)" : "var(--ink-3)" }}
+            >
+              {/* Календарь нарисован, а не взят значком из шрифта: 🗓 на части
+                  систем показывается пустой рамкой -- ровно так и вышло на
+                  проверке. */}
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden>
+                <rect x="1" y="2.5" width="12" height="10.5" rx="1.6"
+                      stroke="currentColor" strokeWidth="1.2" />
+                <path d="M1 6h12M4.5 1v3M9.5 1v3" stroke="currentColor"
+                      strokeWidth="1.2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+          {точно ? (
+            <div className="flex flex-col gap-1.5">
+              {([["от", от], ["до", до]] as const).map(([что, знач]) => (
+                <label key={что} className="flex items-center gap-2" style={{ fontSize: 13 }}>
+                  <span style={{ width: 22, color: "var(--ink-3)" }}>
+                    {ru ? (что === "от" ? "с" : "по") : що(что)}
+                  </span>
+                  <input
+                    type="date"
+                    value={знач}
+                    min={первая}
+                    max={последняя}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (!v) return;
+                      менять(что === "от" ? v : от, что === "от" ? до : v);
+                    }}
+                    className="mono rounded-md border px-1.5 py-1"
+                    style={{ borderColor: "var(--line)", background: "var(--bg)", color: "var(--ink)", fontSize: 13 }}
+                  />
+                </label>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {([["от", от], ["до", до]] as const).map(([что, знач]) => (
+                <div key={что} className="flex items-center gap-1">
+                  <span className="mono" style={{ width: 22, color: "var(--ink-3)", fontSize: 13 }}>
+                    {ru ? (что === "от" ? "с" : "по") : що(что)}
+                  </span>
+                  {годы.map((г) => {
+                    const выбран = Number(знач.slice(0, 4)) === г;
+                    return (
+                      <button
+                        key={г}
+                        type="button"
+                        aria-label={`${что === "от" ? "с" : "по"} ${г}`}
+                        onClick={() => {
+                          /* Границу двигаем к КРАЮ выбранного года: «с 2022»
+                             значит с первого января, «по 2022» -- по тридцать
+                             первое декабря. Иначе год выбирался наполовину. */
+                          const a = что === "от" ? `${г}-01-01` : от;
+                          const b = что === "до" ? `${г}-12-31` : до;
+                          /* Перевёрнутый диапазон не даём завести вовсе:
+                             двигаем вторую границу следом за первой. */
+                          менять(a <= b ? a : b, a <= b ? b : a);
+                        }}
+                        className="mono rounded-md px-1.5 py-1"
+                        style={{
+                          border: "1px solid " + (выбран ? "var(--curve)" : "transparent"),
+                          background: выбран ? "var(--bg-3, transparent)" : "none",
+                          color: выбран ? "var(--ink)" : "var(--ink-3)",
+                          cursor: "pointer",
+                          fontSize: 13,
+                        }}
+                      >
+                        {String(г).slice(2)}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => менять(первая, последняя)}
+            className="mt-1.5 w-full rounded-lg px-2 py-1 text-left"
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: весь ? "var(--ink-3)" : "var(--ink)", fontSize: 13,
+            }}
+          >
+            {ru ? "весь ряд" : "whole series"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** «от»/«до» по-английски -- отдельной строкой, чтобы не городить тернарник. */
+function що(что: "от" | "до") {
+  return что === "от" ? "from" : "to";
 }
 
 function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx: number; lang: Lang; phone?: boolean }) {

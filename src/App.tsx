@@ -37,6 +37,18 @@ export default function App() {
   const [менюОткрыто, setМенюОткрыто] = useState(false);
   const [диапОткрыт, setДиапОткрыт] = useState(false);
   /**
+   * ПЕРЕЛИВ КНОПКИ ФОМа ГАСНЕТ НАВСЕГДА ПОСЛЕ ПЕРВОГО НАЖАТИЯ. Он зовёт
+   * нажать; человек нажал -- звать больше не о чем, и повторный зов на
+   * выключенной кривой читался бы как «ты сделал не то».
+   */
+  const [фомТронут, setФомТронут] = useState(false);
+  /**
+   * ЧТО ОТВЕТИЛ ПОСЕТИТЕЛЬ про ЭТУ неделю, если отвечал. Хранит опрос
+   * (pai.answers.v3), здесь только читается -- кнопке нужно знать, звать ли
+   * ещё и каким цветом обвестись.
+   */
+  const [мойОтвет, setМойОтвет] = useState<number | null>(null);
+  /**
    * ДИАПАЗОН ШКАЛЫ. Держится в состоянии, а НЕ в localStorage: сузив ряд один
    * раз, читатель не должен через неделю открыть страницу и увидеть её уже
    * обрезанной, не помня почему. Страница всегда открывается всем рядом.
@@ -72,6 +84,22 @@ export default function App() {
   const телефон = useТелефон();
   // На телефоне опрос живёт в выдвижной панели, а не в потоке страницы.
   const [опросОткрыт, setОпросОткрыт] = useState(false);
+  /* СТОИТ ПОСЛЕ объявления опросОткрыт нарочно: список зависимостей считается
+     при отрисовке, и эффект, поставленный выше, читал ещё не заведённую
+     переменную -- страница падала целиком с «Cannot access before
+     initialization». */
+  useEffect(() => {
+    try {
+      const A = JSON.parse(localStorage.getItem("pai.answers.v3") || "{}");
+      const r = A?.[SERIES[sel]?.date];
+      const v = typeof r === "number" ? r : r?.v;
+      setМойОтвет(typeof v === "number" ? v : null);
+    } catch {
+      setМойОтвет(null);
+    }
+    // Читается и при закрытии панели опроса: там ответ и появляется.
+  }, [sel, опросОткрыт]);
+
 
 
 
@@ -168,22 +196,27 @@ export default function App() {
     // shrink-0 и nowrap: пара не имеет права разъезжаться на две строки. Когда
     // кнопку увеличили, ей перестало хватать восьми пикселей, и число оставалось
     // на строке места, а кнопка падала под неё -- будто это разные вещи.
-    <div className="relative flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap">
+    /* НА ТЕЛЕФОНЕ ПАРА ПОДНЯТА ЦЕЛИКОМ, число и кнопка вместе. Она стоит в
+       одном ряду с «48-я из 329» -- строчкой текста, -- а кнопка вдвое выше
+       строки, и вровень по середине пара садилась заметно ниже. Сдвиг
+       зрительный (relative): в раскладке пара остаётся на месте и ничего не
+       двигает, а items-center держит число и кнопку на одной середине. */
+    <div
+      className={
+        "relative flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap "
+        + (телефон ? "top-[-7px]" : "")
+      }
+    >
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
       {/* НА ТЕЛЕФОНЕ обе кнопки стоят в коробках ОДНОЙ ширины: так их
           середины приходятся на одну вертикаль, и они читаются как пара.
           Прежде каждая была шириной по своему тексту и они расходились. */}
       {телефон ? (
-        /* ПОДНЯТА относительно строки места. Она стоит в одном ряду с «48-я из
-           329» и числом опроса, а те -- строчки текста; кнопка выше их вдвое, и
-           вровень по середине она садилась заметно ниже строки. Сдвиг чисто
-           зрительный (relative), в раскладке она остаётся на своём месте и
-           ничего не двигает. */
-        <span className="relative top-[-7px] flex w-[111px] shrink-0 justify-center">
-          <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone />
+        <span className="flex w-[111px] shrink-0 justify-center">
+          <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone тронут={фомТронут} onТронуть={() => setФомТронут(true)} />
         </span>
       ) : (
-        <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
+        <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} тронут={фомТронут} onТронуть={() => setФомТронут(true)} />
       )}
     </div>
   );
@@ -191,15 +224,26 @@ export default function App() {
     <button
       type="button"
       onClick={() => setОпросОткрыт(true)}
-      className={"pollbtn font-semibold " + (телефон ? "max-w-[100px] px-2 py-1.5 text-[12px] leading-tight" : "whitespace-nowrap px-3 py-1.5 text-[13px]")}
-      /* Пульсирует цветом показания той недели, что сейчас на экране: спокойная
-         неделя -- спокойное свечение, тревожная -- тревожное. */
-      style={{
-        ["--pulse-1" as string]: moodColor(w.idx, 6, 0.34),
-        ["--pulse-2" as string]: moodColor(w.idx, 6, 0.16),
-        ["--pulse-3" as string]: moodColor(w.idx, 6, 0.4),
-        ["--pulse-4" as string]: moodColor(w.idx, 6, 0.75),
-      }}
+      className={
+        "pollbtn font-semibold "
+        // Ответил -- пульсация выключена насовсем: зов сделал своё дело.
+        + (мойОтвет == null ? "" : "pollbtn-tih ")
+        + (телефон ? "max-w-[100px] px-2 py-1.5 text-[12px] leading-tight" : "whitespace-nowrap px-3 py-1.5 text-[13px]")
+      }
+      /* ДО ОТВЕТА пульсирует цветом показания той недели, что на экране:
+         спокойная неделя -- спокойное свечение, тревожная -- тревожное.
+         ПОСЛЕ ОТВЕТА пульсация выключена, а обводка берёт цвет САМОГО ОТВЕТА:
+         кнопка перестаёт звать и начинает показывать, что человек сказал. */
+      style={
+        мойОтвет == null
+          ? {
+              ["--pulse-1" as string]: moodColor(w.idx, 6, 0.34),
+              ["--pulse-2" as string]: moodColor(w.idx, 6, 0.16),
+              ["--pulse-3" as string]: moodColor(w.idx, 6, 0.4),
+              ["--pulse-4" as string]: moodColor(w.idx, 6, 0.75),
+            }
+          : { borderColor: moodColor(мойОтвет, 6), boxShadow: "none" }
+      }
     >
       {T.pollOpen[lang]}
     </button>
@@ -529,9 +573,8 @@ export default function App() {
                       под ними обеими: оно про ту же неделю, но к опросу
                       отношения не имеет. */}
                   {телефон && (
-                    <div className="-mt-2 flex w-[118px] shrink-0 flex-col items-center gap-2">
+                    <div className="-mt-2 flex w-[118px] shrink-0 justify-center">
                       {кнопкаОпроса}
-                      <СловаНедели w={w} lang={lang} phone />
                     </div>
                   )}
                 </div>
@@ -540,8 +583,17 @@ export default function App() {
                     другой прямо под ними. Иначе между фигурами и полом
                     оставался провал в высоту главной строки. */}
                 {телефон && (
-                  <div className="mt-2">
+                  /* СЛОВА НЕДЕЛИ СТОЯТ РЯДОМ С ПОДПИСЬЮ СТРОЯ, в одном ряду.
+                     Не над ней и не под ней: под кнопкой они наезжали на
+                     сравнения строкой ниже, а в столбце с кнопкой делали
+                     правый край выше строя -- и подпись уезжала вниз на три
+                     строки. Здесь ряд ровно такой высоты, как выше из двух, и
+                     эта высота от недели не зависит: слов всегда три. */
+                  <div className="mt-2 flex items-start justify-between gap-3">
                     <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone level={level} />
+                    <div className="w-[118px] shrink-0">
+                      <СловаНедели w={w} lang={lang} phone />
+                    </div>
                   </div>
                 )}
               </div>
@@ -610,6 +662,20 @@ export default function App() {
                 phone={телефон}
                 уголок={
                   <div className="flex flex-col items-start gap-2">
+                    {/* НА ТЕЛЕФОНЕ ДИАПАЗОН СТОИТ ОТДЕЛЬНОЙ СТРОКОЙ НАД лупой и
+                        настройками: втроём в одну строку они занимали половину
+                        ширины поля кривой, а его меню, открываясь из третьей
+                        кнопки, упиралось в правый край. */}
+                    {телефон && (
+                      <ДиапазонШкалы
+                        открыто={диапОткрыт}
+                        setОткрыто={setДиапОткрыт}
+                        от={диап.от}
+                        до={диап.до}
+                        менять={(от, до) => setДиап({ от, до })}
+                        lang={lang}
+                      />
+                    )}
                     <div className="flex items-center gap-2">
                       <EventSearch lang={lang} onPick={jumpTo} phone />
                       <НастройкиВида
@@ -621,14 +687,16 @@ export default function App() {
                         }
                         lang={lang}
                       />
-                      <ДиапазонШкалы
-                        открыто={диапОткрыт}
-                        setОткрыто={setДиапОткрыт}
-                        от={диап.от}
-                        до={диап.до}
-                        менять={(от, до) => setДиап({ от, до })}
-                        lang={lang}
-                      />
+                      {!телефон && (
+                        <ДиапазонШкалы
+                          открыто={диапОткрыт}
+                          setОткрыто={setДиапОткрыт}
+                          от={диап.от}
+                          до={диап.до}
+                          менять={(от, до) => setДиап({ от, до })}
+                          lang={lang}
+                        />
+                      )}
                     </div>
                     {/* Легенда стоит ПОД ЛУПОЙ, В УГЛУ САМОГО ПОЛЯ -- и на
                         телефоне тоже. Прежде на телефоне она висела отдельным
@@ -968,7 +1036,7 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
  * вся проверка прибора. Ссылка ведёт на источник, чтобы читатель мог посмотреть
  * тот же ряд своими глазами, а не верить нам на слово.
  */
-function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: boolean; onToggle: () => void; phone?: boolean }) {
+function FomButton({ lang, on, onToggle, phone = false, тронут = false, onТронуть }: { lang: Lang; on: boolean; onToggle: () => void; phone?: boolean; тронут?: boolean; onТронуть?: () => void }) {
   const [tip, setTip] = useState(false);
   /**
    * ПОЯСНЕНИЕ ПОКАЗЫВАЕТСЯ ПО НАВЕДЕНИЮ И ГАСНЕТ ПО НАЖАТИЮ.
@@ -1033,8 +1101,10 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
         className={
           "btn " +
           (phone ? "px-2.5 py-1" : "px-7 py-3.5 font-semibold") +
-          // Перелив идёт, только пока кривую не включили.
-          (on ? "" : " fombtn-idle")
+          // Перелив идёт, только пока кнопку НИ РАЗУ не нажимали. Прежде он
+          // возвращался, стоило выключить кривую обратно, -- и звал нажать
+          // туда, куда только что нажали.
+          (тронут ? "" : " fombtn-idle")
         }
         /* Кегль стилем, а не классом: у .btn в index.css свой font-size, и
            класс Tailwind с той же силой ему проигрывал -- кнопка оставалась
@@ -1043,6 +1113,7 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
         data-on={on}
         onClick={() => {
           setTip(false);
+          onТронуть?.();
           onToggle();
         }}
       >
@@ -1292,7 +1363,7 @@ function useЗакрытьСнаружи(
 }
 
 /** Высота одной строки барабана. Три строки видны, средняя -- выбранная. */
-const БАРАБАН_ШАГ = 26;
+const БАРАБАН_ШАГ = 34;
 
 /**
  * БАРАБАН ГОДОВ. Прокручивается пальцем или колесом, средняя строка -- выбор.
@@ -1332,7 +1403,7 @@ function Барабан({
   return (
     <div className="flex flex-col items-center gap-0.5">
       <span className="mono" style={{ color: "var(--ink-3)", fontSize: 11 }}>{подпись}</span>
-      <div className="relative" style={{ height: БАРАБАН_ШАГ * 3, width: 46 }}>
+      <div className="relative" style={{ height: БАРАБАН_ШАГ * 3, width: 62 }}>
         {/* Рамка выбранной строки -- НАД содержимым и мимо касаний: она
             показывает, где середина, и прокрутке мешать не должна. */}
         <div
@@ -1352,6 +1423,13 @@ function Барабан({
             scrollSnapType: "y mandatory",
             paddingTop: БАРАБАН_ШАГ,
             paddingBottom: БАРАБАН_ШАГ,
+            /* КАСАНИЕ НЕ ПРОВАЛИВАЕТСЯ НА СТРАНИЦУ. Докрутив барабан до края,
+               палец продолжал тот же жест -- и браузер отдавал его странице,
+               которая уезжала под рукой. contain обрывает это на барабане.
+               pan-y отдаёт барабану вертикаль и оставляет странице всё
+               остальное. */
+            overscrollBehavior: "contain",
+            touchAction: "pan-y",
           }}
           onScroll={() => {
             if (ведём.current) return;
@@ -1377,7 +1455,7 @@ function Барабан({
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                fontSize: 14,
+                fontSize: 17,
                 color: г === знач ? "var(--ink)" : "var(--ink-3)",
                 opacity: г === знач ? 1 : 0.6,
               }}
@@ -1448,18 +1526,26 @@ function ДиапазонШкалы({
         type="button"
         aria-label={ru ? "диапазон лет" : "year range"}
         onClick={() => setОткрыто(!открыто)}
-        className="mono flex h-8 items-center rounded-full border px-2.5"
-        style={{ ...рамка, fontSize: 13, color: весь ? "var(--ink-2)" : "var(--ink)" }}
+        className="mono flex h-8 items-center rounded-full border px-3"
+        style={{ ...рамка, fontSize: 14, color: весь ? "var(--ink-2)" : "var(--ink)" }}
       >
         {подпись}
       </button>
       {открыто && (
         <div
-          className="absolute left-0 top-[calc(100%+6px)] z-40 rounded-xl border p-2"
-          style={{ borderColor: "var(--line-strong)", background: "var(--bg-2)", boxShadow: "var(--shadow)" }}
+          className="absolute left-0 top-[calc(100%+6px)] z-40 rounded-2xl border p-3"
+          /* Меню перехватывает касания целиком: иначе жест, начатый на его
+             поле, доставался странице, и она листалась под открытым меню. */
+          style={{
+            borderColor: "var(--line-strong)",
+            background: "var(--bg-2)",
+            boxShadow: "var(--shadow)",
+            overscrollBehavior: "contain",
+          }}
+          onTouchMove={(e) => e.stopPropagation()}
         >
-          <div className="mb-1.5 flex items-center gap-2">
-            <span className="whitespace-nowrap" style={{ color: "var(--ink-3)", fontSize: 13 }}>
+          <div className="mb-2 flex items-center gap-3">
+            <span className="whitespace-nowrap" style={{ color: "var(--ink-3)", fontSize: 15 }}>
               {ru ? "показывать" : "show"}
             </span>
             <button
@@ -1467,13 +1553,13 @@ function ДиапазонШкалы({
               aria-label={ru ? "точные границы" : "exact bounds"}
               title={ru ? "точные границы" : "exact bounds"}
               onClick={() => setТочно(!точно)}
-              className="ml-auto flex h-6 w-6 items-center justify-center rounded-md border"
+              className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg border"
               style={{ ...рамка, fontSize: 12, color: точно ? "var(--ink)" : "var(--ink-3)" }}
             >
               {/* Календарь нарисован, а не взят значком из шрифта: 🗓 на части
                   систем показывается пустой рамкой -- ровно так и вышло на
                   проверке. */}
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden>
+              <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
                 <rect x="1" y="2.5" width="12" height="10.5" rx="1.6"
                       stroke="currentColor" strokeWidth="1.2" />
                 <path d="M1 6h12M4.5 1v3M9.5 1v3" stroke="currentColor"
@@ -1484,7 +1570,7 @@ function ДиапазонШкалы({
           {точно ? (
             <div className="flex flex-col gap-1.5">
               {([["от", от], ["до", до]] as const).map(([что, знач]) => (
-                <label key={что} className="flex items-center gap-2" style={{ fontSize: 13 }}>
+                <label key={что} className="flex items-center gap-2" style={{ fontSize: 15 }}>
                   <span style={{ width: 22, color: "var(--ink-3)" }}>
                     {ru ? (что === "от" ? "с" : "по") : що(что)}
                   </span>
@@ -1499,7 +1585,7 @@ function ДиапазонШкалы({
                       менять(что === "от" ? v : от, что === "от" ? до : v);
                     }}
                     className="mono rounded-md border px-1.5 py-1"
-                    style={{ borderColor: "var(--line)", background: "var(--bg)", color: "var(--ink)", fontSize: 13 }}
+                    style={{ borderColor: "var(--line)", background: "var(--bg)", color: "var(--ink)", fontSize: 15 }}
                   />
                 </label>
               ))}
@@ -1529,10 +1615,10 @@ function ДиапазонШкалы({
           <button
             type="button"
             onClick={() => менять(первая, последняя)}
-            className="mt-1.5 w-full rounded-lg px-2 py-1 text-left"
+            className="mt-2 w-full rounded-lg px-2 py-1.5 text-left"
             style={{
               background: "none", border: "none", cursor: "pointer",
-              color: весь ? "var(--ink-3)" : "var(--ink)", fontSize: 13,
+              color: весь ? "var(--ink-3)" : "var(--ink)", fontSize: 15,
             }}
           >
             {ru ? "весь ряд" : "whole series"}

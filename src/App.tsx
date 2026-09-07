@@ -475,7 +475,12 @@ export default function App() {
                  хватает: там перенос остаётся, для того он и оставлен. */
               className={
                 "flex flex-wrap items-start lg:flex-nowrap " +
-                (телефон ? "mb-2 gap-x-3 gap-y-2" : "mb-3 gap-x-5 gap-y-3")
+                /* НИЖНЕГО ОТСТУПА У ВЕРХНЕГО РЯДА НЕТ: сразу под ним стоят
+                   слова недели, и отступ ряда вместе с их собственным давал
+                   над ними пустую полосу. Ряд и без того ступенчатый -- строй
+                   и сравнения кончаются выше числа, -- и лишний воздух эту
+                   ступень только растягивал. */
+                (телефон ? "mb-2 gap-x-3 gap-y-2" : "gap-x-5 gap-y-3")
               }
             >
               {/* Блок числа занимает всю ширину, но НЕ ЯВЛЯЕТСЯ рядом: пока
@@ -686,7 +691,7 @@ export default function App() {
                 прежнем кегле. Своей строкой во всю карточку -- 1174, и
                 кегль можно поднять до уровня соседних чисел. */}
             {!телефон && (
-              <div className="mt-2.5 flex justify-center">
+              <div className="flex justify-center">
                 <СловаНедели w={w} lang={lang} />
               </div>
             )}
@@ -1378,7 +1383,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           "mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4 "
           + (phone ? "" : "text-center")
         }
-        style={{ color: "var(--ink)", fontSize: phone ? 18 : 22 }}
+        style={{ color: "var(--ink)", fontSize: phone ? 18 : 26 }}
         onClick={() => setПодсказка((v) => !v)}
         onMouseEnter={phone ? undefined : () => setПодсказка(true)}
         onMouseLeave={phone ? undefined : () => setПодсказка(false)}
@@ -1428,9 +1433,12 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
             <span
               className={"mono shrink-0 " + (phone ? "text-right" : "")}
               style={{
+                /* КЕГЛЬ ТОТ ЖЕ, ЧТО У СЛОВ. Подпись «новости» -- не приписка
+                   к словам, а вторая половина утверждения: без неё шесть слов
+                   читаются одной кучей. Мельче слов она читалась служебной. */
                 color: "var(--ink-3)",
-                fontSize: phone ? 16 : 19,
-                width: phone ? 64 : undefined,
+                fontSize: phone ? 18 : 26,
+                width: phone ? 72 : undefined,
               }}
             >
               {р.имя}

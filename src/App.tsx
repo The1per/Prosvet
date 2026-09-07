@@ -755,7 +755,7 @@ export default function App() {
                     на такой неделе подпрыгивал бы весь график под блоком; с ней
                     не двигается ничего. Цена -- тридцать пикселей на остальных
                     96 % недель, и она меньше, чем цена дёргающейся страницы. */}
-                <div className="min-w-0 flex-1" style={{ minHeight: 104 }}>
+                <div className="min-w-0 flex-1" style={{ minHeight: 68 }}>
                   <СловаНедели w={w} lang={lang} />
                 </div>
               </div>
@@ -1507,11 +1507,11 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           тревожна неделя, и это уже сказано числом, строем и кривой. */}
       <div
         className={
-          "flex " + (phone ? "mt-0.5 flex-col gap-0.5" : "flex-row flex-wrap items-baseline gap-x-4 gap-y-0")
+          "flex " + (phone ? "mt-0.5 flex-col gap-0.5" : "flex-row flex-wrap items-baseline gap-x-3 gap-y-0")
         }
       >
         {ряды.map((р) => (
-          <div key={р.к} className={"flex items-baseline " + (phone ? "gap-2" : "gap-1.5")}>
+          <div key={р.к} className={"flex items-baseline " + (phone ? "gap-2" : "gap-1")}>
             <span
               className="mono shrink-0 text-right"
               style={{
@@ -1525,7 +1525,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                    за край на семьдесят три пикселя. 14 -- наибольший кегль, при
                    котором влезает и она. */
                 color: "var(--ink-3)",
-                fontSize: phone ? 14 : 22,
+                fontSize: phone ? 14 : 20,
                 width: phone ? 62 : undefined,
               }}
             >
@@ -1535,7 +1535,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
               className="font-semibold"
               style={{
                 color: р.д ? "var(--ink)" : "var(--ink-3)",
-                fontSize: phone ? 14 : 22,
+                fontSize: phone ? 14 : 20,
                 lineHeight: 1.25,
                 /* Сила отрыва -- яркостью, а не вторым числом: 1.5 это десятая
                    часть недель снизу, 3.6 -- девятая десятая сверху. Иначе
@@ -1550,7 +1550,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                 ? р.д.с.map((с, i) => (
                     <span key={с} className="whitespace-nowrap">
                       {i > 0 && (
-                        <span className="mx-1.5 font-normal" style={{ color: "var(--ink-3)" }}>·</span>
+                        <span className="mx-1 font-normal" style={{ color: "var(--ink-3)" }}>·</span>
                       )}
                       {с}
                     </span>

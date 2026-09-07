@@ -89,12 +89,11 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         ? `по-вашему — ${shown.replace(".", ",")} из 10`
         : `by your reading — ${shown} in 10`
       : ru
-        // Короче прежнего: «говорят, что вокруг тревожно» в кегле раздела
-        // занимало три строки, а «говорят: вокруг тревожно» -- две. Слово
-        // «говорят» осталось нарочно: весь проект стоит на разнице между тем,
-        // что есть, и тем, что люди говорят.
-        ? `${shown.replace(".", ",")} из 10 говорят: вокруг тревожно`
-        : `${shown} in 10 say: it is anxious around them`;
+        // «Тревожны 5,4 из 10» -- короче всего прежнего и читается сразу.
+        // Слово уровня стоит отдельной строкой над этим, и вместе выходит
+        // «Напряжение / Тревожны 5,4 из 10».
+        ? `Тревожны ${shown.replace(".", ",")} из 10`
+        : `${shown} in 10 are anxious`;
   // КОРОЧЕ ПРЕЖНЕГО. Было «...даже в самую спокойную неделю за всё время
   // опроса»: строка занимала три строки под фигурами и читалась дольше, чем
   // стоит подпись. «За всё время опроса» и так следует из «самой спокойной».
@@ -131,14 +130,10 @@ export default function People({ idx, lang, preview = null, part, phone = false,
             className="mono whitespace-nowrap"
             style={{ color: "var(--ink-2)", fontSize: "clamp(15px, 3.6vw, 17px)" }}
           >
-            {level && (
-              <b
-                className="font-semibold"
-                style={{ color: "var(--ink)", display: "inline-block", width: "6.1em" }}
-              >
-                {level[0].toUpperCase() + level.slice(1)}
-              </b>
-            )}
+            {/* СЛОВА УРОВНЯ НА ТЕЛЕФОНЕ НЕТ. Подпись теперь начинается словом
+                «Тревожны», и «Напряжение Тревожны 5,4 из 10» читалось как
+                сбой. Уровень и без того сказан цветом фигур. На экране места
+                хватает, и там он стоит отдельной строкой над подписью. */}
             {label}
           </div>
         )}
@@ -209,13 +204,13 @@ export default function People({ idx, lang, preview = null, part, phone = false,
       {[["мин.", floorPx], ["макс.", peakPx]].map(([метка, x]) => (
         <div
           key={метка as string}
-          className="pointer-events-none absolute bottom-[-5px]"
-          style={{ left: (x as number) - 0.5, height: 5 }}
+          className="pointer-events-none absolute bottom-[-3px]"
+          style={{ left: (x as number) - 0.5, height: 3 }}
           aria-hidden
         >
-          <div style={{ width: 1, height: 5, background: "var(--ink)" }} />
+          <div style={{ width: 1, height: 3, background: "var(--ink)" }} />
           <div
-            className="mono absolute top-[5px] -translate-x-1/2 whitespace-nowrap"
+            className="mono absolute top-[3px] -translate-x-1/2 whitespace-nowrap"
             style={{ left: 0, fontSize: phone ? 15 : 19, color: "var(--ink)" }}
           >
             {метка}
@@ -239,10 +234,10 @@ export default function People({ idx, lang, preview = null, part, phone = false,
       // Слово уровня СТОИТ В СТРОКУ с подписью, а не отдельной строкой над
       // ней: отдельной строкой вся подпись занимала четыре строки при трёх
       // словах смысла. Коробка шире прежней ровно настолько, чтобы вышло две.
-      <div className="mono text-[19px] leading-snug" style={{ color: "var(--ink-2)", width: 272 }}>
+      <div className="mono text-[19px] leading-snug" style={{ color: "var(--ink-2)", width: 210 }}>
         {level && (
-          <b className="font-semibold" style={{ color: "var(--ink)" }}>
-            {level[0].toUpperCase() + level.slice(1)}{" "}
+          <b className="block font-semibold" style={{ color: "var(--ink)" }}>
+            {level[0].toUpperCase() + level.slice(1)}
           </b>
         )}
         {label}

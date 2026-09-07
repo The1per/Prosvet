@@ -1408,10 +1408,11 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           на своё меню), а на экране он выглядит подсказкой операционной
           системы, а не частью страницы. */}
       <div
-        className={
-          "mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4 "
-          + (phone ? "" : "text-center")
-        }
+        /* ЗАГОЛОВОК СТОИТ НАД СЛОВАМИ, СЛЕВА, а не по центру карточки. По
+           центру он оказывался над пустотой: слова начинаются у левого края и
+           кончаются раньше правого, а заголовок висел посреди того, что
+           осталось, и связь между ним и словами читалась не сразу. */
+        className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
         style={{ color: "var(--ink)", fontSize: phone ? 18 : 26 }}
         onClick={() => setПодсказка((v) => !v)}
         onMouseEnter={phone ? undefined : () => setПодсказка(true)}
@@ -1422,10 +1423,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
       </div>
       {подсказка && (
         <div
-          className={
-            "absolute top-[calc(100%+6px)] z-40 rounded-xl border p-3 leading-snug "
-            + (phone ? "left-0" : "left-1/2 -translate-x-1/2")
-          }
+          className="absolute left-0 top-[calc(100%+6px)] z-40 rounded-xl border p-3 leading-snug"
           style={{
             borderColor: "var(--line-strong)",
             background: "var(--bg-2)",

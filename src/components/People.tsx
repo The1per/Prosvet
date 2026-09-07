@@ -118,7 +118,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         {phone && (
           <div
             className="mono whitespace-nowrap"
-            style={{ color: "var(--ink-2)", fontSize: "clamp(12px, 3vw, 13px)" }}
+            style={{ color: "var(--ink-2)", fontSize: "clamp(13px, 3vw, 14px)" }}
           >
             {level && (
               <b
@@ -144,8 +144,12 @@ export default function People({ idx, lang, preview = null, part, phone = false,
   // items-start: главная строка начинается на одной высоте с фигурами. По
   // центру она садилась ниже них и переставала читаться как подпись к строю.
   return (
+    // ПОЛ ОПРОСА -- ВО ВСЮ ШИРИНУ БЛОКА, под фигурами И подписью. Он стоял под
+    // одними фигурами, и его собственная ширина тянула левый столбец: в кегле
+    // раздела строка не влезала под фигуры и распирала весь ряд. Растянутый на
+    // весь блок, он укладывается в одну строку и ничего не двигает.
+    <div className={phone ? "" : ""}>
     <div className={phone ? "" : "flex items-start gap-3"}>
-    <div>
     <div className="relative inline-block" style={{ width: ширина }}>
       <div className="flex items-end" style={{ gap: зазор }} role="img" aria-label={label}>
         {Array.from({ length: 10 }, (_, i) => {
@@ -195,14 +199,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     {/* ПОЛ ОПРОСА -- ПРЯМО ПОД ФИГУРАМИ. Он про них: столько тревожных даже в
         самую спокойную неделю, и пунктирная скобка под строем показывает ту же
         величину. Стоя ниже главной строки, он отрывался от того, что объясняет. */}
-    {/* Пол опроса -- ниже главной строки по кеглю (13.5 против 14.5). Он к
-        ней приписка, и крупнее её быть не может. */}
-    {!phone && (
-      <div className="mono mt-3 whitespace-nowrap text-[13.5px] leading-snug" style={{ color: "var(--ink-3)" }}>
-        ↳ {floorLabel}
-      </div>
-    )}
-    </div>
+
     {/* Главная строка -- вплотную справа от фигур и вровень с ними: она про
         них и есть. Ширина задана, иначе блок растянулся бы на всю свободную
         ширину ряда и вытолкнул из строки числа сравнения. */}
@@ -210,13 +207,19 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         недели, и в прежнем росте читалась вровень с ними -- как второе
         показание, а не как подпись к первому. */}
     {!phone && (
-      <div className="mono text-[14.5px] leading-snug" style={{ color: "var(--ink-2)", width: 204 }}>
+      <div className="mono text-[19px] leading-snug" style={{ color: "var(--ink-2)", width: 204 }}>
         {level && (
           <b className="block font-semibold" style={{ color: "var(--ink)" }}>
             {level[0].toUpperCase() + level.slice(1)}
           </b>
         )}
         {label}
+      </div>
+    )}
+    </div>
+    {!phone && (
+      <div className="mono mt-3 whitespace-nowrap text-[19px] leading-snug" style={{ color: "var(--ink-3)" }}>
+        ↳ {floorLabel}
       </div>
     )}
     </div>

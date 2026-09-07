@@ -200,7 +200,12 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
       phone
         ? {
             ...PAD_ТЕЛ,
-            t: LABEL_Y + (рядов - 1) * ШАГ_РЯДА + 13 + 14,
+            // ПОДПИСЕЙ СОБЫТИЙ НА ТЕЛЕФОНЕ БОЛЬШЕ НЕТ -- они переехали в
+            // отдельную полосу над графиком (см. App). Четыре ряда рамок
+            // держали сто пятьдесят семь пикселей верхнего поля: почти
+            // половину высоты, отданной кривой. Осталась только шапка под
+            // выбранную точку.
+            t: 26,
             b: PAD_ТЕЛ.b,
           }
         : PAD_БАЗА,
@@ -689,6 +694,10 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
                 onSel(m.i);
               }}
             >
+              {/* Рамка с названием -- только на экране. На телефоне названия
+                  стоят полосой над графиком, а здесь остаётся точка на кривой:
+                  она и показывает, где событие лежит. */}
+              {!phone && <>
               <rect
                 x={m.lx - m.wid / 2}
                 y={m.ly - 13}
@@ -709,6 +718,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
               >
                 {m.text}
               </text>
+              </>}
               <circle
                 cx={m.x}
                 cy={m.y}

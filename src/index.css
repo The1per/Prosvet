@@ -605,3 +605,14 @@ html[data-theme="light"] .pollglow {
     border-color: var(--pulse-4, rgba(245, 183, 49, 0.75));
   }
 }
+
+/* Лента важных дат на телефоне: прокрутка пальцем, полоски прокрутки не видно.
+   На телефоне её и не показывают, а место она занимает. */
+.lenta {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.lenta::-webkit-scrollbar {
+  display: none;
+}

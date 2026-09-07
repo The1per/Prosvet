@@ -1534,9 +1534,15 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
         }
       >
         {ряды.map((р) => (
-          <div key={р.к} className={"flex items-baseline " + (phone ? "gap-2" : "gap-1")}>
+          <div key={р.к} className={"flex items-baseline " + (phone ? "gap-1.5" : "gap-1")}>
             <span
-              className="mono shrink-0 rounded-md px-1.5 py-0.5 text-right"
+              /* НА ТЕЛЕФОНЕ ПЛАШКА ШИРЕ И СЛОВО В НЕЙ ПО ЦЕНТРУ. Прижатое к
+                 правому краю, оно стояло вплотную к своим словам и читалось их
+                 началом, а не подписью к ним. */
+              className={
+                "mono shrink-0 rounded-md px-1.5 py-0.5 "
+                + (phone ? "text-center" : "text-right")
+              }
               style={{
                 /* КЕГЛЬ ТОТ ЖЕ, ЧТО У СЛОВ. Подпись «новости» -- не приписка
                    к словам, а вторая половина утверждения: без неё шесть слов
@@ -1562,7 +1568,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                 letterSpacing: "0.02em",
                 fontWeight: 700,
                 fontSize: phone ? 13 : 17,
-                width: phone ? 62 : undefined,
+                width: phone ? 76 : undefined,
               }}
             >
               {р.имя}

@@ -87,9 +87,12 @@ export default function People({ idx, lang, preview = null, part, phone = false,
   // КОРОЧЕ ПРЕЖНЕГО. Было «...даже в самую спокойную неделю за всё время
   // опроса»: строка занимала три строки под фигурами и читалась дольше, чем
   // стоит подпись. «За всё время опроса» и так следует из «самой спокойной».
+  // В ОДНУ СТРОКУ. «Даже» и «за всё время опроса» убраны: строка занимала под
+  // фигурами три строки, а сказано в ней одно -- столько тревожных бывает и в
+  // самую спокойную неделю.
   const floorLabel = ru
-    ? `${floor.toFixed(1).replace(".", ",")} из 10 — даже в самую спокойную неделю`
-    : `${floor.toFixed(1)} in 10 — even in the calmest week`;
+    ? `${floor.toFixed(1).replace(".", ",")} из 10 — в самую спокойную неделю`
+    : `${floor.toFixed(1)} in 10 — in the calmest week`;
 
   if (part === "подпись") {
     // Подпись НЕ ШИРЕ САМОГО СТРОЯ: со свободными 110 пикселями блок выходил
@@ -195,7 +198,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     {/* Пол опроса -- ниже главной строки по кеглю (13.5 против 14.5). Он к
         ней приписка, и крупнее её быть не может. */}
     {!phone && (
-      <div className="mono mt-3 text-[13.5px] leading-snug" style={{ color: "var(--ink-3)", width: ширина }}>
+      <div className="mono mt-3 whitespace-nowrap text-[13.5px] leading-snug" style={{ color: "var(--ink-3)" }}>
         ↳ {floorLabel}
       </div>
     )}

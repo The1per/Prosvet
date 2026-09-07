@@ -221,7 +221,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
     [H, PAD],
   );
 
-  const { line, area, fomLine, markers, полосы, gaps, liveX } = useMemo(() => {
+  const { line, area, fomLine, markers, полосы, gaps } = useMemo(() => {
     const pts = data.map((d, i) => [x(i), y(d.idx)] as const);
     let p = `M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
     for (let i = 0; i < pts.length - 1; i++) {
@@ -416,8 +416,6 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
       wid: m.wid,
     }));
 
-    const li = data.findIndex((d) => d.phase !== "обучение");
-
     return {
       line: p,
       area: a,
@@ -426,7 +424,6 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
       markers: ms,
       полосы,
       gaps,
-      liveX: li < 0 ? null : x(li),
     };
   }, [data, lang, x, y, W, PAD, phone, рядов]);
 
@@ -607,52 +604,13 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
             для него. Само правило никуда не делось: место недели считается
             внутри своей эпохи, и это написано словами под числом. */}
 
-        {/* граница: правее прибор недели при настройке не видел */}
-        {liveX != null && (
-          <g>
-            {/* Серое поле возвращено: оно и есть та часть ряда, где индекс
-                считает вслепую, и границу этой части надо видеть, а не
-                выискивать. */}
-            <rect
-              x={liveX}
-              y={PAD.t - 12}
-              width={W - PAD.r - liveX}
-              height={H - PAD.b - PAD.t + 12}
-              fill="var(--ink)"
-              opacity="0.05"
-            />
-            <line x1={liveX} x2={liveX} y1={PAD.t - 12} y2={H - PAD.b} stroke="var(--line-strong)" strokeDasharray="4 4" />
-            {/* ЭТА подпись нужна, в отличие от эпох: она говорит не про
-                устройство прибора, а про то, чего стоят его показания.
-                Правее черты недель прибор при настройке не видел -- значит
-                там он не подогнан, а угадывает. Сторона выбирается по месту:
-                у правого края текст не помещается и встаёт слева. */}
-            {/* ПОДПИСЬ У НИЖНЕГО КОНЦА ЧЕРТЫ, на самой границе: слева от неё
-                индекс настраивался, справа считает вслепую. Двух слов хватает,
-                и они не спорят с кривой за место наверху. */}
-            {(() => {
-              const t = T.untuned[lang];
-              const кегль = phone ? 12 : 13;
-              const шир = t.length * кегль * 0.6;
-              // Если справа от черты места нет -- подпись уходит влево от неё.
-              const справа = W - PAD.r - liveX > шир + 12;
-              return (
-                <text
-                  // На телефоне подпись прижата к правому краю поля: полоса
-                  // прогноза узкая, и у самой черты подпись сидела на ней.
-                  x={phone ? W - PAD.r - 4 : справа ? liveX + 6 : liveX - 6}
-                  y={H - PAD.b - 6}
-                  fontSize={кегль}
-                  textAnchor={phone ? "end" : справа ? "start" : "end"}
-                  fill="var(--ink-3)"
-                  className="mono"
-                >
-                  {t}
-                </text>
-              );
-            })()}
-          </g>
-        )}
+        {/* СЕРОЕ ПОЛЕ И ПОДПИСЬ «ПРОГНОЗ ВСЛЕПУЮ» УБРАНЫ. Они делили картинку
+            надвое и требовали от читателя держать в голове устройство
+            проверки, чтобы понять, на что он смотрит. То же самое сказано
+            словами в разделе «как это измерено»: сколько лет прибор
+            настраивался и на скольких проверялся. Кривая при этом одна и та
+            же на всём ряду -- делить её чертой значило показывать не ряд, а
+            наш способ его проверять. */}
 
         {showFom &&
           gaps.map((g, i) => (

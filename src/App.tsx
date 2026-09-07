@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Chart from "./components/Chart";
 import People from "./components/People";
 import Poll from "./components/Poll";
@@ -94,14 +94,13 @@ export default function App() {
     <div
       style={{ visibility: showFom ? "visible" : "hidden" }}
       hidden={телефон && !showFom}
-      className={телефон ? "absolute right-0 top-[calc(100%+6px)] z-30" : ""}
     >
       <div
         className={
           // На экране легенда стоит СТОЛБИКОМ: в строку она была 270 пикселей
           // шириной и ровно на них раздувала блок, из-за чего числам и строю
           // не хватало места в ряду.
-          "flex flex-col gap-y-0.5 " + (телефон ? "items-end text-[12px]" : "text-[14.5px]")
+          "flex flex-col gap-y-0.5 " + (телефон ? "text-[13px]" : "text-[14.5px]")
         }
         style={{ color: "var(--ink-3)" }}
       >
@@ -123,10 +122,12 @@ export default function App() {
    * Дважды написанная разметка разъезжается при первой же правке.
    */
   const парФОМ = (
-    <div className="relative flex items-center gap-2">
+    // shrink-0 и nowrap: пара не имеет права разъезжаться на две строки. Когда
+    // кнопку увеличили, ей перестало хватать восьми пикселей, и число оставалось
+    // на строке места, а кнопка падала под неё -- будто это разные вещи.
+    <div className="relative flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap">
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
       <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} />
-      {телефон && легенда}
     </div>
   );
   const кнопкаОпроса = (
@@ -146,9 +147,6 @@ export default function App() {
       {T.pollOpen[lang]}
     </button>
   );
-  // Обе подписи сравнений берут один кегль -- наименьший из нужных им.
-  const { общий: кегльПодписи, сообщить: сообщитьКегль } = useОбщийКегль();
-  const подписи = { сообщить: сообщитьКегль, общий: кегльПодписи };
   const heroRef = useReveal<HTMLDivElement>();
   // 140 мс, а не полсекунды: при движении по графику число не должно
   // отставать от курсора -- иначе кажется, что оно не поспевает за неделей.
@@ -373,12 +371,13 @@ export default function App() {
                             ?.scrollIntoView({ behavior: "smooth", block: "start" })
                         }
                         className={
-                          "underline decoration-dotted underline-offset-4 font-medium " +
-                          (телефон ? "text-[18px]" : "text-[21px]")
+                          "whitespace-pre-line text-left underline decoration-dotted underline-offset-4 font-medium leading-tight " +
+                          (телефон ? "text-[15px]" : "text-[18px]")
                         }
                         style={{ background: "none", border: "none", padding: 0, color: "var(--ink)", cursor: "pointer" }}
                       >
-                        {T.basis[lang]}*
+                        <span className="block">{T.basis[lang]}</span>
+                        <span className="block">{T.basis2[lang]}*</span>
                       </button>
                     </span>
                   </div>
@@ -412,16 +411,28 @@ export default function App() {
                     style={{ color: "var(--ink-3)" }}
                   >
                     <span className="whitespace-nowrap tabular-nums">{T.placeInEra[lang](место.место, место.всего, ранняя)}</span>
-                    <span className="shrink-0">{парФОМ}</span>
+                    {телефон && <span className="shrink-0">{парФОМ}</span>}
                   </div>
+                  {/* НА ЭКРАНЕ ПАРА ФОМа СТОИТ СВОЕЙ СТРОКОЙ. Кнопку увеличили,
+                      и втроём -- место, число опроса, кнопка -- они перестали
+                      помещаться в ширину блока: кнопка срывалась под строку
+                      сама, а число оставалось наверху, будто это разные вещи.
+                      Своей строкой пара держится вместе и читается как одно
+                      целое: показание опроса и переключатель его кривой. */}
+                  {!телефон && <div className="mt-2 flex">{парФОМ}</div>}
                   </div>
                 </div>
                 </div>
               </div>
 
               <div className={телефон ? "w-full" : "shrink-0"}>
-                <div className={телефон ? "flex items-end" : "flex items-end"}>
+                {/* НА ТЕЛЕФОНЕ КНОПКА ОПРОСА -- СПРАВА ОТ ФИГУР, вровень с
+                    кнопкой ФОМа строкой выше: две кнопки в столбик читаются
+                    как пара. Прежде она стояла в ряду сравнений, через две
+                    строки от той, с которой её и надо сравнивать глазом. */}
+                <div className={телефон ? "flex items-center justify-between gap-3" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
+                  {телефон && <div className="flex w-[111px] shrink-0 justify-center">{кнопкаОпроса}</div>}
                 </div>
                 {/* На экране подписи здесь нет вовсе: и главная строка, и пол
                     опроса стоят внутри part="строй" -- одна справа от фигур,
@@ -442,7 +453,7 @@ export default function App() {
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
                 <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[104px]"}>
-                  <KpiLabel l={T.vsBaseline[lang]} phone={телефон} имя="база" {...подписи} />
+                  <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
                 </div>
               </div>
 
@@ -451,20 +462,9 @@ export default function App() {
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
                 <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[104px]"}>
-                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} имя="пик" {...подписи} />
+                  <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
                 </div>
               </div>
-
-              {/* Кнопка опроса -- сразу справа от цифры пика: последнее число
-                  ряда, и следом вопрос к самому читателю. По ширине она
-                  выровнена под кнопку опроса ФОМа, что стоит строкой выше:
-                  две кнопки в столбик читаются как пара, вразнобой -- как
-                  случайность. */}
-              {телефон && (
-                <div className="ml-auto flex items-end self-stretch pb-1">
-                  <div className="flex w-[111px] justify-center">{кнопкаОпроса}</div>
-                </div>
-              )}
 
             </div>
 
@@ -494,10 +494,11 @@ export default function App() {
                 уголок={
                   <div className="flex flex-col items-start gap-2">
                     <EventSearch lang={lang} onPick={jumpTo} phone />
-                    {/* Легенда стоит ПОД ЛУПОЙ, в углу самого поля: она про
-                        кривую, и место ей рядом с кривой, а не в строке с
-                        числами. */}
-                    {!телефон && легенда}
+                    {/* Легенда стоит ПОД ЛУПОЙ, В УГЛУ САМОГО ПОЛЯ -- и на
+                        телефоне тоже. Прежде на телефоне она висела отдельным
+                        слоем под кнопкой опроса, то есть в строке с числами:
+                        объясняла цвета кривой, стоя далеко от кривой. */}
+                    {легенда}
                   </div>
                 }
               />
@@ -893,7 +894,7 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
       <button
         className={
           "btn " +
-          (phone ? "px-2.5 py-1 text-[12px]" : "px-6 py-3 text-[15px] font-semibold") +
+          (phone ? "px-2.5 py-1 text-[12px]" : "px-7 py-3.5 text-[17px] font-semibold") +
           // Перелив идёт, только пока кривую не включили.
           (on ? "" : " fombtn-idle")
         }
@@ -925,7 +926,7 @@ const ПОРОГ_СОГЛАСИЯ = 5;
  * рядом с числом опроса, знаком расхождения и кнопкой. Меньше -- строка места
  * налезает на кнопку, больше -- между блоком и строем зияет пустота.
  */
-const ШИРИНА_ЧИСЛА = 396;
+const ШИРИНА_ЧИСЛА = 388;
 
 function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx: number; lang: Lang; phone?: boolean }) {
   const d = fom == null ? 0 : fom - idx;
@@ -945,7 +946,7 @@ function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx:
         // Число опроса опущено на несколько пикселей: вровень с кнопкой оно
         // спорило с ней за внимание, а это разные вещи -- показание и переключатель.
         className={"mono font-bold leading-none " + (phone ? "text-[17px]" : "relative top-[6px] text-[40px]")}
-        style={{ color: "var(--ink-2)", width: phone ? 38 : 80, display: "inline-block" }}
+        style={{ color: "var(--ink-2)", width: phone ? 38 : 72, display: "inline-block" }}
       >
         {fom == null ? "—" : `${fom.toFixed(0)}%`}
       </span>
@@ -983,90 +984,34 @@ function Kpi({ v, c, phone = false }: { v: string; c: string; phone?: boolean })
 }
 
 /**
- * ОБЩИЙ КЕГЛЬ НА ВСЕ ПОДПИСИ РЯДА.
+ * КЕГЛЬ ПОДПИСЕЙ РАВЕН КЕГЛЮ РАЗДЕЛА «Общественная тревога» -- это наименьший
+ * кегль страницы, и ниже него не опускается ничто. Прежде подписи сжимались до
+ * двенадцати и ниже: формально читаемо, на деле мелко.
  *
- * Каждая подпись сжимается по своей длине, и порознь они разъезжались: «к
- * обычной неделе» вставала в 10 пикселей, а «Пик с 2020, 2022» рядом в 12 --
- * два разных кегля в одной строке читаются как ошибка вёрстки. Поэтому каждая
- * сообщает, какой кегль ей нужен, а берут все НАИМЕНЬШИЙ из нужных.
+ * Раз сжимать нельзя, подпись просто ПЕРЕНОСИТСЯ. Прыгать от недели к неделе
+ * ей теперь нечем: «к обычной неделе» постоянна, а у «Пик с 2020, 2022»
+ * меняются только цифры года, и длина строки от этого не меняется.
  */
-function useОбщийКегль() {
-  const [кегли, setКегли] = useState<Record<string, number>>({});
-  const сообщить = useCallback(
-    (имя: string, v: number) =>
-      setКегли((с) => (с[имя] === v ? с : { ...с, [имя]: v })),
-    [],
-  );
-  const значения = Object.values(кегли);
-  return { общий: значения.length ? Math.min(...значения) : null, сообщить };
-}
-
-/** Кегль подписи, когда места хватает; ниже него не опускаемся никогда. */
-const ПОДПИСЬ_КЕГЛЬ = { экран: 15, телефон: 12 };
-// Ниже двенадцати на странице не опускается НИЧТО: меньше -- уже не подпись, а
-// след от подписи. Если в двенадцати строка не помещается даже в свою коробку,
-// она переносится -- перенос честнее нечитаемого кегля. Так бывает только в
-// английском, где «Peak since 2020, 2022» длиннее русского на треть.
-const ПОДПИСЬ_МИНИМУМ = 12;
-
+const ПОДПИСЬ_КЕГЛЬ = { экран: 19, телефон: 13 };
 /**
- * Подпись под числом сравнения. ВСЕГДА В ОДНУ СТРОКУ.
+ * Подпись под числом сравнения.
  *
- * Раньше она переносилась: «к обычной неделе» и «Пик с 2020, 2022» не влезали
- * в свою коробку и вставали в две строки, отчего низ ряда ходил ходуном --
- * у одной недели подпись в одну строку, у соседней в две, и всё под ней
- * прыгало. По-английски они ещё длиннее («Peak before 2020, 2019»), так что
- * подобрать один кегль на все случаи нельзя.
+ * СЖАТИЯ БОЛЬШЕ НЕТ. Подпись умела уменьшаться, чтобы влезть в одну строку, и
+ * доходила до девяти-двенадцати пикселей -- формально читаемо, на деле мелко.
+ * Теперь кегль постоянен и равен наименьшему на странице (ПОДПИСЬ_КЕГЛЬ, тот
+ * же, что у раздела «Общественная тревога»), а не помещается -- переносится.
  *
- * Поэтому не перенос, а СЖАТИЕ: подпись меряется в своём полном кегле, и если
- * не помещается -- кегль уменьшается ровно во столько раз, во сколько не
- * хватило места. Ниже ПОДПИСЬ_МИНИМУМ не опускаемся: нечитаемая подпись хуже
- * перенесённой.
- *
- * Мерить обязательно в useLayoutEffect и обязательно вернув полный кегль
- * перед замером: иначе второй замер пойдёт от уже сжатого кегля и подпись
- * будет ужиматься на каждой перерисовке.
+ * Прыгать от недели к неделе ей нечем: «к обычной неделе» постоянна, а у
+ * «Пик с 2020, 2022» меняются только цифры года, и число строк от этого не
+ * меняется.
  */
-function KpiLabel({
-  l, phone = false, имя, сообщить, общий,
-}: {
-  l: string; phone?: boolean; имя: string;
-  сообщить: (имя: string, v: number) => void; общий: number | null;
-}) {
-  const база = phone ? ПОДПИСЬ_КЕГЛЬ.телефон : ПОДПИСЬ_КЕГЛЬ.экран;
-  const ref = useRef<HTMLSpanElement>(null);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    const короб = el?.parentElement;
-    if (!el || !короб) return;
-    // Мерить обязательно ПО СОДЕРЖИМОМУ: у блочного элемента scrollWidth
-    // возвращает ширину коробки, а не строки, и подпись «не помещается»
-    // никогда. Поэтому span -- inline-block, он сам по себе шириной в текст.
-    el.style.fontSize = база + "px";
-    // offsetWidth, а НЕ getBoundingClientRect: страница масштабируется zoom-ом
-    // (scale.ts), и getBoundingClientRect отдаёт ширину уже масштабированной, а
-    // clientWidth -- нет. Смешав их, получаем разный кегль на разной ширине
-    // окна и подпись, вылезающую за коробку на 1440. offsetWidth меряет то же,
-    // что и clientWidth, -- обе в немасштабированных пикселях.
-    const надо = el.offsetWidth;
-    const есть = короб.clientWidth;
-    const нужно = надо > есть && надо > 0
-      ? Math.max(ПОДПИСЬ_МИНИМУМ, Math.floor((база * есть) / надо))
-      : база;
-    // Не влезает даже в минимальном кегле -- разрешаем перенос именно ей.
-    el.style.whiteSpace = надо * (нужно / база) > есть ? "normal" : "nowrap";
-    // Вернуть кегль ОБЯЗАТЕЛЬНО. Замер сделан правкой стиля напрямую, и React
-    // об этой правке не знает: он считает, что уже поставил нужный кегль, и
-    // второй раз его не поставит. Без этой строки подпись навсегда оставалась
-    // в полном кегле, а состояние говорило другое.
-    el.style.fontSize = (общий ?? база) + "px";
-    сообщить(имя, нужно);
-  }, [l, база, имя, сообщить, общий]);
+function KpiLabel({ l, phone = false }: { l: string; phone?: boolean }) {
   return (
-    <div className="w-full overflow-hidden leading-snug" style={{ color: "var(--ink-3)" }}>
-      <span ref={ref} className="inline-block whitespace-nowrap" style={{ fontSize: общий ?? база }}>
-        {l}
-      </span>
+    <div
+      className="w-full leading-snug"
+      style={{ color: "var(--ink-3)", fontSize: phone ? ПОДПИСЬ_КЕГЛЬ.телефон : ПОДПИСЬ_КЕГЛЬ.экран }}
+    >
+      {l}
     </div>
   );
 }

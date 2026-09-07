@@ -81,13 +81,19 @@ export const T = {
   fomNone: { ru: "опроса ФОМа не было", en: "no poll" },
   fomOn: { ru: "Кривая опроса ФОМ", en: "FOM poll curve" },
   /** То же на телефоне: длинная надпись там занимала строку целиком. */
-  fomOnShort: { ru: "опрос ФОМ", en: "FOM poll" },
+  fomOnShort: { ru: "Опрос ФОМ", en: "FOM poll" },
   fomWhat: {
     ru: "ФОМ каждую пятницу публикует, сколько людей называют настроение вокруг себя тревожным. На этом ряду индекс и проверяется:",
     en: "Every Friday FOM publishes the share of people who call the mood around them anxious. That is the series the index is checked against:",
   },
   /** Постоянная подпись рядом с числом: на чём это число основано. */
-  basis: { ru: "по следам в сети", en: "from web traces" },
+  // ДВЕ СТРОКИ И ПОЛНОЕ ИМЯ. «По следам в сети» отвечало на вопрос «как
+  // измерено», но не говорило, ЧТО измерено. Рядом с числом должно стоять имя
+  // величины, иначе число остаётся без названия.
+  // Две строки -- двумя полями, а не переводом строки внутри одной: перевод
+  // строки в словаре легко теряется при правке и не виден глазом.
+  basis: { ru: "Индекс тревожности", en: "Anxiety index" },
+  basis2: { ru: "по следам в сети", en: "from web traces" },
   // Здесь «опрос» без имени нарочно: подпись стоит вплотную к кнопке «опрос
   // ФОМ», и полное имя во второй раз только удлиняет строку.
   gapUp: { ru: "опрос выше", en: "poll higher" },
@@ -243,12 +249,6 @@ export const T = {
   },
   scrollHint: { ru: "ниже — как это работает", en: "below — how it works" },
   events: { ru: "Что было в эти недели", en: "What happened in these weeks" },
-  /**
-   * Отсечка на графике. «Дальше без настройки» понимал только тот, кто уже
-   * знает, что такое настройка. Здесь сказано, что это значит для читателя:
-   * правее прибор эти недели впервые видит и предсказывает вслепую.
-   */
-  untuned: { ru: "Прогноз вслепую", en: "Blind forecast" },
   footer: {
     ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа, выходят по пятницам о прошедшей неделе.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",
@@ -288,7 +288,7 @@ export const T = {
       },
       {
         t: "4. Проверка опросом ФОМа",
-        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100 — и на тех неделях, которые он при настройке не видел, тоже.\n\nТам, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 38-й из 302, а опрос по уровню — 141-й; неделю боёв в Курской области — 82-й против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
+        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100.\n\nРяд разрезан по времени, и это главное в проверке. На 265 неделях — с 2019 по октябрь 2024 года — индекс настраивался: там подбирались все его постоянные. Следующие 89 недель, по конец 2025-го, при настройке были закрыты, и на них он отвечает верно в 83 случаях из 100. Всё, что позже, он считает впервые и вперёд ещё не проверялся вовсе.\n\nЭто разделение — не формальность. Настроить прибор так, чтобы он объяснил прошлое, легко; трудно, чтобы он угадывал то, чего не видел.\n\nТам, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 38-й из 302, а опрос по уровню — 141-й; неделю боёв в Курской области — 82-й против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
       },
     ],
     en: [
@@ -306,7 +306,7 @@ export const T = {
       },
       {
         t: "4. Checked against the poll",
-        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100 — including on weeks it never saw while being tuned.\n\nWhere the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 38th of 302 while the poll by level ranks it 141st; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
+        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100.\n\nThe series is cut in time, and that is the heart of the test. On 265 weeks — from 2019 to October 2024 — the index was tuned: every constant in it was chosen there. The next 89 weeks, through the end of 2025, were hidden during tuning, and on them it answers correctly in 83 cases out of 100. Everything later it is computing for the first time, and has not been validated forward at all.\n\nThis split is not a formality. Tuning an instrument to explain the past is easy; making it guess what it has not seen is not.\n\nWhere the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 38th of 302 while the poll by level ranks it 141st; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
       },
     ],
   },

@@ -85,6 +85,10 @@ type Props = {
   sel: number;
   onSel: (i: number) => void;
   showFom: boolean;
+  /** Простой вид: без свечения кривой. Настройка читателя, не прибора. */
+  простой?: boolean;
+  /** Показывать ли саму кривую индекса. Выключают, чтобы смотреть один опрос. */
+  индекс?: boolean;
   phone?: boolean;
   /**
    * Что поставить в правый верхний угол ПОЛЯ КРИВОЙ (не полотна). Снаружи
@@ -94,7 +98,7 @@ type Props = {
   уголок?: React.ReactNode;
 };
 
-export default function Chart({ data, lang, sel, onSel, showFom, phone = false, уголок }: Props) {
+export default function Chart({ data, lang, sel, onSel, showFom, простой = false, индекс = true, phone = false, уголок }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const [hovering, setHovering] = useState(false);
   /**
@@ -622,17 +626,17 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
             <path key={i} d={g.d} fill={g.up ? "var(--cool)" : "var(--violet)"} opacity="0.5" />
           ))}
 
-        <path d={area} fill="url(#areaG)" />
-        <path
+        {индекс && <path d={area} fill="url(#areaG)" />}
+        {индекс && <path
           d={line}
           fill="none"
           stroke={CURVE}
           strokeWidth="2.3"
           strokeLinecap="round"
-          filter="url(#glow)"
+          filter={простой ? undefined : "url(#glow)"}
           className="draw"
           style={{ transition: "stroke 0.35s ease" }}
-        />
+        />}
 
         {/* ДЛИТЕЛЬНОСТЬ СОБЫТИЙ -- цветом самой линии. Кусок лежит ровно на
             серебряной кривой (те же изгибы, те же соседи) и чуть толще её,
@@ -640,7 +644,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
             недели, тот же, что у метки и у точки. Выбранное событие ярче
             прочих. Без анимации отрисовки: она у серебряной линии одна на
             всю кривую, и куски бежали бы наперегонки с ней. */}
-        {полосы.map((п) => (
+        {индекс && полосы.map((п) => (
           <path
             key={"п" + п.i}
             d={п.d}
@@ -650,7 +654,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, phone = false, 
             strokeLinecap="round"
             strokeLinejoin="round"
             opacity={sel === п.i ? 1 : 0.85}
-            filter="url(#glow)"
+            filter={простой ? undefined : "url(#glow)"}
           />
         ))}
 

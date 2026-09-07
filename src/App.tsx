@@ -21,6 +21,16 @@ export default function App() {
   // краям шкалы. ЧИСЛО И СВЕТ ЗА НИМ ВЕДЁТ ТОЛЬКО ПРИБОР: подменить показание
   // ответом посетителя значит показать ему его же ответ и выдать за измерение.
   const [preview, setPreview] = useState<number | null>(null);
+  /**
+   * НАСТРОЙКИ ГРАФИКА -- дело читателя, а не прибора. Три переключателя:
+   * свечение, кривая индекса, кривая опроса. Показания от них не меняются,
+   * меняется только то, что видно; поэтому они и стоят у графика, а не в
+   * разборе метода.
+   */
+  const [настройки, setНастройки] = useLocal("pai.vid.v1", {
+    простой: false, индекс: true,
+  });
+  const [менюОткрыто, setМенюОткрыто] = useState(false);
 
   const lang = prefs.lang;
   const w = SERIES[sel];
@@ -188,7 +198,7 @@ export default function App() {
       {/* Свет НЕПОДВИЖЕН относительно окна: он начинается сверху от числа и
           остаётся с читателем, пока он листает. Раньше он был приклеен к
           самому числу и уезжал вместе с ним. */}
-      <div
+      {!настройки.простой && <div
         className="glow-echo"
         aria-hidden
         style={{
@@ -196,8 +206,8 @@ export default function App() {
           ["--g3" as string]: glow.far,
           ["--gx" as string]: `${gspot.x}px`,
         }}
-      />
-      <div
+      />}
+      {!настройки.простой && <div
         className="numglow"
         aria-hidden
         style={{
@@ -208,7 +218,7 @@ export default function App() {
           ["--gy" as string]: `${gspot.y}px`,
           ["--gs" as string]: `${(1 + 0.3 * moodT(w.idx)).toFixed(2)}`,
         }}
-      />
+      />}
       <div className="grid-bg" />
       <div className="noise" />
 
@@ -434,7 +444,7 @@ export default function App() {
                       // нет лишнего.
                       (телефон ? "-mt-2 items-center text-[15px]" : "mt-0.5 items-end text-[19px]")
                     }
-                    style={{ color: "var(--ink-3)" }}
+                    style={{ color: "var(--ink)" }}
                   >
                     {/* НА ТЕЛЕФОНЕ БЕЗ ЭПОХИ. «с 2020» занимает четверть
                         короткой строки, а сказано то же самое словами под
@@ -537,10 +547,23 @@ export default function App() {
                 sel={sel}
                 onSel={setSel}
                 showFom={showFom}
+                простой={настройки.простой}
+                индекс={настройки.индекс}
                 phone={телефон}
                 уголок={
                   <div className="flex flex-col items-start gap-2">
-                    <EventSearch lang={lang} onPick={jumpTo} phone />
+                    <div className="flex items-center gap-2">
+                      <EventSearch lang={lang} onPick={jumpTo} phone />
+                      <НастройкиВида
+                        открыто={менюОткрыто}
+                        setОткрыто={setМенюОткрыто}
+                        значения={{ ...настройки, фом: showFom }}
+                        менять={(к, v) =>
+                          к === "фом" ? setShowFom(v) : setНастройки({ ...настройки, [к]: v })
+                        }
+                        lang={lang}
+                      />
+                    </div>
                     {/* Легенда стоит ПОД ЛУПОЙ, В УГЛУ САМОГО ПОЛЯ -- и на
                         телефоне тоже. Прежде на телефоне она висела отдельным
                         слоем под кнопкой опроса, то есть в строке с числами:
@@ -1017,6 +1040,72 @@ function ПолосаСобытий({ lang, sel, onSel }: { lang: Lang; sel: num
   );
 }
 
+/**
+ * НАСТРОЙКИ ВИДА -- маленькое меню у лупы.
+ *
+ * Три переключателя, и ни один не трогает показаний: свечение, кривая
+ * индекса, кривая опроса. Прежде опрос включался отдельной кнопкой в ряду
+ * чисел, а свечение не выключалось вовсе -- кому оно мешает читать кривую,
+ * деться было некуда.
+ *
+ * Меню нарочно крошечное: три строки, значок и слово. Иконки без слов тут не
+ * годятся -- «свечение» и «кривая индекса» одним значком не различишь.
+ */
+function НастройкиВида({
+  открыто, setОткрыто, значения, менять, lang,
+}: {
+  открыто: boolean;
+  setОткрыто: (v: boolean) => void;
+  значения: { простой: boolean; индекс: boolean; фом: boolean };
+  менять: (ключ: "простой" | "индекс" | "фом", v: boolean) => void;
+  lang: Lang;
+}) {
+  const ru = lang === "ru";
+  const ряды: { к: "простой" | "индекс" | "фом"; знак: string; имя: string; вкл: boolean }[] = [
+    { к: "индекс", знак: "∿", имя: ru ? "кривая индекса" : "index curve", вкл: значения.индекс },
+    { к: "фом", знак: "▦", имя: ru ? "кривая опроса" : "poll curve", вкл: значения.фом },
+    { к: "простой", знак: "✳", имя: ru ? "свечение" : "glow", вкл: !значения.простой },
+  ];
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        aria-label={ru ? "вид графика" : "chart view"}
+        onClick={() => setОткрыто(!открыто)}
+        className="flex h-8 w-8 items-center justify-center rounded-full border"
+        style={{
+          borderColor: "var(--line-strong)", background: "var(--bg-2)",
+          color: "var(--ink-2)", cursor: "pointer", fontSize: 15,
+        }}
+      >
+        ⚙
+      </button>
+      {открыто && (
+        <div
+          className="absolute left-0 top-[calc(100%+6px)] z-40 rounded-xl border p-1"
+          style={{ borderColor: "var(--line-strong)", background: "var(--bg-2)", boxShadow: "var(--shadow)" }}
+        >
+          {ряды.map((р) => (
+            <button
+              key={р.к}
+              type="button"
+              onClick={() => менять(р.к, р.к === "простой" ? р.вкл : !р.вкл)}
+              className="flex w-full items-center gap-2 whitespace-nowrap rounded-lg px-2 py-1.5 text-left"
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: р.вкл ? "var(--ink)" : "var(--ink-3)", fontSize: 15,
+              }}
+            >
+              <span style={{ width: 14, textAlign: "center", opacity: р.вкл ? 1 : 0.4 }}>{р.знак}</span>
+              {р.имя}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx: number; lang: Lang; phone?: boolean }) {
   const d = fom == null ? 0 : fom - idx;
   const врозь = fom != null && Math.abs(d) >= ПОРОГ_СОГЛАСИЯ;
@@ -1096,9 +1185,11 @@ const ПОДПИСЬ_КЕГЛЬ = { экран: 19, телефон: 17 };
  */
 function KpiLabel({ l, phone = false }: { l: string; phone?: boolean }) {
   return (
+    // Цвет БЕЛЫЙ, а не серый: подпись объясняет число рядом, и серым она
+    // читалась хуже самого числа, ради которого стоит.
     <div
       className="w-full leading-snug"
-      style={{ color: "var(--ink-3)", fontSize: phone ? ПОДПИСЬ_КЕГЛЬ.телефон : ПОДПИСЬ_КЕГЛЬ.экран }}
+      style={{ color: "var(--ink)", fontSize: phone ? ПОДПИСЬ_КЕГЛЬ.телефон : ПОДПИСЬ_КЕГЛЬ.экран }}
     >
       {l}
     </div>

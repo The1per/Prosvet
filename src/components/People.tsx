@@ -72,12 +72,13 @@ export default function People({ idx, lang, preview = null, part, phone = false,
   // опрос не опускался ниже 32 % и не поднимался выше 70 %.
   const floor = FLOOR_FOM / 10;
   const peak = PEAK_FOM / 10;
-  const вМестах = (v: number) => {
-    const ц = Math.floor(v);
-    return ц * (ш + зазор) + (v - ц) * ш;
+  // Дробной позиции больше не нужно: границы стоят В ПРОМЕЖУТКАХ между
+  // фигурами, а не в дробных долях фигуры.
+  /** Середина промежутка после k-й фигуры: граница между людьми. */
+  const вПромежуток = (v: number) => {
+    const k = Math.max(1, Math.min(9, Math.round(v)));
+    return k * (ш + зазор) - зазор / 2;
   };
-  const floorPx = вМестах(floor);
-  const peakPx = вМестах(peak);
 
   const shown = (Math.round(v * 10) / 10).toFixed(1);
   const ru = lang === "ru";
@@ -201,16 +202,19 @@ export default function People({ idx, lang, preview = null, part, phone = false,
       {/* Подписи БЕЛЫЕ и в общем кегле страницы. Одиннадцать пикселей серым
           -- это не подпись, а её след; такого кегля на странице нет нигде и
           быть не должно. Отсечки подняты вплотную к строю: они про него. */}
-      {[["мин.", floorPx], ["макс.", peakPx]].map(([метка, x]) => (
+      {/* ОТСЕЧКИ СТОЯТ В ПРОМЕЖУТКАХ МЕЖДУ ФИГУРАМИ, а не поперёк них:
+          граница проходит между людьми, а не через человека. Черта короткая и
+          начинается сразу под строем; подпись под чертой, но не вплотную. */}
+      {[["мин.", вПромежуток(floor)], ["макс.", вПромежуток(peak)]].map(([метка, x]) => (
         <div
           key={метка as string}
-          className="pointer-events-none absolute bottom-[-3px]"
-          style={{ left: (x as number) - 0.5, height: 3 }}
+          className="pointer-events-none absolute bottom-[-4px]"
+          style={{ left: (x as number) - 0.5, height: 4 }}
           aria-hidden
         >
-          <div style={{ width: 1, height: 3, background: "var(--ink)" }} />
+          <div style={{ width: 1, height: 4, background: "var(--ink)" }} />
           <div
-            className="mono absolute top-[3px] -translate-x-1/2 whitespace-nowrap"
+            className="mono absolute top-[6px] -translate-x-1/2 whitespace-nowrap"
             style={{ left: 0, fontSize: phone ? 15 : 19, color: "var(--ink)" }}
           >
             {метка}

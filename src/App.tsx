@@ -402,49 +402,20 @@ export default function App() {
               {T.titleParts[lang].map(([буква, хвост], i) => (
                 <span key={буква + i}>
                   {i > 0 ? " " : ""}
-                  {/* Буквы не перекрашены -- они ПОМЕЧЕНЫ: крупнее остальных, а
-                      под каждой -- ОКНО В ЧЁРНОЙ ПАНЕЛИ. Прежде там стояла
-                      черта цветом показания, и она читалась подчёркиванием,
-                      то есть частью текста. Окно читается иначе: сквозь
-                      прорезь в панели виден тот же свет, каким горит число, --
-                      имя и показание оказываются об одном, и сказано это не
-                      надписью, а светом.
-
-                      Квадрат со скошенными углами (восьмиугольник в clip-path),
-                      а не круг и не полоса: у прорези в панели должны быть
-                      грани. */}
+                  {/* Буквы не перекрашены -- они ПОМЕЧЕНЫ ОДНИМ РАЗМЕРОМ.
+                      Под ними стояла сперва черта цветом показания, потом окно
+                      в панели -- оба отвергнуты: черта читалась подчёркиванием,
+                      то есть частью текста, а окна выглядели тремя лишними
+                      пятнами под строкой. Аббревиатура собирается и без метки:
+                      три буквы крупнее прочих видно сразу. */}
                   <span
-                    className="relative inline-block"
                     style={{
                       color: "var(--curve)",
                       fontSize: "1.22em",
-                      /* Место под окно отводится САМОЙ БУКВОЙ. Без него окно
-                         вылезало за нижний край панели и обрезалось ею
-                         наполовину: панель прижата к строке вплотную. */
-                      paddingBottom: "0.44em",
                       textShadow: "0 0 12px color-mix(in srgb, var(--curve) 60%, transparent)",
                     }}
                   >
                     {буква}
-                    <span
-                      aria-hidden
-                      style={{
-                        position: "absolute",
-                        left: "50%",
-                        bottom: "0.02em",
-                        transform: "translateX(-50%)",
-                        width: "0.36em",
-                        height: "0.36em",
-                        background: color,
-                        /* Свет из-под панели, а не наклейка поверх неё: мягкое
-                           свечение наружу и тонкая тёмная грань по краю. */
-                        boxShadow:
-                          "0 0 9px " + color + ", inset 0 0 0 1px color-mix(in srgb, var(--bg) 55%, transparent)",
-                        clipPath:
-                          "polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%)",
-                        transition: "background 0.12s linear, box-shadow 0.12s linear",
-                      }}
-                    />
                   </span>
                   {хвост}
                 </span>
@@ -859,10 +830,11 @@ export default function App() {
                         до={диап.до}
                         менять={(от, до) => setДиап({ от, до })}
                         lang={lang}
+                        phone={телефон}
                       />
                     )}
                     <div className="flex items-center gap-2">
-                      <EventSearch lang={lang} onPick={jumpTo} phone />
+                      <EventSearch lang={lang} onPick={jumpTo} phone крупно={!телефон} />
                       <НастройкиВида
                         открыто={менюОткрыто}
                         setОткрыто={setМенюОткрыто}
@@ -871,6 +843,7 @@ export default function App() {
                           к === "фом" ? setShowFom(v) : setНастройки({ ...настройки, [к]: v })
                         }
                         lang={lang}
+                        phone={телефон}
                       />
                       {!телефон && (
                         <ДиапазонШкалы
@@ -880,6 +853,7 @@ export default function App() {
                           до={диап.до}
                           менять={(от, до) => setДиап({ от, до })}
                           lang={lang}
+                          phone={телефон}
                         />
                       )}
                     </div>
@@ -1082,7 +1056,10 @@ function разобратьДень(s: string, lang: Lang): string | null {
 }
 
 /* ---------------- поиск по событию ---------------- */
-function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: string) => void; phone?: boolean }) {
+/* `phone` здесь значит «свёрнут в лупу», а не «телефон»: на экране поиск тоже
+   свёрнут, чтобы не стоить целой строки. Размер кнопки поэтому задаётся
+   отдельным признаком -- иначе на экране она осталась бы телефонной. */
+function EventSearch({ lang, onPick, phone = false, крупно = false }: { lang: Lang; onPick: (d: string) => void; phone?: boolean; крупно?: boolean }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   // На телефоне поиск свёрнут в лупу и разворачивается по нажатию: полем во
@@ -1147,10 +1124,17 @@ function EventSearch({ lang, onPick, phone = false }: { lang: Lang; onPick: (d: 
             setРазвёрнут(true);
             window.setTimeout(() => поле.current?.focus(), 0);
           }}
-          className="flex h-8 w-8 items-center justify-center rounded-full border"
+          /* НА ЭКРАНЕ КНОПКИ КРУПНЕЕ: 40 против 32 на телефоне. Страница
+             сжимается zoom-ом с ширины 1600 (см. scale.ts), и тридцать два
+             пикселя разметки превращаются там в двадцать с небольшим -- по
+             такой мишени попадают, но искать её приходится глазами. */
+          className={
+            "flex items-center justify-center rounded-full border "
+            + (крупно ? "h-10 w-10" : "h-8 w-8")
+          }
           style={{ borderColor: "var(--line-strong)", background: "var(--card-2)", color: "var(--ink-3)", cursor: "pointer" }}
         >
-          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden>
+          <svg width={крупно ? 19 : 15} height={крупно ? 19 : 15} viewBox="0 0 16 16" aria-hidden>
             <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.6" />
             <path d="M10.4 10.4 L14 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
@@ -1390,13 +1374,14 @@ function ПолосаСобытий({ lang, sel, onSel }: { lang: Lang; sel: num
  * годятся -- «свечение» и «кривая индекса» одним значком не различишь.
  */
 function НастройкиВида({
-  открыто, setОткрыто, значения, менять, lang,
+  открыто, setОткрыто, значения, менять, lang, phone = false,
 }: {
   открыто: boolean;
   setОткрыто: (v: boolean) => void;
   значения: { простой: boolean; индекс: boolean; фом: boolean };
   менять: (ключ: "простой" | "индекс" | "фом", v: boolean) => void;
   lang: Lang;
+  phone?: boolean;
 }) {
   const ru = lang === "ru";
   const коробка = useRef<HTMLDivElement>(null);
@@ -1412,10 +1397,13 @@ function НастройкиВида({
         type="button"
         aria-label={ru ? "вид графика" : "chart view"}
         onClick={() => setОткрыто(!открыто)}
-        className="flex h-8 w-8 items-center justify-center rounded-full border"
+        className={
+          "flex items-center justify-center rounded-full border "
+          + (phone ? "h-8 w-8" : "h-10 w-10")
+        }
         style={{
           borderColor: "var(--line-strong)", background: "var(--bg-2)",
-          color: "var(--ink-2)", cursor: "pointer", fontSize: 15,
+          color: "var(--ink-2)", cursor: "pointer", fontSize: phone ? 15 : 19,
         }}
       >
         ⚙
@@ -1790,7 +1778,7 @@ function Барабан({
  * в числах слева. Диапазон -- увеличительное стекло, а не другой прибор.
  */
 function ДиапазонШкалы({
-  открыто, setОткрыто, от, до, менять, lang,
+  открыто, setОткрыто, от, до, менять, lang, phone = false,
 }: {
   открыто: boolean;
   setОткрыто: (v: boolean) => void;
@@ -1798,6 +1786,7 @@ function ДиапазонШкалы({
   до: string;
   менять: (от: string, до: string) => void;
   lang: Lang;
+  phone?: boolean;
 }) {
   const ru = lang === "ru";
   const [точно, setТочно] = useState(false);
@@ -1830,8 +1819,10 @@ function ДиапазонШкалы({
         type="button"
         aria-label={ru ? "диапазон лет" : "year range"}
         onClick={() => setОткрыто(!открыто)}
-        className="mono flex h-8 items-center rounded-full border px-3"
-        style={{ ...рамка, fontSize: 14, color: весь ? "var(--ink-2)" : "var(--ink)" }}
+        className={
+          "mono flex items-center rounded-full border " + (phone ? "h-8 px-3" : "h-10 px-4")
+        }
+        style={{ ...рамка, fontSize: phone ? 14 : 17, color: весь ? "var(--ink-2)" : "var(--ink)" }}
       >
         {подпись}
       </button>

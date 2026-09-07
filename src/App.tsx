@@ -208,11 +208,12 @@ export default function App() {
       }
     >
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
-      {/* НА ТЕЛЕФОНЕ обе кнопки стоят в коробках ОДНОЙ ширины: так их
-          середины приходятся на одну вертикаль, и они читаются как пара.
-          Прежде каждая была шириной по своему тексту и они расходились. */}
+      {/* НА ТЕЛЕФОНЕ обе кнопки стоят в коробках ОДНОЙ ширины -- 118, как у
+          «Тревожно ли вокруг вас» строкой ниже. Так их середины приходятся на
+          одну вертикаль. Коробки были 111 и 118, и кнопки расходились на
+          три с половиной пикселя -- мелочь, которую глаз всё равно ловит. */}
       {телефон ? (
-        <span className="flex w-[111px] shrink-0 justify-center">
+        <span className="flex w-[118px] shrink-0 justify-center">
           <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone тронут={фомТронут} onТронуть={() => setФомТронут(true)} />
         </span>
       ) : (
@@ -565,7 +566,13 @@ export default function App() {
                     кнопкой ФОМа строкой выше: две кнопки в столбик читаются
                     как пара. Прежде она стояла в ряду сравнений, через две
                     строки от той, с которой её и надо сравнивать глазом. */}
-                <div className={телефон ? "flex items-start justify-between gap-3" : "flex items-end"}>
+                {/* ЗАЗОРА НЕТ ВОВСЕ. Строй занимает 236 пикселей, столбец
+                    кнопки 118, поля карточки оставляют 356 -- вместе ровно
+                    354, и на зазор места нет. С зазором justify-between
+                    выталкивал столбец за край карточки, кнопка «Тревожно ли»
+                    уезжала правее кнопки ФОМа (у той такого соседа нет), и
+                    середины двух кнопок расходились на десять пикселей. */}
+                <div className={телефон ? "flex items-start justify-between" : "flex items-end"}>
                   <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
                   {/* ОБЕ КНОПКИ ПОДНЯТЫ И ЧИТАЮТСЯ ПАРОЙ: «Опрос ФОМ» с числом
                       опроса стоит строкой выше, «Тревожно ли вокруг вас» --
@@ -589,36 +596,44 @@ export default function App() {
                      правый край выше строя -- и подпись уезжала вниз на три
                      строки. Здесь ряд ровно такой высоты, как выше из двух, и
                      эта высота от недели не зависит: слов всегда три. */
-                  <div className="mt-2 flex items-start justify-between gap-3">
+                  <div className="mt-2 flex items-start justify-between gap-1 pr-0">
                     <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone level={level} />
-                    <div className="w-[118px] shrink-0">
+                    {/* ШИРЕ КОЛОНКИ КНОПОК И ЛЕВЕЕ ЕЁ: слова бывают до
+                        пятнадцати букв, и в 118 пикселей самое длинное не
+                        влезает. Место слева свободно -- подпись строя коротка.
+                        Заголовок едет вместе со словами, они одно целое. */}
+                    <div className="w-[172px] shrink-0">
                       <СловаНедели w={w} lang={lang} phone />
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className={телефон ? "" : "shrink-0"}>
+              {/* НА ТЕЛЕФОНЕ СРАВНЕНИЯ СТОЯТ В СТОЛБИК, число слева, подпись
+                  справа от него. Рядом они занимали две трети ширины экрана и
+                  подписи вставали в две строки каждая; в столбик обе читаются
+                  одной строкой, а высота выходит та же. */}
+              <div className={телефон ? "flex items-baseline gap-2" : "shrink-0"}>
                 {/* Прижаты к ВЕРХУ ряда, как число и строй: в коробке на 76
                     пикселей с прижатием к низу они висели заметно ниже всего
                     остального и читались как приписка. */}
-                <div className="flex items-start">
+                <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[108px]"}>
+                <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
                   <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
                 </div>
               </div>
 
-              <div className={телефон ? "" : "shrink-0"}>
-                <div className="flex items-start">
+              <div className={телефон ? "mt-1 flex items-baseline gap-2" : "shrink-0"}>
+                <div className={телефон ? "flex w-[68px] shrink-0 items-start justify-end" : "flex items-start"}>
                   <Kpi
                     v={`${дельтаНед == null ? "—" : (дельтаНед > 0 ? "+" : "") + дельтаНед}%`}
                     c={дельтаНед == null ? "var(--ink-3)" : moodColor(w.idx, 6)}
                     phone={телефон}
                   />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[108px]"}>
+                <div className={телефон ? "" : "mt-1.5 w-[108px]"}>
                   <KpiLabel l={T.vsPrev[lang]} phone={телефон} />
                 </div>
               </div>
@@ -1281,27 +1296,52 @@ function НастройкиВида({
  * в подсказке, для тех, кому нужно точно.
  */
 function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lang; phone?: boolean }) {
+  const [подсказка, setПодсказка] = useState(false);
+  const коробка = useRef<HTMLDivElement>(null);
+  useЗакрытьСнаружи(коробка, подсказка, () => setПодсказка(false));
   if (!w.слово || !w.слово.с.length) return null;
   const ru = lang === "ru";
+  /* ОБЪЯСНЕНИЕ КОРОТКОЕ НАРОЧНО: подсказка читается на лету, а не изучается.
+     Как считается -- подробно сказано в разборе метода. */
+  const текст = ru
+    ? "Сказано намного чаще обычного для самого этого слова"
+    : "Said far more often than this word usually is";
   return (
-    <div className={phone ? "text-center" : ""}>
+    <div className="relative" ref={коробка}>
+      {/* НА ТЕЛЕФОНЕ ПОДСКАЗКА ПО НАЖАТИЮ. Атрибут title там не показывается
+          вовсе: наведения на телефоне нет, а долгое нажатие браузер тратит на
+          своё меню. Поэтому подпись здесь -- кнопка, и она открывает то же
+          объяснение рядом. Гасится нажатием куда угодно мимо. */}
       <div
         className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
         style={{ color: "var(--ink)", fontSize: phone ? 15 : 18 }}
-        /* ОБЪЯСНЕНИЕ КОРОТКОЕ НАРОЧНО: подсказка читается на лету, а не
-           изучается. Как считается -- подробно сказано в разборе метода. */
-        title={ru
-          ? "Сказано намного чаще обычного для самого этого слова"
-          : "Said far more often than this word usually is"}
+        title={phone ? undefined : текст}
+        onClick={phone ? () => setПодсказка((v) => !v) : undefined}
+        role={phone ? "button" : undefined}
       >
         {ru ? "слова недели" : "words of the week"}
       </div>
+      {phone && подсказка && (
+        <div
+          className="absolute right-0 top-[calc(100%+6px)] z-40 rounded-xl border p-2.5 leading-snug"
+          style={{
+            borderColor: "var(--line-strong)",
+            background: "var(--bg-2)",
+            color: "var(--ink-2)",
+            boxShadow: "var(--shadow)",
+            width: "min(250px, calc(100vw - 32px))",
+            fontSize: 13,
+          }}
+        >
+          {текст}
+        </div>
+      )}
       {/* СЛОВА ВСЕГДА БЕЛЫЕ. Цветом на этой странице сказано ровно одно --
           насколько тревожна неделя, и это уже сказано числом, строем и самой
           кривой. Крася в тот же цвет ещё и слова, мы повторяли бы показание
           там, где его нет: слово недели прибором не меряется. */}
       <div
-        className={phone ? "flex flex-col items-center" : "flex items-baseline gap-2"}
+        className={phone ? "flex flex-col items-start" : "flex items-baseline gap-2"}
         style={{
           color: "var(--ink)",
           fontSize: phone ? 16 : 22,
@@ -1313,16 +1353,13 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           transition: "opacity 0.12s linear",
         }}
       >
-        {/* На телефоне столбец шириной 118 пикселей, а слова бывают до
-            пятнадцати букв («ответственность»). Такому кегль ужимается по
-            месту -- перенести одно слово некуда, а вылезти за карточку оно не
-            имеет права: карточка режет по краю. */}
+        {/* КЕГЛЬ У ВСЕХ СЛОВ ОДИН. Он ужимался под длинные -- и страницу
+            подёргивало при каждом переходе на другую неделю: слово короче,
+            кегль крупнее, строка другой высоты. Место под слова отведено
+            заранее и с запасом на самое длинное («ответственность»), а какой
+            длины слово попадётся -- уже не важно. */}
         {w.слово.с.map((с, i) => (
-          <span
-            key={с}
-            className="font-semibold whitespace-nowrap"
-            style={phone && с.length > 10 ? { fontSize: Math.round(160 / с.length) } : undefined}
-          >
+          <span key={с} className="font-semibold whitespace-nowrap">
             {!phone && i > 0 && (
               <span className="mr-2 font-normal" style={{ color: "var(--ink-3)" }}>·</span>
             )}
@@ -1399,6 +1436,32 @@ function Барабан({
     el.scrollTo({ top: цель, behavior: "smooth" });
     window.setTimeout(() => (ведём.current = false), 350);
   }, [знач, годы]);
+
+  /**
+   * КОЛЕСО КРУТИТ РОВНО НА ОДИН ГОД ЗА ЩЕЛЧОК.
+   *
+   * Браузер отдаёт колесу около ста пикселей за щелчок, а строка барабана --
+   * тридцать четыре: один щелчок проматывал три года и перескакивал нужный.
+   * Здесь щелчок перехватывается и переводится в один шаг.
+   *
+   * Слушатель ставится вручную, а не через onWheel: React вешает свой
+   * пассивно, а пассивному нельзя отменить прокрутку -- страница уезжала бы
+   * вместе с барабаном.
+   */
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const колесо = (e: WheelEvent) => {
+      e.preventDefault();
+      if (ведём.current) return;
+      const k = Math.max(0, годы.indexOf(знач));
+      const шаг = e.deltaY > 0 ? 1 : -1;
+      const н = Math.max(0, Math.min(годы.length - 1, k + шаг));
+      if (годы[н] !== знач) менять(годы[н]);
+    };
+    el.addEventListener("wheel", колесо, { passive: false });
+    return () => el.removeEventListener("wheel", колесо);
+  }, [знач, годы, менять]);
 
   return (
     <div className="flex flex-col items-center gap-0.5">

@@ -174,7 +174,12 @@ export default function App() {
           середины приходятся на одну вертикаль, и они читаются как пара.
           Прежде каждая была шириной по своему тексту и они расходились. */}
       {телефон ? (
-        <span className="flex w-[111px] shrink-0 justify-center">
+        /* ПОДНЯТА относительно строки места. Она стоит в одном ряду с «48-я из
+           329» и числом опроса, а те -- строчки текста; кнопка выше их вдвое, и
+           вровень по середине она садилась заметно ниже строки. Сдвиг чисто
+           зрительный (relative), в раскладке она остаётся на своём месте и
+           ничего не двигает. */
+        <span className="relative top-[-7px] flex w-[111px] shrink-0 justify-center">
           <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone />
         </span>
       ) : (
@@ -503,7 +508,7 @@ export default function App() {
                   {!телефон && (
                     <div className="mt-2 flex items-center gap-9">
                       {парФОМ}
-                      <СловоНедели w={w} lang={lang} />
+                      <СловаНедели w={w} lang={lang} />
                     </div>
                   )}
                   </div>
@@ -524,9 +529,9 @@ export default function App() {
                       под ними обеими: оно про ту же неделю, но к опросу
                       отношения не имеет. */}
                   {телефон && (
-                    <div className="-mt-2 flex w-[111px] shrink-0 flex-col items-center gap-2">
+                    <div className="-mt-2 flex w-[118px] shrink-0 flex-col items-center gap-2">
                       {кнопкаОпроса}
-                      <СловоНедели w={w} lang={lang} phone />
+                      <СловаНедели w={w} lang={lang} phone />
                     </div>
                   )}
                 </div>
@@ -1186,7 +1191,9 @@ function НастройкиВида({
 }
 
 /**
- * СЛОВО НЕДЕЛИ.
+ * СЛОВА НЕДЕЛИ. Три, а не одно: одно слово неделю называет, три её
+ * описывают, и сразу видно, об одном ли они. Формы одного корня сведены при
+ * счёте, иначе выходило «бензин · бензина · очереди».
  *
  * Какое слово в эту неделю говорили в городских пабликах заметно чаще, чем
  * обычно в этом месяце. Считается отдельно от прибора и НА ПОКАЗАНИЕ НЕ
@@ -1202,35 +1209,55 @@ function НастройкиВида({
  * и «интернет» выглядели бы одинаково весомо, а это неправда. Само число --
  * в подсказке, для тех, кому нужно точно.
  */
-function СловоНедели({ w, lang, phone = false }: { w: Week; lang: Lang; phone?: boolean }) {
-  if (!w.слово) return null;
+function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lang; phone?: boolean }) {
+  if (!w.слово || !w.слово.с.length) return null;
   const ru = lang === "ru";
   return (
     <div className={phone ? "text-center" : ""}>
       <div
-        className="mono whitespace-nowrap"
-        style={{ color: "var(--ink-3)", fontSize: phone ? 13 : 15 }}
-      >
-        {ru ? "слово недели" : "word of the week"}
-      </div>
-      <div
-        className="font-semibold whitespace-nowrap"
-        style={{
-          color: moodColor(w.idx, 6),
-          fontSize: phone ? 17 : 24,
-          lineHeight: 1.15,
-          /* 1.4 -- десятая часть недель снизу, 3.0 -- девятая десятая сверху.
-             Между ними яркость и растёт; за 3.0 слово горит целиком. */
-          opacity: Math.max(0.45, Math.min(1, 0.45 + (w.слово.раз - 1.4) * 0.34)),
-          transition: "color 0.12s linear, opacity 0.12s linear",
-        }}
+        className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
+        style={{ color: "var(--ink)", fontSize: phone ? 15 : 18 }}
+        /* ОБЪЯСНЕНИЕ КОРОТКОЕ НАРОЧНО: подсказка читается на лету, а не
+           изучается. Как считается -- подробно сказано в разборе метода. */
         title={ru
-          ? `в ${w.слово.раз.toFixed(1)} раза выше того уровня, которого это слово`
-            + ` само достигает раз в десять недель`
-          : `${w.слово.раз.toFixed(1)}x the level this word reaches on its own`
-            + ` about once in ten weeks`}
+          ? "Сказано намного чаще обычного для самого этого слова"
+          : "Said far more often than this word usually is"}
       >
-        {w.слово.с}
+        {ru ? "слова недели" : "words of the week"}
+      </div>
+      {/* СЛОВА ВСЕГДА БЕЛЫЕ. Цветом на этой странице сказано ровно одно --
+          насколько тревожна неделя, и это уже сказано числом, строем и самой
+          кривой. Крася в тот же цвет ещё и слова, мы повторяли бы показание
+          там, где его нет: слово недели прибором не меряется. */}
+      <div
+        className={phone ? "flex flex-col items-center" : "flex items-baseline gap-2"}
+        style={{
+          color: "var(--ink)",
+          fontSize: phone ? 16 : 22,
+          lineHeight: 1.2,
+          /* Сила отрыва -- яркостью: 1.5 это десятая часть недель снизу, 3.6 --
+             девятая десятая сверху. Иначе «война» и «интернет» выглядели бы
+             одинаково весомо, а это неправда. */
+          opacity: Math.max(0.5, Math.min(1, 0.5 + (w.слово.раз - 1.5) * 0.24)),
+          transition: "opacity 0.12s linear",
+        }}
+      >
+        {/* На телефоне столбец шириной 118 пикселей, а слова бывают до
+            пятнадцати букв («ответственность»). Такому кегль ужимается по
+            месту -- перенести одно слово некуда, а вылезти за карточку оно не
+            имеет права: карточка режет по краю. */}
+        {w.слово.с.map((с, i) => (
+          <span
+            key={с}
+            className="font-semibold whitespace-nowrap"
+            style={phone && с.length > 10 ? { fontSize: Math.round(160 / с.length) } : undefined}
+          >
+            {!phone && i > 0 && (
+              <span className="mr-2 font-normal" style={{ color: "var(--ink-3)" }}>·</span>
+            )}
+            {с}
+          </span>
+        ))}
       </div>
     </div>
   );

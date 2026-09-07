@@ -234,7 +234,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
     [H, PAD],
   );
 
-  const { line, area, fomLine, markers, полосы, gaps } = useMemo(() => {
+  const { line, area, fomLine, markers, полосы } = useMemo(() => {
     const pts = data.map((d, i) => [x(i), y(d.idx)] as const);
     let p = `M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
     for (let i = 0; i < pts.length - 1; i++) {
@@ -287,28 +287,6 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
       f += `${open ? "L" : "M"}${x(i).toFixed(1)},${y(d.fom).toFixed(1)}`;
       open = true;
     });
-
-    // РАСХОЖДЕНИЕ. Полоска от прибора до опроса на каждой неделе, где волна
-    // была. Цвет говорит, кто выше. Тянуть сплошную заливку нельзя: между
-    // волнами опроса нет, и залитый промежуток был бы измерением, которого
-    // не делали.
-    // Лента строится ПАРАМИ соседних недель: четырёхугольник между прибором и
-    // опросом. Тонкая лента -- согласие, и именно это надо было увидеть; толстая
-    // -- расхождение. Разрыв в опросе рвёт и ленту: между волнами измерения нет,
-    // и залитый промежуток был бы измерением, которого не делали.
-    const gaps: { d: string; up: boolean }[] = [];
-    for (let i = 0; i + 1 < data.length; i++) {
-      const A = data[i];
-      const B = data[i + 1];
-      if (A.fom == null || B.fom == null) continue;
-      const x1 = x(i);
-      const x2 = x(i + 1);
-      gaps.push({
-        d: `M${x1.toFixed(1)},${y(A.idx).toFixed(1)}L${x2.toFixed(1)},${y(B.idx).toFixed(1)}L${x2.toFixed(1)},${y(B.fom).toFixed(1)}L${x1.toFixed(1)},${y(A.fom).toFixed(1)}Z`,
-        up: A.fom + B.fom > A.idx + B.idx,
-      });
-    }
-
 
     // ОДИН РЯД. Подписи стоят ровной строкой наверху, в порядке дат, каждой
     // отведена равная доля ширины -- а к своей точке на кривой от неё идёт
@@ -436,7 +414,6 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
 
       markers: ms,
       полосы,
-      gaps,
     };
   }, [data, lang, x, y, W, PAD, phone, рядов]);
 
@@ -628,10 +605,12 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
             же на всём ряду -- делить её чертой значило показывать не ряд, а
             наш способ его проверять. */}
 
-        {showFom &&
-          gaps.map((g, i) => (
-            <path key={i} d={g.d} fill={g.up ? "var(--cool)" : "var(--violet)"} opacity="0.5" />
-          ))}
+        {/* ЛЕНТЫ РАСХОЖДЕНИЯ БОЛЬШЕ НЕТ. Она закрашивала промежуток между
+            прибором и опросом, и это была ТРЕТЬЯ величина на картинке, которой
+            никто не просил: читатель включает кривую опроса, чтобы увидеть
+            опрос, а не чтобы разбирать, где мы с ним разошлись. Обе кривые
+            нарисованы -- расхождение видно и так, глазом, без заливки, которая
+            вдобавок перекрывала цветные куски событий. */}
 
         {индекс && <path d={area} fill="url(#areaG)" />}
         {индекс && <path

@@ -324,7 +324,7 @@ export default function App() {
               переходе на другую неделю. */}
           <div
             ref={heroRef}
-            className={"card reveal in flex h-full flex-col overflow-hidden " + (телефон ? "p-2" : "p-3 sm:p-4")}
+            className={"card reveal in flex h-full flex-col " + (телефон ? "p-2" : "overflow-hidden p-3 sm:p-4")}
           >
             {/* ПАРЫ «ЗНАЧЕНИЕ + ПОДПИСЬ», А НЕ СЕТКА. Прежде здесь была сетка с
                 жёсткими колонками (392+324+124+92 и просветы) -- на экране уже
@@ -378,7 +378,7 @@ export default function App() {
                         "mono font-bold leading-[0.84] " +
                         (телефон ? "text-[46px]" : "text-[44px] sm:text-[54px] lg:text-[64px]")
                       }
-                      style={{ color, transition: "color 0.4s ease" }}
+                      style={{ color, transition: "color 0.12s linear" }}
                     >
                       {shown.toFixed(1)}
                     </span>
@@ -1021,7 +1021,7 @@ function ПолосаСобытий({ lang, sel, onSel }: { lang: Lang; sel: num
     [],
   );
   return (
-    <div className="lenta -mx-1 mb-2 flex gap-2 overflow-x-auto px-1 pb-1">
+    <div className="lenta -mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-1">
       {события.map(({ w, i, ev }) => {
         const on = sel === i;
         const c = moodColor(w.idx, 6);

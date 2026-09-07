@@ -378,7 +378,11 @@ export default function App() {
         className="sticky top-0 z-30 border-b backdrop-blur-xl"
         style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 76%, transparent)" }}
       >
-        <div className="mx-auto flex max-w-[1920px] items-center gap-3 px-2 py-1.5 sm:px-3">
+        {/* НИЖНЕГО ПОЛЯ У ПАНЕЛИ НЕТ: место под окна отводит сама буква
+              (paddingBottom у неё), и своё поле панель добавляла бы поверх --
+              шапка вырастала на четырнадцать пикселей, а с ней опускалась вся
+              страница. */}
+          <div className="mx-auto flex max-w-[1920px] items-center gap-3 px-2 pb-0 pt-1.5 sm:px-3">
           <Pulse idx={w.idx} />
           {/* На телефоне заголовок обрезался на «трев»: там нет места ни на
               кегль 20, ни на годы в одну строку с ним. Кегль меньше, годы --
@@ -398,21 +402,49 @@ export default function App() {
               {T.titleParts[lang].map(([буква, хвост], i) => (
                 <span key={буква + i}>
                   {i > 0 ? " " : ""}
-                  {/* Буквы не перекрашены -- они ПОМЕЧЕНЫ: крупнее остальных и
-                      с чертой снизу. Одним цветом кривой на серебряном тексте
-                      разницы не видно вовсе, а черта под буквой -- обычный
-                      знак аббревиатуры, и читается сразу. */}
+                  {/* Буквы не перекрашены -- они ПОМЕЧЕНЫ: крупнее остальных, а
+                      под каждой -- ОКНО В ЧЁРНОЙ ПАНЕЛИ. Прежде там стояла
+                      черта цветом показания, и она читалась подчёркиванием,
+                      то есть частью текста. Окно читается иначе: сквозь
+                      прорезь в панели виден тот же свет, каким горит число, --
+                      имя и показание оказываются об одном, и сказано это не
+                      надписью, а светом.
+
+                      Квадрат со скошенными углами (восьмиугольник в clip-path),
+                      а не круг и не полоса: у прорези в панели должны быть
+                      грани. */}
                   <span
+                    className="relative inline-block"
                     style={{
                       color: "var(--curve)",
                       fontSize: "1.22em",
-                      // Черта живёт цветом показания: имя и число -- об одном.
-                      borderBottom: "2px solid " + color,
-                      paddingBottom: "1px",
+                      /* Место под окно отводится САМОЙ БУКВОЙ. Без него окно
+                         вылезало за нижний край панели и обрезалось ею
+                         наполовину: панель прижата к строке вплотную. */
+                      paddingBottom: "0.44em",
                       textShadow: "0 0 12px color-mix(in srgb, var(--curve) 60%, transparent)",
                     }}
                   >
                     {буква}
+                    <span
+                      aria-hidden
+                      style={{
+                        position: "absolute",
+                        left: "50%",
+                        bottom: "0.02em",
+                        transform: "translateX(-50%)",
+                        width: "0.36em",
+                        height: "0.36em",
+                        background: color,
+                        /* Свет из-под панели, а не наклейка поверх неё: мягкое
+                           свечение наружу и тонкая тёмная грань по краю. */
+                        boxShadow:
+                          "0 0 9px " + color + ", inset 0 0 0 1px color-mix(in srgb, var(--bg) 55%, transparent)",
+                        clipPath:
+                          "polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%)",
+                        transition: "background 0.12s linear, box-shadow 0.12s linear",
+                      }}
+                    />
                   </span>
                   {хвост}
                 </span>
@@ -1539,10 +1571,9 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                 color: "var(--ink)",
                 background: "var(--card-2)",
                 border: "1px solid var(--line)",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
+                letterSpacing: "0.02em",
                 fontWeight: 700,
-                fontSize: phone ? 12 : 15,
+                fontSize: phone ? 13 : 17,
                 width: phone ? 62 : undefined,
               }}
             >

@@ -681,7 +681,7 @@ export default function App() {
                     между строками только так и читается: слова одной под
                     словами другой. */}
                 {телефон && (
-                  <div className="mt-2.5">
+                  <div className="mt-1.5">
                     <СловаНедели w={w} lang={lang} phone />
                   </div>
                 )}
@@ -719,14 +719,20 @@ export default function App() {
                 рядом с «мобилизации · повестки · возвращайтесь») слова
                 переносятся -- и без отведённой высоты всё под блоком
                 подпрыгивало бы при переходе на такую неделю. */}
+            {/* СЛОВА ЗАНИМАЮТ ВСЮ ШИРИНУ, и только поэтому строка одна ВСЕГДА.
+                Рядом с кнопкой ФОМа им доставалось 877 пикселей, а самая длинная
+                неделя просит 1150: половина недель переносила «люди» на вторую
+                строку, и при перелистывании блок дёргался. Во всю карточку
+                (1156) не переносится ни одна.
+
+                Кнопка ушла под слова -- она короткая, и её строка стоит дешевле
+                скачущего блока. */}
             {!телефон && (
-              <div className="mt-2 flex items-start gap-6">
-                <div className="shrink-0">{парФОМ}</div>
-                <div className="min-w-0 flex-1" style={{ minHeight: 124 }}>
-                  <СловаНедели w={w} lang={lang} />
-                </div>
+              <div className="mt-1 w-full">
+                <СловаНедели w={w} lang={lang} />
               </div>
             )}
+            {!телефон && <div className="mt-1 flex">{парФОМ}</div>}
 
             {/* СЛОВА НЕДЕЛИ СТОЯТ ВЫШЕ ПАРЫ ФОМа -- прямо под верхним
                 рядом: под числом, строем, напряжением и обоими
@@ -1285,7 +1291,7 @@ function ПолосаСобытий({ lang, sel, onSel }: { lang: Lang; sel: num
     [],
   );
   return (
-    <div className="lenta lenta-край -mx-1 mb-2 flex gap-2 overflow-x-auto px-1 pb-1">
+    <div className="lenta lenta-край -mx-1 mb-1 flex gap-2 overflow-x-auto px-1 pb-1">
       {события.map(({ w, i, ev }) => {
         const on = sel === i;
         const c = moodColor(w.idx, 6);
@@ -1410,8 +1416,8 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
      ставится прочерк -- он говорит «данных нет», а пустое место не говорило бы
      ничего. */
   const ряды = [
-    { к: "новости", имя: ru ? "новости" : "news", д: w.слово.новости },
-    { к: "люди", имя: ru ? "люди" : "people", д: w.слово.люди },
+    { к: "новости", имя: ru ? "Новости" : "News", д: w.слово.новости },
+    { к: "люди", имя: ru ? "Люди" : "People", д: w.слово.люди },
   ].map((р) => ({ ...р, д: р.д && р.д.с.length ? р.д : null }));
   if (!ряды.some((р) => р.д)) return null;
   /* ОБЪЯСНЕНИЕ ЧЕЛОВЕЧЕСКИМ ЯЗЫКОМ и в одном окне на обе строки: разница между
@@ -1435,7 +1441,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
            кончаются раньше правого, а заголовок висел посреди того, что
            осталось, и связь между ним и словами читалась не сразу. */
         className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
-        style={{ color: "var(--ink)", fontSize: phone ? 18 : 26 }}
+        style={{ color: "var(--ink)", fontSize: phone ? 15 : 26 }}
         onClick={() => setПодсказка((v) => !v)}
         onMouseEnter={phone ? undefined : () => setПодсказка(true)}
         onMouseLeave={phone ? undefined : () => setПодсказка(false)}
@@ -1474,7 +1480,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           тревожна неделя, и это уже сказано числом, строем и кривой. */}
       <div
         className={
-          "mt-0.5 flex " + (phone ? "flex-col gap-0.5" : "flex-row flex-wrap items-baseline gap-x-8 gap-y-1")
+          "mt-0.5 flex " + (phone ? "flex-col gap-0.5" : "flex-row items-baseline gap-6")
         }
       >
         {ряды.map((р) => (
@@ -1485,9 +1491,15 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                 /* КЕГЛЬ ТОТ ЖЕ, ЧТО У СЛОВ. Подпись «новости» -- не приписка
                    к словам, а вторая половина утверждения: без неё шесть слов
                    читаются одной кучей. Мельче слов она читалась служебной. */
+                /* НА ТЕЛЕФОНЕ КЕГЛЬ МЕНЬШЕ, И ЭТО НЕ ВЫБОР. Под слова там
+                   остаётся 283 пикселя (374 минус поле карточки, колонка
+                   подписи и зазор), а самая длинная строка -- «мобилизации ·
+                   повестки · возвращайтесь» -- при 18 занимает 356 и уходила
+                   за край на семьдесят три пикселя. 14 -- наибольший кегль, при
+                   котором влезает и она. */
                 color: "var(--ink-3)",
-                fontSize: phone ? 18 : 26,
-                width: phone ? 72 : undefined,
+                fontSize: phone ? 14 : 26,
+                width: phone ? 62 : undefined,
               }}
             >
               {р.имя}
@@ -1496,7 +1508,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
               className="font-semibold"
               style={{
                 color: р.д ? "var(--ink)" : "var(--ink-3)",
-                fontSize: phone ? 18 : 26,
+                fontSize: phone ? 14 : 26,
                 lineHeight: 1.25,
                 /* Сила отрыва -- яркостью, а не вторым числом: 1.5 это десятая
                    часть недель снизу, 3.6 -- девятая десятая сверху. Иначе

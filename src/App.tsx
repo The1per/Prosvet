@@ -452,7 +452,7 @@ export default function App() {
                 <div className="flex items-start">
                   <Kpi v={`${delta > 0 ? "+" : ""}${delta}%`} c={moodColor(w.idx, 6)} phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[104px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
                   <KpiLabel l={T.vsBaseline[lang]} phone={телефон} />
                 </div>
               </div>
@@ -461,7 +461,7 @@ export default function App() {
                 <div className="flex items-start">
                   <Kpi v={пик.idx.toFixed(1)} c="var(--accent)" phone={телефон} />
                 </div>
-                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[104px]"}>
+                <div className={телефон ? "mt-1 max-w-[150px]" : "mt-1.5 w-[92px]"}>
                   <KpiLabel l={`${T.peakEra[lang](ранняя)}, ${пик.date.slice(0, 4)}`} phone={телефон} />
                 </div>
               </div>
@@ -931,7 +931,7 @@ const ПОРОГ_СОГЛАСИЯ = 5;
  * рядом с числом опроса, знаком расхождения и кнопкой. Меньше -- строка места
  * налезает на кнопку, больше -- между блоком и строем зияет пустота.
  */
-const ШИРИНА_ЧИСЛА = 388;
+const ШИРИНА_ЧИСЛА = 380;
 
 /**
  * Лента важных дат для телефона.

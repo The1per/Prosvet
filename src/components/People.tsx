@@ -33,8 +33,8 @@ const BODY =
 // 25/5, а не 27/6: строй стоит в одном ряду с числами и управлением, и
 // каждый лишний пиксель его ширины -- это пиксель, из-за которого ряд
 // рассыпается на две строки. Разницу в два пикселя на фигуру глаз не ловит.
-const W = 24;
-const GAP = 4;
+const W = 20;   // было 24: строй ужат, чтобы подписи рядом влезли в две строки
+const GAP = 3;
 export const PEOPLE_WIDTH = 10 * W + 9 * GAP;
 // Телефон: строй ужат так, чтобы десять фигур влезли в 390 пикселей вместе с
 // полями карточки, и не забирали высоту у графика.
@@ -82,8 +82,12 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         ? `по-вашему — ${shown.replace(".", ",")} из 10`
         : `by your reading — ${shown} in 10`
       : ru
-        ? `${shown.replace(".", ",")} из 10 говорят, что вокруг тревожно`
-        : `${shown} in 10 say the mood around them is anxious`;
+        // Короче прежнего: «говорят, что вокруг тревожно» в кегле раздела
+        // занимало три строки, а «говорят: вокруг тревожно» -- две. Слово
+        // «говорят» осталось нарочно: весь проект стоит на разнице между тем,
+        // что есть, и тем, что люди говорят.
+        ? `${shown.replace(".", ",")} из 10 говорят: вокруг тревожно`
+        : `${shown} in 10 say: it is anxious around them`;
   // КОРОЧЕ ПРЕЖНЕГО. Было «...даже в самую спокойную неделю за всё время
   // опроса»: строка занимала три строки под фигурами и читалась дольше, чем
   // стоит подпись. «За всё время опроса» и так следует из «самой спокойной».
@@ -150,6 +154,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
     // весь блок, он укладывается в одну строку и ничего не двигает.
     <div className={phone ? "" : ""}>
     <div className={phone ? "" : "flex items-start gap-3"}>
+    <div>
     <div className="relative inline-block" style={{ width: ширина }}>
       <div className="flex items-end" style={{ gap: зазор }} role="img" aria-label={label}>
         {Array.from({ length: 10 }, (_, i) => {
@@ -196,9 +201,16 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         aria-hidden
       />
     </div>
-    {/* ПОЛ ОПРОСА -- ПРЯМО ПОД ФИГУРАМИ. Он про них: столько тревожных даже в
-        самую спокойную неделю, и пунктирная скобка под строем показывает ту же
-        величину. Стоя ниже главной строки, он отрывался от того, что объясняет. */}
+    {/* ПОЛ ОПРОСА -- ПРЯМО ПОД ФИГУРАМИ и вплотную к ним: он про них, и
+        пунктирная скобка под строем показывает ту же величину. Кегль тот же,
+        что у строки справа, -- это две подписи одного веса, а не подпись и
+        приписка к ней. */}
+    {!phone && (
+      <div className="mono mt-2 text-[19px] leading-snug" style={{ color: "var(--ink-3)", width: ширина }}>
+        ↳ {floorLabel}
+      </div>
+    )}
+    </div>
 
     {/* Главная строка -- вплотную справа от фигур и вровень с ними: она про
         них и есть. Ширина задана, иначе блок растянулся бы на всю свободную
@@ -207,21 +219,19 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         недели, и в прежнем росте читалась вровень с ними -- как второе
         показание, а не как подпись к первому. */}
     {!phone && (
-      <div className="mono text-[19px] leading-snug" style={{ color: "var(--ink-2)", width: 204 }}>
+      // Слово уровня СТОИТ В СТРОКУ с подписью, а не отдельной строкой над
+      // ней: отдельной строкой вся подпись занимала четыре строки при трёх
+      // словах смысла. Коробка шире прежней ровно настолько, чтобы вышло две.
+      <div className="mono text-[19px] leading-snug" style={{ color: "var(--ink-2)", width: 285 }}>
         {level && (
-          <b className="block font-semibold" style={{ color: "var(--ink)" }}>
-            {level[0].toUpperCase() + level.slice(1)}
+          <b className="font-semibold" style={{ color: "var(--ink)" }}>
+            {level[0].toUpperCase() + level.slice(1)}{" "}
           </b>
         )}
         {label}
       </div>
     )}
     </div>
-    {!phone && (
-      <div className="mono mt-3 whitespace-nowrap text-[19px] leading-snug" style={{ color: "var(--ink-3)" }}>
-        ↳ {floorLabel}
-      </div>
-    )}
     </div>
   );
 }

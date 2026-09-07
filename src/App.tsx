@@ -428,8 +428,11 @@ export default function App() {
                       почти постоянная. */}
                   <div
                     className={
-                      "mt-0.5 flex justify-between gap-3 " +
-                      (телефон ? "items-center text-[13.5px]" : "items-end text-[19px]")
+                      "flex justify-between gap-3 " +
+                      // На телефоне строка и обе кнопки подтянуты вверх, к дате:
+                      // между ними стоял воздух, которого на короткой карточке
+                      // нет лишнего.
+                      (телефон ? "-mt-1 items-center text-[15px]" : "mt-0.5 items-end text-[19px]")
                     }
                     style={{ color: "var(--ink-3)" }}
                   >
@@ -1078,7 +1081,7 @@ function Kpi({ v, c, phone = false }: { v: string; c: string; phone?: boolean })
  * ей теперь нечем: «к обычной неделе» постоянна, а у «Пик с 2020, 2022»
  * меняются только цифры года, и длина строки от этого не меняется.
  */
-const ПОДПИСЬ_КЕГЛЬ = { экран: 19, телефон: 13 };
+const ПОДПИСЬ_КЕГЛЬ = { экран: 19, телефон: 15 };
 /**
  * Подпись под числом сравнения.
  *

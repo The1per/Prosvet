@@ -129,7 +129,7 @@ export default function People({ idx, lang, preview = null, part, phone = false,
         {phone && (
           <div
             className="mono whitespace-nowrap"
-            style={{ color: "var(--ink-2)", fontSize: "clamp(13px, 3vw, 14px)" }}
+            style={{ color: "var(--ink-2)", fontSize: "clamp(15px, 3.6vw, 17px)" }}
           >
             {level && (
               <b
@@ -203,17 +203,20 @@ export default function People({ idx, lang, preview = null, part, phone = false,
           обе границы нарисованы: докуда опрос опускался и докуда поднимался
           за одиннадцать лет. Читателю это говорит, широка ли шкала, на
           которой стоит сегодняшнее число. */}
+      {/* Подписи БЕЛЫЕ и в общем кегле страницы. Одиннадцать пикселей серым
+          -- это не подпись, а её след; такого кегля на странице нет нигде и
+          быть не должно. Отсечки подняты вплотную к строю: они про него. */}
       {[["мин.", floorPx], ["макс.", peakPx]].map(([метка, x]) => (
         <div
           key={метка as string}
-          className="pointer-events-none absolute bottom-[-8px]"
-          style={{ left: (x as number) - 0.5, height: 8 }}
+          className="pointer-events-none absolute bottom-[-5px]"
+          style={{ left: (x as number) - 0.5, height: 5 }}
           aria-hidden
         >
-          <div style={{ width: 1, height: 8, background: "var(--line-strong)" }} />
+          <div style={{ width: 1, height: 5, background: "var(--ink)" }} />
           <div
-            className="mono absolute top-[9px] -translate-x-1/2 whitespace-nowrap"
-            style={{ left: 0, fontSize: phone ? 11 : 13, color: "var(--ink-3)" }}
+            className="mono absolute top-[5px] -translate-x-1/2 whitespace-nowrap"
+            style={{ left: 0, fontSize: phone ? 15 : 19, color: "var(--ink)" }}
           >
             {метка}
           </div>

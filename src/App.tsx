@@ -344,7 +344,9 @@ export default function App() {
                 {/* Число прижато к ВЕРХУ ряда, как и строй: прижатое к низу
                     76-пиксельной коробки, оно оказывалось ниже человечков. */}
                 <div className={"flex flex-col " + (телефон ? "pt-1.5" : "")}>
-                  <div className="flex items-end gap-2">
+                  {/* Зазор 3, а не 2: подпись стояла к числу вплотную и
+                      читалась его частью. */}
+                  <div className="flex items-end gap-3">
                     <span
                       ref={numRef}
                       className={
@@ -909,10 +911,14 @@ function FomButton({ lang, on, onToggle, phone = false }: { lang: Lang; on: bool
       <button
         className={
           "btn " +
-          (phone ? "px-2.5 py-1 text-[12px]" : "px-7 py-3.5 text-[17px] font-semibold") +
+          (phone ? "px-2.5 py-1" : "px-7 py-3.5 font-semibold") +
           // Перелив идёт, только пока кривую не включили.
           (on ? "" : " fombtn-idle")
         }
+        /* Кегль стилем, а не классом: у .btn в index.css свой font-size, и
+           класс Tailwind с той же силой ему проигрывал -- кнопка оставалась
+           пятнадцатью пикселями, сколько её ни увеличивай в разметке. */
+        style={{ fontSize: phone ? 13 : 20 }}
         data-on={on}
         onClick={() => {
           setTip(false);

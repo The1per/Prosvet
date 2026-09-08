@@ -812,7 +812,31 @@ export default function App() {
                 подписей. */}
             {телефон && <ПолосаСобытий lang={lang} sel={sel} onSel={setSel} />}
 
-            <div className="flex h-[var(--chart-h,360px)] flex-none flex-col">
+            <div className="relative flex h-[var(--chart-h,360px)] flex-none flex-col">
+              {/* СТРЕЛКИ ПО КРАЯМ КРИВОЙ. Неделя переключалась только щелчком
+                  по точке, а точки к краю ряда сходятся вплотную: попасть в
+                  соседнюю мышью труднее, чем кажется. Стрелки стоят прозрачными
+                  поверх поля -- они нужны, когда их ищут, и не спорят с кривой,
+                  когда смотрят на неё.
+
+                  ТОЛЬКО НА ЭКРАНЕ: на телефоне поле кривой узкое, и кнопка у
+                  края закрыла бы саму кривую. */}
+              {!телефон && (
+                <>
+                  <СтрелкаНедели
+                    сторона="влево"
+                    можно={sel > срез.сдвиг}
+                    жать={() => setSel(Math.max(срез.сдвиг, sel - 1))}
+                    lang={lang}
+                  />
+                  <СтрелкаНедели
+                    сторона="вправо"
+                    можно={sel < срез.конец}
+                    жать={() => setSel(Math.min(срез.конец, sel + 1))}
+                    lang={lang}
+                  />
+                </>
+              )}
               <Chart
                 data={срез.данные}
                 lang={lang}
@@ -1459,6 +1483,47 @@ function НастройкиВида({
  * и «интернет» выглядели бы одинаково весомо, а это неправда. Само число --
  * в подсказке, для тех, кому нужно точно.
  */
+/** Стрелка перехода на соседнюю неделю. Прозрачная: поверх кривой она не
+ *  должна спорить с ней за внимание, но при наведении становится видна. */
+function СтрелкаНедели({
+  сторона, можно, жать, lang,
+}: {
+  сторона: "влево" | "вправо";
+  можно: boolean;
+  жать: () => void;
+  lang: Lang;
+}) {
+  const ru = lang === "ru";
+  const влево = сторона === "влево";
+  return (
+    <button
+      type="button"
+      aria-label={ru ? (влево ? "предыдущая неделя" : "следующая неделя")
+                     : (влево ? "previous week" : "next week")}
+      disabled={!можно}
+      onClick={жать}
+      className={
+        "group absolute top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center "
+        + "justify-center rounded-full border transition-opacity "
+        + (влево ? "left-1" : "right-1")
+      }
+      style={{
+        borderColor: "var(--line)",
+        background: "transparent",
+        color: "var(--ink-2)",
+        opacity: можно ? 0.42 : 0.12,
+        cursor: можно ? "pointer" : "default",
+        fontSize: 22,
+        lineHeight: 1,
+      }}
+      onMouseEnter={(e) => { if (можно) e.currentTarget.style.opacity = "1"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.opacity = можно ? "0.42" : "0.12"; }}
+    >
+      {влево ? "‹" : "›"}
+    </button>
+  );
+}
+
 /** Границы яркости для каждого ряда слов: десятая и девятая десятая его
  *  собственных значений «раз». Считаются один раз по всему ряду недель.
  *
@@ -1600,7 +1665,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
              под другом, то вперемешку со словами соседнего ряда. Столбиком
              плашки стоят на одной вертикали, слова начинаются с одного места, и
              три ряда читаются как три ряда, а не как одна длинная строка. */
-          "flex " + (phone ? "mt-0.5 flex-col gap-0.5" : "flex-col gap-0.5")
+          "flex " + (phone ? "mt-0.5 flex-col gap-1" : "flex-col gap-1.5")
         }
       >
         {ряды.map((р) => (
@@ -1637,12 +1702,12 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                 border: "1px solid var(--line)",
                 letterSpacing: "0.02em",
                 fontWeight: 700,
-                fontSize: phone ? 13 : 17,
+                fontSize: phone ? 14 : 19,
                 /* ШИРИНА ПЛАШКИ ПОСТОЯННА И НА ЭКРАНЕ. Пока ряды шли строкой,
                    ширина была не нужна; столбиком без неё слова трёх рядов
                    начинались с разных мест -- «Люди» короче «Паблики», и первое
                    слово каждого ряда стояло на своей вертикали. */
-                width: phone ? 76 : 92,
+                width: phone ? 82 : 104,
               }}
             >
               {р.имя}
@@ -1651,8 +1716,8 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
               className="font-semibold"
               style={{
                 color: р.д ? цвет_слова(р.к, р.д.раз) : "var(--ink-3)",
-                fontSize: phone ? 14 : 20,
-                lineHeight: 1.25,
+                fontSize: phone ? 15 : 23,
+                lineHeight: 1.3,
                 /* Сила отрыва -- яркостью, а не вторым числом: иначе «война» и
                    «интернет» выглядели бы одинаково весомо.
  
@@ -1675,7 +1740,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                 ? р.д.с.map((с, i) => (
                     <span key={с} className="whitespace-nowrap">
                       {i > 0 && (
-                        <span className="mx-1 font-normal" style={{ color: "var(--ink-3)" }}>·</span>
+                        <span className="mx-1.5 font-normal" style={{ color: "var(--ink-3)" }}>·</span>
                       )}
                       {с}
                     </span>

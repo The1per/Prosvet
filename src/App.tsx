@@ -1518,10 +1518,24 @@ function СтрелкаНедели({
      НА ТЕЛЕФОНЕ они встают под своими соседями: левая под диапазоном, правая
      под настройками -- в тот же столбец, чтобы ряд кнопок читался колонками, а
      не рассыпался. */
-  const d = phone ? 40 : 52;
+  /* ДВА РАЗМЕРА, А НЕ ОДИН. Видимый кружок и область нажатия -- разные вещи.
+     На телефоне палец шире значка, и нажатие мимо кружка попадало на шкалу под
+     ним: неделя переключалась не туда, куда целились. Область нажатия сделана
+     шире кружка, но не намного -- иначе она сама начнёт перехватывать касания,
+     предназначенные кривой. Кружок остаётся прежнего размера: расширять надо
+     хват, а не рисунок. */
+  const кружок = phone ? 40 : 62;
+  const хват = phone ? кружок + 16 : кружок;
+  /* Хват шире кружка, и чтобы кружок остался НА ТОМ ЖЕ месте, коробку сдвигают
+     на половину прибавки в каждую сторону. */
+  const поля = (хват - кружок) / 2;
+  /* НА ЭКРАНЕ ОТОДВИНУТЫ ГЛУБЖЕ В ПОЛЕ. Слева вдоль края идут подписи оси
+     («70», «60») и сама её линия; при отступе 46 кнопка вставала на них
+     вплотную. По вертикали спущены ниже: наверху поля идут полочки к меткам
+     событий. */
   const место: React.CSSProperties = phone
-    ? { top: 48, ...(влево ? { left: 22 } : { right: 6 }) }
-    : { top: "22%", ...(влево ? { left: 46 } : { right: 26 }) };
+    ? { top: 48 - поля, ...(влево ? { left: 22 - поля } : { right: 6 - поля }) }
+    : { top: "40%", ...(влево ? { left: 78 } : { right: 58 }) };
   return (
     <button
       type="button"
@@ -1529,23 +1543,32 @@ function СтрелкаНедели({
                      : (влево ? "previous week" : "next week")}
       disabled={!можно}
       onClick={жать}
-      className="absolute z-30 flex items-center justify-center rounded-full border"
+      className="absolute z-30 flex items-center justify-center"
       style={{
         ...место,
-        width: d, height: d,
-        borderColor: "var(--line-strong)",
-        background: "var(--bg-2)",
-        color: "var(--ink-2)",
-        opacity: можно ? 0.82 : 0.22,
+        width: хват, height: хват,
+        background: "transparent",
+        border: "none",
+        padding: 0,
         cursor: можно ? "pointer" : "default",
-        fontSize: phone ? 23 : 29,
-        lineHeight: 1,
-        paddingBottom: 3,
       }}
-      onMouseEnter={(e) => { if (можно) e.currentTarget.style.opacity = "1"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.opacity = можно ? "0.82" : "0.22"; }}
     >
-      {влево ? "‹" : "›"}
+      <span
+        className="flex items-center justify-center rounded-full border"
+        style={{
+          width: кружок, height: кружок,
+          borderColor: "var(--line-strong)",
+          background: "var(--bg-2)",
+          color: "var(--ink-2)",
+          opacity: можно ? 0.82 : 0.22,
+          fontSize: phone ? 23 : 34,
+          lineHeight: 1,
+          paddingBottom: 3,
+          transition: "opacity 0.12s linear",
+        }}
+      >
+        {влево ? "‹" : "›"}
+      </span>
     </button>
   );
 }

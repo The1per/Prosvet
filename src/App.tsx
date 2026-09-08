@@ -1494,6 +1494,71 @@ function НастройкиВида({
  */
 /** Стрелка перехода на соседнюю неделю. Прозрачная: поверх кривой она не
  *  должна спорить с ней за внимание, но при наведении становится видна. */
+/** Слово недели с выпадающим окном: с чем оно стояло рядом.
+ *
+ *  ЗАЧЕМ. Слово названо, но не объяснено: «бензин» может значить и очереди, и
+ *  подорожание, и удар по заводу. Пара слов отличает -- «нет бензина», «цены на
+ *  бензин», -- и показывать её надо там же, где слово, а не в отдельном разборе.
+ *
+ *  ОКНО ОТКРЫВАЕТСЯ ВНИЗ, а не всплывает подсказкой браузера: подсказки на
+ *  телефоне не показываются вовсе, а на экране выглядят частью системы, а не
+ *  страницы. На телефоне открывается по нажатию, на экране -- по наведению. */
+function Слово({
+  с, пары, phone, lang, видность,
+}: {
+  с: string;
+  пары: [string, number][] | null;
+  phone: boolean;
+  lang: Lang;
+  видность: number;
+}) {
+  const [открыто, setОткрыто] = useState(false);
+  if (!пары || !пары.length) {
+    return <span style={{ opacity: видность }}>{с}</span>;
+  }
+  return (
+    <span
+      className="relative"
+      onMouseEnter={phone ? undefined : () => setОткрыто(true)}
+      onMouseLeave={phone ? undefined : () => setОткрыто(false)}
+    >
+      <span
+        className="cursor-help underline decoration-dotted underline-offset-4"
+        style={{ textDecorationColor: "var(--ink-3)", opacity: видность }}
+        onClick={() => setОткрыто((v) => !v)}
+        role="button"
+      >
+        {с}
+      </span>
+      {открыто && (
+        <span
+          className="absolute left-0 top-[calc(100%+7px)] z-40 block rounded-xl border px-3 py-2"
+          style={{
+            borderColor: "var(--line-strong)",
+            background: "var(--bg-2)",
+            boxShadow: "var(--shadow)",
+            minWidth: 180,
+            fontSize: phone ? 14 : 17,
+            fontWeight: 500,
+            color: "var(--ink-2)",
+            lineHeight: 1.5,
+          }}
+        >
+          <span className="mono block pb-1" style={{ fontSize: phone ? 11 : 13, color: "var(--ink-3)" }}>
+            {lang === "ru" ? "РЯДОМ СТОЯЛО" : "APPEARED WITH"}
+          </span>
+          {пары.map(([п, n]) => (
+            <span key={п} className="flex items-baseline justify-between gap-4 whitespace-nowrap">
+              <span style={{ color: "var(--ink)" }}>{п}</span>
+              <span className="mono" style={{ color: "var(--ink-3)", fontSize: phone ? 12 : 14 }}>{n}</span>
+            </span>
+          ))}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function СтрелкаНедели({
   сторона, можно, жать, lang, phone,
 }: {
@@ -1535,7 +1600,7 @@ function СтрелкаНедели({
      событий. */
   const место: React.CSSProperties = phone
     ? { top: 48 - поля, ...(влево ? { left: 22 - поля } : { right: 6 - поля }) }
-    : { top: "40%", ...(влево ? { left: 78 } : { right: 58 }) };
+    : { top: "31%", ...(влево ? { left: 78 } : { right: 58 }) };
   return (
     <button
       type="button"
@@ -1639,6 +1704,7 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
      Читатель начинает с того, что говорят такие же, как он, и лишь затем видит,
      как то же самое назвали редакции. Обратный порядок ставил впереди чужую
      речь, и своя читалась примечанием к ней. */
+  const пары: Record<string, [string, number][]> = (w.слово as any).пары || {};
   const ряды = [
     { к: "люди", имя: ru ? "Люди" : "People", д: w.слово.люди },
     { к: "новости", имя: ru ? "Паблики" : "Channels", д: w.слово.новости },
@@ -1781,7 +1847,11 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
  
                    Теперь границы берутся из САМОГО РЯДА: десятая и девятая
                    десятая его собственных значений по всем неделям. */
-                opacity: р.д ? яркость(р.к, р.д.раз) : 0.45,
+                /* ПРОЗРАЧНОСТЬ НЕ ЗДЕСЬ, А НА САМОМ СЛОВЕ. Пока она стояла на
+                   строке, её наследовало выпадающее окно биграмм: оно
+                   просвечивало, и сквозь него читались слова соседних рядов.
+                   Прозрачность родителя действует на всех потомков разом, и
+                   отменить её изнутри нельзя. */
                 transition: "opacity 0.12s linear",
               }}
             >
@@ -1791,7 +1861,13 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                       {i > 0 && (
                         <span className="mx-1.5 font-normal" style={{ color: "var(--ink-3)" }}>·</span>
                       )}
-                      {с}
+                      <Слово
+                        с={с}
+                        пары={пары[с] || null}
+                        phone={phone}
+                        lang={lang}
+                        видность={р.д ? яркость(р.к, р.д.раз) : 0.45}
+                      />
                     </span>
                   ))
                 : "—"}

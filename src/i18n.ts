@@ -200,6 +200,7 @@ export const T = {
   viewsPlain: { ru: "просмотров", en: "views" },
   weakerThanMob: { ru: "слабее недели мобилизации", en: "weaker than mobilisation week" },
   isTheMob: { ru: "это и есть самая тревожная неделя ряда", en: "this is the most anxious week on record" },
+  alarmNotYet: { ru: "тревожное чтение недели ещё не посчитано", en: "anxious reading not computed yet" },
   aboveNormal: { ru: "выше обычной недели", en: "above a normal week" },
   belowNormalShort: { ru: "ниже обычной", en: "below normal" },
   belowNormal: { ru: "ниже обычной недели", en: "below a normal week" },

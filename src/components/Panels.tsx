@@ -99,11 +99,26 @@ export function Breakdown({ w, lang, baseline }: { w: Week; lang: Lang; baseline
           label={delta >= 0 ? T.aboveNormal[lang] : T.belowNormal[lang]}
           color={moodColor(w.idx, 6)}
         />
-        <Stat
-          big={alarm.vsMob == null ? "1×" : `${Math.round(alarm.vsMob)}×`}
-          label={alarm.vsMob == null ? T.isTheMob[lang] : T.weakerThanMob[lang]}
-          color="var(--violet)"
-        />
+        {/* ДВА РАЗНЫХ СМЫСЛА У ОДНОГО NULL. vsMob = null законно означает «это
+            и есть неделя мобилизации» -- такая неделя ровно одна. Но web_data
+            подставлял тот же null неделям, для которых тревожное чтение ещё не
+            посчитано, и свежая неделя выходила на страницу с подписью «самая
+            тревожная неделя ряда». Различитель: у недели мобилизации total =
+            52470, у непосчитанной -- ноль. Отсутствие данных не смеет
+            печататься превосходной степенью. */}
+        {alarm.total > 0 ? (
+          <Stat
+            big={alarm.vsMob == null ? "1×" : `${Math.round(alarm.vsMob)}×`}
+            label={alarm.vsMob == null ? T.isTheMob[lang] : T.weakerThanMob[lang]}
+            color="var(--violet)"
+          />
+        ) : (
+          <Stat
+            big="—"
+            label={T.alarmNotYet[lang]}
+            color="var(--violet)"
+          />
+        )}
       </div>
 
       {/* Блока «о чём тревожились» здесь больше нет: те же статьи стоят под
@@ -194,7 +209,12 @@ export function Reads({ w, lang }: { w: Week; lang: Lang }) {
       <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h3 className="text-[20px] font-semibold">{T.readsTitle[lang]}</h3>
         <div className="text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
-          {T.alarmReads[lang]} · {fmt(alarm.total, lang)} {T.views[lang]}
+          {/* «0 просмотров» -- это утверждение, что тревожного не читали
+              вовсе. У непосчитанной недели это ложь, и её видно на странице
+              крупно. Ноль здесь значит только «ещё не считали». */}
+          {alarm.total > 0
+            ? <>{T.alarmReads[lang]} · {fmt(alarm.total, lang)} {T.views[lang]}</>
+            : T.alarmNotYet[lang]}
         </div>
       </div>
       {/* Пять мест всегда, даже если тем меньше: иначе ряд плиток то короче,

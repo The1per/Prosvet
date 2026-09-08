@@ -1504,28 +1504,29 @@ function НастройкиВида({
  *  телефоне не показываются вовсе, а на экране выглядят частью системы, а не
  *  страницы. На телефоне открывается по нажатию, на экране -- по наведению. */
 function Слово({
-  с, пары, phone, lang, видность,
+  с, пары, phone, lang, видность, открыто, открыть,
 }: {
   с: string;
   пары: [string, number][] | null;
   phone: boolean;
   lang: Lang;
   видность: number;
+  открыто: boolean;
+  открыть: (да: boolean) => void;
 }) {
-  const [открыто, setОткрыто] = useState(false);
   if (!пары || !пары.length) {
     return <span style={{ opacity: видность }}>{с}</span>;
   }
   return (
     <span
       className="relative"
-      onMouseEnter={phone ? undefined : () => setОткрыто(true)}
-      onMouseLeave={phone ? undefined : () => setОткрыто(false)}
+      onMouseEnter={phone ? undefined : () => открыть(true)}
+      onMouseLeave={phone ? undefined : () => открыть(false)}
     >
       <span
         className="cursor-help underline decoration-dotted underline-offset-4"
         style={{ textDecorationColor: "var(--ink-3)", opacity: видность }}
-        onClick={() => setОткрыто((v) => !v)}
+        onClick={() => открыть(!открыто)}
         role="button"
       >
         {с}
@@ -1545,12 +1546,13 @@ function Слово({
           }}
         >
           <span className="mono block pb-1" style={{ fontSize: phone ? 11 : 13, color: "var(--ink-3)" }}>
-            {lang === "ru" ? "РЯДОМ СТОЯЛО" : "APPEARED WITH"}
+            {lang === "ru" ? "РЯДОМ СТОЯЛО · ДОЛЯ УПОМИНАНИЙ"
+                          : "APPEARED WITH · SHARE OF MENTIONS"}
           </span>
           {пары.map(([п, n]) => (
             <span key={п} className="flex items-baseline justify-between gap-4 whitespace-nowrap">
               <span style={{ color: "var(--ink)" }}>{п}</span>
-              <span className="mono" style={{ color: "var(--ink-3)", fontSize: phone ? 12 : 14 }}>{n}</span>
+              <span className="mono" style={{ color: "var(--ink-3)", fontSize: phone ? 12 : 14 }}>{n}%</span>
             </span>
           ))}
         </span>
@@ -1705,6 +1707,11 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
      как то же самое назвали редакции. Обратный порядок ставил впереди чужую
      речь, и своя читалась примечанием к ней. */
   const пары: Record<string, [string, number][]> = (w.слово as any).пары || {};
+  /* ОТКРЫТО ВСЕГДА НЕ БОЛЬШЕ ОДНОГО ОКНА. Пока каждое слово помнило своё
+     состояние само, на телефоне (где окно открывается нажатием, а не
+     наведением) они копились: открыл три слова -- висят три окна внахлёст.
+     Состояние поднято сюда, в строку: оно одно на все девять слов. */
+  const [открытое, setОткрытое] = useState<string | null>(null);
   const ряды = [
     { к: "люди", имя: ru ? "Люди" : "People", д: w.слово.люди },
     { к: "новости", имя: ru ? "Паблики" : "Channels", д: w.слово.новости },
@@ -1867,6 +1874,8 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                         phone={phone}
                         lang={lang}
                         видность={р.д ? яркость(р.к, р.д.раз) : 0.45}
+                        открыто={открытое === р.к + "/" + с}
+                        открыть={(да) => setОткрытое(да ? р.к + "/" + с : null)}
                       />
                     </span>
                   ))

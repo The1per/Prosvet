@@ -1508,8 +1508,20 @@ function СтрелкаНедели({
   /* ВИДНОСТЬ. Сперва стрелки стояли на 0.42 без подложки -- приглушённый цвет
      на тёмном поле при такой прозрачности не виден вовсе, и их не находили ни
      на экране, ни на телефоне. Теперь у них своя подложка и своя рамка, как у
-     лупы и шестерёнки рядом: они читаются кнопками, а не тенью. */
-  const d = phone ? 34 : 44;
+     лупы и шестерёнки рядом.
+
+     МЕСТО. По вертикали -- НЕ посередине поля: там они попадали ровно на
+     кривую в её самой интересной части. По горизонтали -- НЕ у самого края:
+     слева вдоль края стоят подписи оси («70», «60»), и кнопка садилась прямо
+     на них. Обе отодвинуты внутрь поля кривой.
+
+     НА ТЕЛЕФОНЕ они встают под своими соседями: левая под диапазоном, правая
+     под настройками -- в тот же столбец, чтобы ряд кнопок читался колонками, а
+     не рассыпался. */
+  const d = phone ? 40 : 52;
+  const место: React.CSSProperties = phone
+    ? { top: 48, ...(влево ? { left: 22 } : { right: 6 }) }
+    : { top: "22%", ...(влево ? { left: 46 } : { right: 26 }) };
   return (
     <button
       type="button"
@@ -1517,20 +1529,18 @@ function СтрелкаНедели({
                      : (влево ? "previous week" : "next week")}
       disabled={!можно}
       onClick={жать}
-      className={
-        "absolute top-1/2 z-30 flex -translate-y-1/2 items-center justify-center "
-        + "rounded-full border " + (влево ? "left-1" : "right-1")
-      }
+      className="absolute z-30 flex items-center justify-center rounded-full border"
       style={{
+        ...место,
         width: d, height: d,
         borderColor: "var(--line-strong)",
         background: "var(--bg-2)",
         color: "var(--ink-2)",
         opacity: можно ? 0.82 : 0.22,
         cursor: можно ? "pointer" : "default",
-        fontSize: phone ? 19 : 24,
+        fontSize: phone ? 23 : 29,
         lineHeight: 1,
-        paddingBottom: 2,
+        paddingBottom: 3,
       }}
       onMouseEnter={(e) => { if (можно) e.currentTarget.style.opacity = "1"; }}
       onMouseLeave={(e) => { e.currentTarget.style.opacity = можно ? "0.82" : "0.22"; }}

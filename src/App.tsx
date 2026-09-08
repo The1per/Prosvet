@@ -1531,7 +1531,7 @@ function Слово({
       >
         {с}
       </span>
-      {открыто && (
+      {открыто && !phone && (
         <span
           className="absolute left-0 top-[calc(100%+7px)] z-40 block rounded-xl border px-3 py-2"
           style={{
@@ -1545,10 +1545,6 @@ function Слово({
             lineHeight: 1.5,
           }}
         >
-          <span className="mono block pb-1" style={{ fontSize: phone ? 11 : 13, color: "var(--ink-3)" }}>
-            {lang === "ru" ? "РЯДОМ СТОЯЛО · ДОЛЯ УПОМИНАНИЙ"
-                          : "APPEARED WITH · SHARE OF MENTIONS"}
-          </span>
           {пары.map(([п, n]) => (
             <span key={п} className="flex items-baseline justify-between gap-4 whitespace-nowrap">
               <span style={{ color: "var(--ink)" }}>{п}</span>
@@ -1835,7 +1831,19 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
               {р.имя}
             </span>
             <span
-              className="font-semibold"
+              /* НА ТЕЛЕФОНЕ СЛОВА -- ЛЕНТА, как важные даты. Три слова длинной
+                 недели не влезают в 283 пикселя, и раньше их приходилось
+                 держать мелким кеглем ради самых длинных. Лента снимает это:
+                 слова листаются, а край панели прячет их той же маской, что и
+                 даты, -- `lenta-край`. Приём тот же, не похожий: если менять
+                 его, менять надо в одном месте. */
+              /* ПОЛЕ СЛЕВА РАВНО ШИРИНЕ МАСКИ, и вычтено обратно отрицательным
+                 отступом. Маска гасит по пятнадцать пикселей с каждого края, и
+                 без поля она съедала начало первого слова: «очереди» читалось
+                 «черeди». У полосы дат этого не видно, потому что у кнопок есть
+                 своё поле; у слов его не было. */
+              className={"font-semibold "
+                + (phone ? "lenta lenta-край overflow-x-auto whitespace-nowrap pl-4 -ml-4" : "")}
               style={{
                 color: р.д ? цвет_слова(р.к, р.д.раз) : "var(--ink-3)",
                 fontSize: phone ? 15 : 23,
@@ -1884,6 +1892,31 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
           </div>
         ))}
       </div>
+      {/* НА ТЕЛЕФОНЕ ОКНО ПАР СТОИТ ПОД РЯДАМИ, А НЕ ВНУТРИ СЛОВА. Ряды там --
+          ленты с прокруткой и маской по краям; окно, вложенное в ленту,
+          обрезалось бы и по горизонтали, и по вертикали. Снаружи оно свободно и
+          заодно шире: на узкой карточке это читается лучше приткнутого
+          пузырька. */}
+      {phone && открытое && пары[открытое.split("/")[1]] && (
+        <div
+          className="mt-1.5 rounded-xl border px-3 py-2"
+          style={{
+            borderColor: "var(--line-strong)",
+            background: "var(--bg-2)",
+            fontSize: 14,
+            fontWeight: 500,
+            color: "var(--ink-2)",
+            lineHeight: 1.5,
+          }}
+        >
+          {пары[открытое.split("/")[1]].map(([п, n]) => (
+            <div key={п} className="flex items-baseline justify-between gap-4">
+              <span style={{ color: "var(--ink)" }}>{п}</span>
+              <span className="mono" style={{ color: "var(--ink-3)", fontSize: 12 }}>{n}%</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

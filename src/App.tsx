@@ -188,18 +188,23 @@ export default function App() {
     >
       <div
         className={
-          // На экране легенда стоит СТОЛБИКОМ: в строку она была 270 пикселей
+          // На ЭКРАНЕ легенда стоит СТОЛБИКОМ: в строку она была 270 пикселей
           // шириной и ровно на них раздувала блок, из-за чего числам и строю
           // не хватало места в ряду.
-          "flex flex-col gap-y-0.5 " + (телефон ? "text-[13px]" : "text-[14.5px]")
+          // На ТЕЛЕФОНЕ наоборот -- строкой: там она стоит в одном ряду с
+          // диапазоном и настройками, и столбик поднимал этот ряд вдвое,
+          // отбирая высоту у самой кривой.
+          (телефон
+            ? "flex flex-row items-center gap-x-2.5 text-[12px] "
+            : "flex flex-col gap-y-0.5 text-[14.5px] ")
         }
         style={{ color: "var(--ink-3)" }}
       >
-        <span className="flex items-center gap-1.5">
+        <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--cool)" }} />
           {T.gapUp[lang]}
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           <i className="inline-block h-3.5 w-3.5 rounded" style={{ background: "var(--violet)" }} />
           {T.gapDown[lang]}
         </span>
@@ -887,6 +892,10 @@ export default function App() {
                           phone={телефон}
                         />
                       )}
+                      {/* ЛЕГЕНДА НА ТЕЛЕФОНЕ -- ЗДЕСЬ, справа от диапазона и в
+                          одну строку. Прежде она висела своей строкой под этим
+                          рядом и съедала высоту у кривой. */}
+                      {телефон && легенда}
                       <div className="flex items-center gap-2">
                       {!телефон && <EventSearch lang={lang} onPick={jumpTo} phone крупно />}
                         
@@ -921,8 +930,10 @@ export default function App() {
                     {/* Легенда стоит ПОД ЛУПОЙ, В УГЛУ САМОГО ПОЛЯ -- и на
                         телефоне тоже. Прежде на телефоне она висела отдельным
                         слоем под кнопкой опроса, то есть в строке с числами:
-                        объясняла цвета кривой, стоя далеко от кривой. */}
-                    {легенда}
+                        объясняла цвета кривой, стоя далеко от кривой.
+                        На телефоне она теперь стоит ВЫШЕ, в ряду с диапазоном,
+                        и второй раз её здесь рисовать не надо. */}
+                    {!телефон && легенда}
                   </div>
                 }
               />
@@ -1586,7 +1597,10 @@ function Слово({
   открыть: (да: boolean) => void;
 }) {
   const ссыл = useRef<HTMLSpanElement | null>(null);
-  const [якорь, setЯкорь] = useState<{ x: number; y: number } | null>(null);
+  const окно = useRef<HTMLSpanElement | null>(null);
+  /** `низ` -- верх самого слова: по нему окно перекидывается НАД словом,
+      когда под ним не хватает высоты. */
+  const [якорь, setЯкорь] = useState<{ x: number; y: number; низ: number } | null>(null);
 
   /* КООРДИНАТЫ БЕРУТСЯ ПРИ ОТКРЫТИИ И ОБНОВЛЯЮТСЯ, ПОКА ОКНО ОТКРЫТО. Слово
      живёт в ленте: её листают, страницу прокручивают -- и окно, замершее на
@@ -1606,10 +1620,7 @@ function Слово({
         открыть(false);
         return;
       }
-      setЯкорь({
-        x: Math.max(6, Math.min(r.left, window.innerWidth - 196)),
-        y: r.bottom + 7,
-      });
+      setЯкорь({ x: Math.max(6, r.left), y: r.bottom + 7, низ: r.top });
     };
     мерить();
     const лента = ссыл.current?.closest(".lenta");
@@ -1622,6 +1633,36 @@ function Слово({
       window.removeEventListener("resize", мерить);
     };
   }, [открыто, открыть]);
+
+  /* ОКНО ЗАГОНЯЕТСЯ В ЭКРАН ПО СВОЕЙ НАСТОЯЩЕЙ ШИРИНЕ. Прежде она была
+     ПРИКИНУТА числом 196, а окно бывает вдвое шире: «признана экстремистской»
+     с процентом не влезает и в триста. Слова у правого края выпускали окно за
+     экран, и прочесть его было нельзя.
+     Замер идёт в useLayoutEffect -- до показа кадра, поэтому окно не прыгает.
+     Приход сюда конечный: поправленное положение уже в экране, и второй заход
+     ничего не меняет. Тем же заходом окно перекидывается НАД словом, если под
+     ним не хватает высоты. */
+  useLayoutEffect(() => {
+    const о = окно.current;
+    if (!о || !якорь) return;
+    const r = о.getBoundingClientRect();
+    /* СЧИТАЕМ СДВИГ, А НЕ НОВОЕ ЧИСЛО. `position: fixed` отсчитывается от
+       экрана только пока НИ У ОДНОГО предка нет transform, filter или
+       backdrop-filter; стоит появиться такому -- и отсчёт идёт от него.
+       Здесь так и есть: у окна стиль left = 105, а на экране оно на 114.
+       Сравнивать своё число с window.innerWidth поэтому нельзя -- это разные
+       системы координат, и поправка промахивалась ровно на эту разницу.
+       Сдвиг же одинаков в обеих: сколько прибавили к стилю, на столько уехало
+       и на экране. */
+    const хотим = Math.max(6, Math.min(r.left, window.innerWidth - 6 - r.width));
+    const мимо = r.bottom > window.innerHeight - 6;
+    const хотимY = мимо ? Math.max(6, якорь.низ - r.height - 7) : r.top;
+    const dx = хотим - r.left;
+    const dy = хотимY - r.top;
+    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+      setЯкорь({ ...якорь, x: якорь.x + dx, y: якорь.y + dy });
+    }
+  }, [якорь]);
 
   if (!пары || !пары.length) {
     return <span style={{ opacity: видность }}>{с}</span>;
@@ -1643,6 +1684,7 @@ function Слово({
       </span>
       {открыто && якорь && (
         <span
+          ref={окно}
           /* ОКНО ДЕРЖИТСЯ НА ЭКРАННЫХ КООРДИНАТАХ СЛОВА, а не на его месте в
              потоке. Два повода. Первый: на телефоне ряд слов -- лента с
              overflow, и вложенное окно она обрезала бы; вынесенное же под ряды
@@ -1656,6 +1698,9 @@ function Слово({
             background: "var(--bg-2)",
             boxShadow: "var(--shadow)",
             minWidth: 180,
+            /* Шире экрана окно не бывает ни при какой паре: длинная фраза
+               переносится внутри, а не вылезает наружу. */
+            maxWidth: "calc(100vw - 12px)",
             fontSize: phone ? 14 : 17,
             fontWeight: 500,
             color: "var(--ink-2)",
@@ -1663,9 +1708,9 @@ function Слово({
           }}
         >
           {пары.map(([п, n]) => (
-            <span key={п} className="flex items-baseline justify-between gap-4 whitespace-nowrap">
+            <span key={п} className="flex items-baseline justify-between gap-4">
               <span style={{ color: "var(--ink)" }}>{п}</span>
-              <span className="mono" style={{ color: "var(--ink-3)", fontSize: phone ? 12 : 14 }}>{n}%</span>
+              <span className="mono whitespace-nowrap" style={{ color: "var(--ink-3)", fontSize: phone ? 12 : 14 }}>{n}%</span>
             </span>
           ))}
         </span>
@@ -1868,7 +1913,10 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
            центру он оказывался над пустотой: слова начинаются у левого края и
            кончаются раньше правого, а заголовок висел посреди того, что
            осталось, и связь между ним и словами читалась не сразу. */
-        className="mono cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
+        /* inline-block ОБЯЗАТЕЛЕН. Блочный заголовок растягивался на всю
+           ширину карточки, и вместе с ним растягивался хитбокс: подсказка
+           открывалась от нажатия в любом месте строки, за метр от слов. */
+        className="mono inline-block w-fit cursor-help whitespace-nowrap underline decoration-dotted underline-offset-4"
         style={{ color: "var(--ink)", fontSize: phone ? 15 : 23 }}
         onClick={() => setПодсказка((v) => !v)}
         onMouseEnter={phone ? undefined : () => setПодсказка(true)}
@@ -2265,13 +2313,13 @@ function ДиапазонШкалы({
     cursor: "pointer",
   } as const;
   return (
-    <div className="relative" ref={коробка}>
+    <div className="relative shrink-0" ref={коробка}>
       <button
         type="button"
         aria-label={ru ? "диапазон лет" : "year range"}
         onClick={() => setОткрыто(!открыто)}
         className={
-          "mono flex items-center rounded-full border " + (phone ? "h-8 px-3" : "h-10 px-4")
+          "mono flex items-center whitespace-nowrap rounded-full border " + (phone ? "h-8 px-3" : "h-10 px-4")
         }
         style={{ ...рамка, fontSize: phone ? 14 : 17, color: весь ? "var(--ink-2)" : "var(--ink)" }}
       >

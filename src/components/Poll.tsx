@@ -141,6 +141,13 @@ export default function Poll({
   const color = moodColor(value, 6);
   // Что светит: пока ведут ползунок -- его значение, после ответа -- ответ.
   const показ = mine && !editing ? mine.v : value;
+  /* ЦВЕТ ЗОВА. На телефоне заголовок стоит внутри выдвинутой панели, прямо над
+     ползунком, и брал он цвет ПОКАЗАНИЯ НЕДЕЛИ (idx) -- то есть не менялся,
+     пока ручку ведут. Рядом с ползунком, который цвет меняет, это читалось как
+     поломка. Теперь на телефоне зов идёт за рукой.
+     На большом экране заголовок стоит в столбце рядом с графиком, вдали от
+     ползунка, и там цвет недели остаётся верным: он подписывает график. */
+  const зов = answered ? mine!.v : phone ? показ : idx ?? показ;
 
   useEffect(() => {
     setEditing(false);
@@ -249,10 +256,10 @@ export default function Poll({
       <div
         className={"chip relative mb-2 self-start " + (answered ? "" : "chip-zovet")}
         style={{
-          ["--pulse-1" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.34),
-          ["--pulse-2" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.16),
-          ["--pulse-3" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.4),
-          ["--pulse-4" as string]: moodColor(answered ? mine!.v : (idx ?? показ), 6, 0.75),
+          ["--pulse-1" as string]: moodColor(зов, 6, 0.34),
+          ["--pulse-2" as string]: moodColor(зов, 6, 0.16),
+          ["--pulse-3" as string]: moodColor(зов, 6, 0.4),
+          ["--pulse-4" as string]: moodColor(зов, 6, 0.75),
           ...(answered
             ? {
                 boxShadow: `0 0 14px ${moodColor(mine!.v, 6, 0.4)}`,
@@ -311,11 +318,23 @@ export default function Poll({
             />
           </div>
 
+          {/* ПОДПИСИ ГОРЯТ ВМЕСТЕ СО СВОИМИ ФИГУРАМИ. Прежде «спокойно» было
+              всегда серым, а «тревожно» всегда цветным -- обе стояли мёртво
+              при любом положении ручки, хотя фигуры над ними уже отзывались.
+              Теперь у подписи та же близость, что у её полюса: подведи ручку --
+              и слово наливается, уведи -- гаснет. Гаснет НЕ ДО НУЛЯ: дальняя
+              подпись обязана остаться читаемой, она называет край шкалы. */}
           <div className="mt-1 flex items-baseline justify-between">
-            <span className="mono text-[18px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+            <span
+              className="mono text-[18px] uppercase tracking-wider"
+              style={{ color, opacity: 0.34 + 0.66 * (1 - показ / 100), transition: "opacity .18s linear" }}
+            >
               {T.calm[lang]}
             </span>
-            <span className="mono text-[18px] uppercase tracking-wider" style={{ color }}>
+            <span
+              className="mono text-[18px] uppercase tracking-wider"
+              style={{ color, opacity: 0.34 + 0.66 * (показ / 100), transition: "opacity .18s linear" }}
+            >
               {T.panic[lang]}
             </span>
           </div>

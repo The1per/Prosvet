@@ -442,7 +442,7 @@ html[data-theme="light"] .pollglow {
   animation: shiver var(--sd, 0.4s) infinite ease-in-out;
 }
 .sway {
-  animation: sway 5.2s infinite ease-in-out;
+  animation: sway 3s infinite ease-in-out;
   transform-box: fill-box;
   transform-origin: 50% 100%;
 }

@@ -1017,9 +1017,12 @@ export default function App() {
               }}
             />
             <div
-              className="absolute right-0 top-0 flex max-h-full w-[min(430px,100vw)] flex-col overflow-y-auto p-3"
+              className="absolute right-0 top-0 flex max-h-full w-[min(430px,100vw)] flex-col overflow-y-auto p-3 backdrop-blur-xl"
               style={{
-                background: "var(--bg)",
+                /* ТО ЖЕ ВЕЩЕСТВО, ЧТО У ВЕРХНЕЙ ПОЛОСЫ: тот же color-mix и то
+                   же размытие. Панель выезжает ИЗ полосы, и глухой чёрный фон
+                   выдавал в ней постороннюю вещь, приехавшую откуда-то ещё. */
+                background: "color-mix(in srgb, var(--bg) 76%, transparent)",
                 borderBottom: "1px solid var(--line-strong)",
                 borderLeft: "1px solid var(--line-strong)",
                 transform: опросОткрыт ? "translateY(0)" : "translateY(-102%)",

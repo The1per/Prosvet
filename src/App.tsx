@@ -84,6 +84,21 @@ export default function App() {
   const телефон = useТелефон();
   // На телефоне опрос живёт в выдвижной панели, а не в потоке страницы.
   const [опросОткрыт, setОпросОткрыт] = useState(false);
+  /* ВЫСОТА ЧЁРНОЙ ПОЛОСЫ МЕРЯЕТСЯ, А НЕ ЗАШИВАЕТСЯ ЧИСЛОМ. Панель опроса
+     выезжает из-под неё и не имеет права её накрыть, а высота полосы разная:
+     заголовок на узком экране переносится, годы уходят строкой ниже. Зашитое
+     число разъехалось бы с настоящей полосой на первом же таком экране. */
+  const шапкаRef = useRef<HTMLElement>(null);
+  const [шапкаH, setШапкаH] = useState(0);
+  useLayoutEffect(() => {
+    const el = шапкаRef.current;
+    if (!el) return;
+    const мерить = () => setШапкаH(el.getBoundingClientRect().height);
+    мерить();
+    const ro = new ResizeObserver(мерить);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   /* СТОИТ ПОСЛЕ объявления опросОткрыт нарочно: список зависимостей считается
      при отрисовке, и эффект, поставленный выше, читал ещё не заведённую
      переменную -- страница падала целиком с «Cannot access before
@@ -375,6 +390,7 @@ export default function App() {
       <div className="noise" />
 
       <header
+        ref={шапкаRef}
         className="sticky top-0 z-30 border-b backdrop-blur-xl"
         style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 76%, transparent)" }}
       >
@@ -463,7 +479,7 @@ export default function App() {
           className={
             телефон
               ? "flex flex-col gap-3"
-              : "grid gap-3 md:grid-cols-[minmax(0,1fr)_374px]"
+              : "grid gap-3 md:grid-cols-[minmax(0,1fr)_337px]"
           }
         >
           {/* СТОЛБЦЫ ОДНОЙ ВЫСОТЫ -- и это безопасно ровно потому, что высота
@@ -872,8 +888,14 @@ export default function App() {
                         />
                       )}
                       <div className="flex items-center gap-2">
-                      <EventSearch lang={lang} onPick={jumpTo} phone крупно={!телефон} />
+                      {!телефон && <EventSearch lang={lang} onPick={jumpTo} phone крупно />}
+                        
                       <НастройкиВида
+                        сверху={
+                          телефон ? (
+                            <EventSearch lang={lang} onPick={jumpTo} phone всегдаРазвёрнут />
+                          ) : null
+                        }
                         открыто={менюОткрыто}
                         setОткрыто={setМенюОткрыто}
                         значения={{ ...настройки, фом: showFom }}
@@ -967,16 +989,22 @@ export default function App() {
 
       {/* ВЫДВИЖНОЙ ОПРОС НА ТЕЛЕФОНЕ.
           Кнопка держится внизу экрана и видна всегда -- на любой высоте
-          прокрутки, а не только там, куда человек долистал. Панель уезжает
-          вправо за край и возвращается по нажатию; когда опрос пройден, она
-          задвигается сама.
+          прокрутки, а не только там, куда человек долистал. Панель выезжает
+          ИЗ-ПОД ВЕРХНЕЙ ПОЛОСЫ и уходит обратно за неё. Прежде она выезжала
+          сбоку во весь экран и накрывала полосу вместе с заголовком: пропадало,
+          где ты находишься.
+          Коробка панели начинается РОВНО под полосой и обрезает всё, что за её
+          край (overflow-hidden), -- поэтому задвинутая панель не мелькает над
+          заголовком по дороге. Затемнение начинается там же, и полоса остаётся
+          читаемой. Слой ниже полосы (z-20 против z-30) нарочно: обрезки мало,
+          у полосы полупрозрачный фон, и панель просвечивала бы сквозь него.
           Панель нарисована ВСЕГДА, а не по условию: анимации нужен элемент,
           который уже стоит на месте, иначе он появлялся бы рывком. */}
       {телефон && (
         <>
           <div
-            className="fixed inset-0 z-50"
-            style={{ pointerEvents: опросОткрыт ? "auto" : "none" }}
+            className="fixed inset-x-0 bottom-0 z-20 overflow-hidden"
+            style={{ top: шапкаH, pointerEvents: опросОткрыт ? "auto" : "none" }}
             aria-hidden={!опросОткрыт}
           >
             <div
@@ -989,11 +1017,12 @@ export default function App() {
               }}
             />
             <div
-              className="absolute right-0 top-0 flex h-full w-[min(430px,94vw)] flex-col overflow-y-auto p-3"
+              className="absolute right-0 top-0 flex max-h-full w-[min(430px,100vw)] flex-col overflow-y-auto p-3"
               style={{
                 background: "var(--bg)",
+                borderBottom: "1px solid var(--line-strong)",
                 borderLeft: "1px solid var(--line-strong)",
-                transform: опросОткрыт ? "translateX(0)" : "translateX(102%)",
+                transform: опросОткрыт ? "translateY(0)" : "translateY(-102%)",
                 transition: "transform .28s ease",
               }}
             >
@@ -1098,7 +1127,7 @@ function разобратьДень(s: string, lang: Lang): string | null {
 /* `phone` здесь значит «свёрнут в лупу», а не «телефон»: на экране поиск тоже
    свёрнут, чтобы не стоить целой строки. Размер кнопки поэтому задаётся
    отдельным признаком -- иначе на экране она осталась бы телефонной. */
-function EventSearch({ lang, onPick, phone = false, крупно = false }: { lang: Lang; onPick: (d: string) => void; phone?: boolean; крупно?: boolean }) {
+function EventSearch({ lang, onPick, phone = false, крупно = false, всегдаРазвёрнут = false }: { lang: Lang; onPick: (d: string) => void; phone?: boolean; крупно?: boolean; всегдаРазвёрнут?: boolean }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   // На телефоне поиск свёрнут в лупу и разворачивается по нажатию: полем во
@@ -1151,7 +1180,11 @@ function EventSearch({ lang, onPick, phone = false, крупно = false }: { la
     return named.filter((h) => h.n.toLowerCase().includes(s) || h.d.includes(s)).slice(0, 8);
   }, [q, lang]);
 
-  const свёрнут = phone && !развёрнут;
+  /* ВНУТРИ НАСТРОЕК ПОИСК СРАЗУ РАСКРЫТ. Своей кнопки на телефоне у него
+     больше нет -- она переехала в поле настроек, и прятать поле ввода за второй
+     кнопкой внутри уже открытого меню значило бы два нажатия там, где хватает
+     одного. */
+  const свёрнут = phone && !развёрнут && !всегдаРазвёрнут;
 
   return (
     <div ref={box} className="relative">
@@ -1413,6 +1446,7 @@ function ПолосаСобытий({ lang, sel, onSel }: { lang: Lang; sel: num
  * годятся -- «свечение» и «кривая индекса» одним значком не различишь.
  */
 function НастройкиВида({
+  сверху,
   открыто, setОткрыто, значения, менять, lang, phone = false,
 }: {
   открыто: boolean;
@@ -1449,9 +1483,22 @@ function НастройкиВида({
       </button>
       {открыто && (
         <div
-          className="absolute left-0 top-[calc(100%+6px)] z-40 rounded-xl border p-1"
+          /* НА ТЕЛЕФОНЕ ОТКРЫВАЕТСЯ ВЛЕВО. Кнопка переехала к правому краю поля
+             кривой, а поле открывалось вправо от неё -- и уходило за экран.
+             Прижатое правым краем к кнопке, оно раскрывается внутрь страницы. */
+          className={
+            "absolute top-[calc(100%+6px)] z-40 rounded-xl border p-1 "
+            + (phone ? "right-0" : "left-0")
+          }
           style={{ borderColor: "var(--line-strong)", background: "var(--bg-2)", boxShadow: "var(--shadow)" }}
         >
+          {сверху && (
+            /* СТРОКА ПОИСКА ПЕРВОЙ, И ОТБИТА ЧЕРТОЙ: это не такой же
+               переключатель, как «показывать опрос», а другой род действия. */
+            <div className="mb-1 border-b pb-2" style={{ borderColor: "var(--line)" }}>
+              {сверху}
+            </div>
+          )}
           {ряды.map((р) => (
             <button
               key={р.к}
@@ -1494,6 +1541,27 @@ function НастройкиВида({
  */
 /** Стрелка перехода на соседнюю неделю. Прозрачная: поверх кривой она не
  *  должна спорить с ней за внимание, но при наведении становится видна. */
+/** Переполнена ли строка: есть ли что прятать за краем.
+ *
+ *  Маска ставится ТОЛЬКО при настоящем переполнении. Пока она стояла всегда,
+ *  у каждой строки гасла последняя буква последнего слова -- даже там, где
+ *  строка умещалась целиком, и гасить было нечего.
+ */
+function useПереполнение<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  const [переполнено, setПереполнено] = useState(false);
+  useEffect(() => {
+    const э = ref.current;
+    if (!э) return;
+    const мерить = () => setПереполнено(э.scrollWidth > э.clientWidth + 1);
+    мерить();
+    const н = new ResizeObserver(мерить);
+    н.observe(э);
+    return () => н.disconnect();
+  });
+  return { ref, переполнено };
+}
+
 /** Слово недели с выпадающим окном: с чем оно стояло рядом.
  *
  *  ЗАЧЕМ. Слово названо, но не объяснено: «бензин» может значить и очереди, и
@@ -1514,6 +1582,44 @@ function Слово({
   открыто: boolean;
   открыть: (да: boolean) => void;
 }) {
+  const ссыл = useRef<HTMLSpanElement | null>(null);
+  const [якорь, setЯкорь] = useState<{ x: number; y: number } | null>(null);
+
+  /* КООРДИНАТЫ БЕРУТСЯ ПРИ ОТКРЫТИИ И ОБНОВЛЯЮТСЯ, ПОКА ОКНО ОТКРЫТО. Слово
+     живёт в ленте: её листают, страницу прокручивают -- и окно, замершее на
+     старом месте, повисло бы над пустотой. Ушло слово за край экрана -- окно
+     закрывается само. */
+  useEffect(() => {
+    if (!открыто) {
+      setЯкорь(null);
+      return;
+    }
+    const мерить = () => {
+      const э = ссыл.current;
+      if (!э) return;
+      const r = э.getBoundingClientRect();
+      const виден = r.right > 4 && r.left < window.innerWidth - 4;
+      if (!виден) {
+        открыть(false);
+        return;
+      }
+      setЯкорь({
+        x: Math.max(6, Math.min(r.left, window.innerWidth - 196)),
+        y: r.bottom + 7,
+      });
+    };
+    мерить();
+    const лента = ссыл.current?.closest(".lenta");
+    лента?.addEventListener("scroll", мерить, { passive: true });
+    window.addEventListener("scroll", мерить, { passive: true });
+    window.addEventListener("resize", мерить);
+    return () => {
+      лента?.removeEventListener("scroll", мерить);
+      window.removeEventListener("scroll", мерить);
+      window.removeEventListener("resize", мерить);
+    };
+  }, [открыто, открыть]);
+
   if (!пары || !пары.length) {
     return <span style={{ opacity: видность }}>{с}</span>;
   }
@@ -1524,6 +1630,7 @@ function Слово({
       onMouseLeave={phone ? undefined : () => открыть(false)}
     >
       <span
+        ref={ссыл}
         className="cursor-help underline decoration-dotted underline-offset-4"
         style={{ textDecorationColor: "var(--ink-3)", opacity: видность }}
         onClick={() => открыть(!открыто)}
@@ -1531,10 +1638,17 @@ function Слово({
       >
         {с}
       </span>
-      {открыто && !phone && (
+      {открыто && якорь && (
         <span
-          className="absolute left-0 top-[calc(100%+7px)] z-40 block rounded-xl border px-3 py-2"
+          /* ОКНО ДЕРЖИТСЯ НА ЭКРАННЫХ КООРДИНАТАХ СЛОВА, а не на его месте в
+             потоке. Два повода. Первый: на телефоне ряд слов -- лента с
+             overflow, и вложенное окно она обрезала бы; вынесенное же под ряды
+             оно удлиняло карточку. Второй: уехало слово за край при листании --
+             окно просто закрывается, а не висит над пустотой. */
+          className="fixed z-50 block rounded-xl border px-3 py-2"
           style={{
+            left: якорь.x,
+            top: якорь.y,
             borderColor: "var(--line-strong)",
             background: "var(--bg-2)",
             boxShadow: "var(--shadow)",
@@ -1687,7 +1801,17 @@ function цвет_слова(ряд: string, раз: number): string {
 }
 
 function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lang; phone?: boolean }) {
-  const [подсказка, setПодсказка] = useState(false);
+  const [подсказка, _setПодсказка] = useState(false);
+  /* ПОДСКАЗКА ЗАГОЛОВКА И ОКНА СЛОВ -- ОДНО МЕСТО НА ДВОИХ. Они стоят вплотную
+     и оба выпадают вниз: открытые разом, они накладывались друг на друга.
+     Открытие любого закрывает другое. */
+  const setПодсказка = (v: boolean | ((p: boolean) => boolean)) => {
+    _setПодсказка((p) => {
+      const н = typeof v === "function" ? (v as (p: boolean) => boolean)(p) : v;
+      if (н) setОткрытое(null);
+      return н;
+    });
+  };
   const коробка = useRef<HTMLDivElement>(null);
   useЗакрытьСнаружи(коробка, подсказка, () => setПодсказка(false));
   if (!w.слово) return null;
@@ -1706,8 +1830,13 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
   /* ОТКРЫТО ВСЕГДА НЕ БОЛЬШЕ ОДНОГО ОКНА. Пока каждое слово помнило своё
      состояние само, на телефоне (где окно открывается нажатием, а не
      наведением) они копились: открыл три слова -- висят три окна внахлёст.
-     Состояние поднято сюда, в строку: оно одно на все девять слов. */
-  const [открытое, setОткрытое] = useState<string | null>(null);
+     Состояние поднято сюда, в строку: оно одно на все девять слов, а заодно
+     соперничает с подсказкой заголовка. */
+  const [открытое, _setОткрытое] = useState<string | null>(null);
+  const setОткрытое = (v: string | null) => {
+    if (v) _setПодсказка(false);
+    _setОткрытое(v);
+  };
   const ряды = [
     { к: "люди", имя: ru ? "Люди" : "People", д: w.слово.люди },
     { к: "новости", имя: ru ? "Паблики" : "Channels", д: w.слово.новости },
@@ -1787,7 +1916,25 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
         }
       >
         {ряды.map((р) => (
-          <div key={р.к} className={"flex items-baseline " + (phone ? "gap-1.5" : "gap-1")}>
+          <РядСлов
+            key={р.к}
+            р={р}
+            пары={пары}
+            phone={phone}
+            lang={lang}
+            открытое={открытое}
+            setОткрытое={setОткрытое}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function РядСлов({ р, пары, phone, lang, открытое, setОткрытое }: any) {
+  const { ref, переполнено } = useПереполнение<HTMLSpanElement>();
+  return (
+          <div className={"flex items-baseline " + (phone ? "gap-1.5" : "gap-1")}>
             <span
               /* НА ТЕЛЕФОНЕ ПЛАШКА ШИРЕ И СЛОВО В НЕЙ ПО ЦЕНТРУ. Прижатое к
                  правому краю, оно стояло вплотную к своим словам и читалось их
@@ -1837,13 +1984,21 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                  слова листаются, а край панели прячет их той же маской, что и
                  даты, -- `lenta-край`. Приём тот же, не похожий: если менять
                  его, менять надо в одном месте. */
-              /* ПОЛЕ СЛЕВА РАВНО ШИРИНЕ МАСКИ, и вычтено обратно отрицательным
-                 отступом. Маска гасит по пятнадцать пикселей с каждого края, и
-                 без поля она съедала начало первого слова: «очереди» читалось
-                 «черeди». У полосы дат этого не видно, потому что у кнопок есть
-                 своё поле; у слов его не было. */
+              /* МАСКА ТОЛЬКО СПРАВА И ТОЛЬКО ПРИ ПЕРЕПОЛНЕНИИ. Двусторонняя
+                 съедала начало первой строки; чтобы это исправить, я загонял
+                 ленту под плашку отрицательным отступом -- и слова стали
+                 просвечивать сквозь неё, потому что плашка полупрозрачна
+                 (6 % белого). Обе беды снимает односторонняя маска: содержимое
+                 уходит вправо, там и гаснет, а слева ничего прятать не нужно.
+                 Ставится она лишь тогда, когда прятать ЕСТЬ ЧТО: пока стояла
+                 всегда, у каждой строки гасла последняя буква последнего слова
+                 даже там, где строка умещалась целиком. */
+              ref={ref}
               className={"font-semibold "
-                + (phone ? "lenta lenta-край overflow-x-auto whitespace-nowrap pl-4 -ml-4" : "")}
+                + (phone
+                    ? "lenta overflow-x-auto whitespace-nowrap "
+                      + (переполнено ? "лента-право" : "")
+                    : "")}
               style={{
                 color: р.д ? цвет_слова(р.к, р.д.раз) : "var(--ink-3)",
                 fontSize: phone ? 15 : 23,
@@ -1890,34 +2045,6 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
                 : "—"}
             </span>
           </div>
-        ))}
-      </div>
-      {/* НА ТЕЛЕФОНЕ ОКНО ПАР СТОИТ ПОД РЯДАМИ, А НЕ ВНУТРИ СЛОВА. Ряды там --
-          ленты с прокруткой и маской по краям; окно, вложенное в ленту,
-          обрезалось бы и по горизонтали, и по вертикали. Снаружи оно свободно и
-          заодно шире: на узкой карточке это читается лучше приткнутого
-          пузырька. */}
-      {phone && открытое && пары[открытое.split("/")[1]] && (
-        <div
-          className="mt-1.5 rounded-xl border px-3 py-2"
-          style={{
-            borderColor: "var(--line-strong)",
-            background: "var(--bg-2)",
-            fontSize: 14,
-            fontWeight: 500,
-            color: "var(--ink-2)",
-            lineHeight: 1.5,
-          }}
-        >
-          {пары[открытое.split("/")[1]].map(([п, n]) => (
-            <div key={п} className="flex items-baseline justify-between gap-4">
-              <span style={{ color: "var(--ink)" }}>{п}</span>
-              <span className="mono" style={{ color: "var(--ink-3)", fontSize: 12 }}>{n}%</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -2267,8 +2394,8 @@ function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx:
       <span
         // Число опроса опущено на несколько пикселей: вровень с кнопкой оно
         // спорило с ней за внимание, а это разные вещи -- показание и переключатель.
-        className={"mono font-bold leading-none " + (phone ? "text-[17px]" : "relative top-[6px] text-[40px]")}
-        style={{ color: "var(--ink-2)", width: phone ? 38 : 72, display: "inline-block" }}
+        className={"mono font-bold leading-none " + (phone ? "text-[20px]" : "relative top-[6px] text-[40px]")}
+        style={{ color: "var(--ink-2)", width: phone ? 44 : 72, display: "inline-block" }}
       >
         {fom == null ? "—" : `${fom.toFixed(0)}%`}
       </span>

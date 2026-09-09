@@ -425,26 +425,31 @@ html[data-theme="light"] .pollglow {
     transform: translate(var(--sx), 0.2px) rotate(calc(var(--sr) * 0.6));
   }
 }
-@keyframes breathe {
+/* НАКЛОН ПОКОЯ. Поворот вокруг СТУПНЕЙ, а не середины: фигура, повёрнутая
+   вокруг своего центра, ездит ногами по земле и выглядит подвешенной.
+   transform-box: fill-box обязателен -- без него точка отсчёта берётся от
+   всего рисунка, и три фигуры расходятся веером вместо общего наклона. */
+@keyframes sway {
   0%,
   100% {
-    transform: translateY(0) scaleY(1);
+    transform: rotate(-2.6deg);
   }
   50% {
-    transform: translateY(-1.6px) scaleY(1.035);
+    transform: rotate(2.6deg);
   }
 }
 .shiver {
   animation: shiver var(--sd, 0.4s) infinite ease-in-out;
 }
-.breathe {
-  animation: breathe 3.4s infinite ease-in-out;
+.sway {
+  animation: sway 5.2s infinite ease-in-out;
+  transform-box: fill-box;
   transform-origin: 50% 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .shiver,
-  .breathe,
+  .sway,
   .numglow {
     animation: none;
   }
@@ -620,6 +625,24 @@ html[data-theme="light"] .pollglow {
 /* Мягкий край ленты: фишка не обрывается о панель, а тает на подходе к ней.
    Маска, а не градиент поверх: под лентой лежит стекло карточки со своим
    фоном, и накладка нужного цвета там не подбирается. */
+/* ГАСНЕТ ТОЛЬКО ПРАВЫЙ КРАЙ. Двусторонняя маска (.lenta-край) съедала и начало
+   строки: у слов недели первое слово теряло первые буквы, а последнее -- всегда
+   последнюю, даже когда прятать было нечего. Здесь гаснет тот край, за который
+   содержимое и уходит; ставится этот класс только при настоящем переполнении. */
+.лента-право {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 26px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 26px),
+    transparent 100%
+  );
+}
 .lenta-край {
   -webkit-mask-image: linear-gradient(
     to right,

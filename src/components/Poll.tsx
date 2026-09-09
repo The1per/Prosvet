@@ -273,15 +273,15 @@ export default function Poll({
         <>
           {/* Зачем отвечать -- сразу под вопросом. Не приписка внизу: человек
               решает, двигать ли ручку, здесь, а не после ответа. */}
-          <p className="mt-2 text-[16px] leading-snug" style={{ color: "var(--ink-2)" }}>
+          <p className="mt-2 text-[18px] leading-snug" style={{ color: "var(--ink-2)" }}>
             {T.pollCall[lang]}
           </p>
           {/* Фигуры НАД ползунком, подписи ПОД ним, сам он во всю ширину:
               так шкала читается как шкала, а не как строка с картинками по
               краям. */}
           <div className="mt-7 flex items-end justify-between">
-            <Poles kind="calm" color={color} title={T.calm[lang]} live={value < 45} />
-            <Poles kind="chaos" color={color} title={T.panic[lang]} live={value >= 70} />
+            <Poles kind="calm" color={color} title={T.calm[lang]} live={value < 45} близость={1 - value / 100} />
+            <Poles kind="chaos" color={color} title={T.panic[lang]} live={value >= 70} близость={value / 100} />
           </div>
 
           <div className="relative mt-2">
@@ -312,19 +312,19 @@ export default function Poll({
           </div>
 
           <div className="mt-1 flex items-baseline justify-between">
-            <span className="mono text-[16px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+            <span className="mono text-[18px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
               {T.calm[lang]}
             </span>
-            <span className="mono text-[16px] uppercase tracking-wider" style={{ color }}>
+            <span className="mono text-[18px] uppercase tracking-wider" style={{ color }}>
               {T.panic[lang]}
             </span>
           </div>
 
           <div className="mt-6 flex items-center justify-between gap-3">
-            <button className="btn px-6 py-2.5 text-[16.5px]" data-on={true} onClick={submit}>
+            <button className="btn px-6 py-2.5 text-[18.5px]" data-on={true} onClick={submit}>
               {T.save[lang]}
             </button>
-            <span className="mono text-[19px] font-semibold" style={{ color: "var(--ink-2)" }}>
+            <span className="mono text-[21px] font-semibold" style={{ color: "var(--ink-2)" }}>
               {fmtDate(weekDate, lang)}
             </span>
           </div>
@@ -338,7 +338,7 @@ export default function Poll({
             </div>
           ) : (
         <>
-          <div className="mono text-[17px] uppercase tracking-[0.14em]" style={{ color: "var(--ink-3)" }}>
+          <div className="mono text-[19px] uppercase tracking-[0.14em]" style={{ color: "var(--ink-3)" }}>
             {T.youSaid[lang]}
           </div>
           <div className="mono mt-1 text-4xl font-bold leading-none" style={{ color: moodColor(mine!.v, 6) }}>
@@ -379,10 +379,10 @@ export default function Poll({
 
       {past.length > 0 && (
         <div className="mt-4 border-t pt-3" style={{ borderColor: "var(--line)" }}>
-          <div className="mono text-[17px] uppercase tracking-[0.14em]" style={{ color: "var(--ink-3)" }}>
+          <div className="mono text-[19px] uppercase tracking-[0.14em]" style={{ color: "var(--ink-3)" }}>
             {T.yourPast[lang]}
           </div>
-          <div className="mono mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[16px]" style={{ color: "var(--ink-2)" }}>
+          <div className="mono mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[18px]" style={{ color: "var(--ink-2)" }}>
             {past.map(([d, a]) => (
               <span key={d}>
                 {fmtDate(d, lang)} — <b style={{ color: moodColor(a.v, 6) }}>{a.v}</b>

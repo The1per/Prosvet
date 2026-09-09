@@ -32,7 +32,7 @@ export default function App() {
   // сделана. Цветное свечение важных дат остаётся всегда -- оно не украшение,
   // а способ отличить событие от обычной недели, и переключателю не подчинено.
   const [настройки, setНастройки] = useLocal("pai.vid.v2", {
-    простой: true, индекс: true,
+    простой: true, индекс: true, превышение: false,
   });
   const [менюОткрыто, setМенюОткрыто] = useState(false);
   const [диапОткрыт, setДиапОткрыт] = useState(false);
@@ -866,6 +866,7 @@ export default function App() {
                 showFom={showFom}
                 простой={настройки.простой}
                 индекс={настройки.индекс}
+                превышение={настройки.превышение}
                 phone={телефон}
                 уголок={
                   <div className="flex flex-col items-start gap-2">
@@ -1043,7 +1044,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setОпросОткрыт(false)}
-                className="mono mb-2 self-end px-2 py-1 text-[15px] underline-offset-4"
+                className="mono mb-2 self-end px-3 py-2 text-[18px] underline-offset-4"
                 style={{ color: "var(--ink-3)", background: "none", border: "none", cursor: "pointer" }}
               >
                 {T.pollClose[lang]} ✕
@@ -1465,17 +1466,19 @@ function НастройкиВида({
 }: {
   открыто: boolean;
   setОткрыто: (v: boolean) => void;
-  значения: { простой: boolean; индекс: boolean; фом: boolean };
-  менять: (ключ: "простой" | "индекс" | "фом", v: boolean) => void;
+  значения: { простой: boolean; индекс: boolean; фом: boolean; превышение: boolean };
+  менять: (ключ: "простой" | "индекс" | "фом" | "превышение", v: boolean) => void;
   lang: Lang;
   phone?: boolean;
 }) {
   const ru = lang === "ru";
   const коробка = useRef<HTMLDivElement>(null);
   useЗакрытьСнаружи(коробка, открыто, () => setОткрыто(false));
-  const ряды: { к: "простой" | "индекс" | "фом"; знак: string; имя: string; вкл: boolean }[] = [
+  const ряды: { к: "простой" | "индекс" | "фом" | "превышение"; знак: string; имя: string; вкл: boolean }[] = [
     { к: "индекс", знак: "∿", имя: ru ? "кривая индекса" : "index curve", вкл: значения.индекс },
     { к: "фом", знак: "▦", имя: ru ? "кривая опроса" : "poll curve", вкл: значения.фом },
+    { к: "превышение", знак: "◈", имя: ru ? "превышение вместо ранга" : "excess vs rank",
+      вкл: значения.превышение },
     { к: "простой", знак: "✳", имя: ru ? "свечение" : "glow", вкл: !значения.простой },
   ];
   return (

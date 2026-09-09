@@ -97,6 +97,13 @@ type Props = {
   простой?: boolean;
   /** Показывать ли саму кривую индекса. Выключают, чтобы смотреть один опрос. */
   индекс?: boolean;
+  /**
+   * Вторая кривая: тот же прибор, но место недели в истории заменено УРОВНЕМ
+   * превышения (z-оценка в том же окне). Разбор -- uroven_rule.md: уровень
+   * лучше опознаёт события и хуже держит живой год, и потому стоит рядом, а
+   * не вместо.
+   */
+  превышение?: boolean;
   phone?: boolean;
   /**
    * Что поставить в правый верхний угол ПОЛЯ КРИВОЙ (не полотна). Снаружи
@@ -106,7 +113,7 @@ type Props = {
   уголок?: React.ReactNode;
 };
 
-export default function Chart({ data, lang, sel, onSel, showFom, простой = false, индекс = true, phone = false, уголок }: Props) {
+export default function Chart({ data, lang, sel, onSel, showFom, простой = false, индекс = true, превышение = false, phone = false, уголок }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const [hovering, setHovering] = useState(false);
   /**
@@ -238,7 +245,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
     [H, PAD],
   );
 
-  const { line, area, fomLine, markers, полосы, gaps } = useMemo(() => {
+  const { line, area, fomLine, urLine, markers, полосы, gaps } = useMemo(() => {
     const pts = data.map((d, i) => [x(i), y(d.idx)] as const);
     let p = `M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
     for (let i = 0; i < pts.length - 1; i++) {
@@ -290,6 +297,21 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
       }
       f += `${open ? "L" : "M"}${x(i).toFixed(1)},${y(d.fom).toFixed(1)}`;
       open = true;
+    });
+
+    // ВТОРАЯ КРИВАЯ -- уровень превышения. Рвётся там, где её нет, как и
+    // опросная: дорисовывать по прямой через дыру значит показать измерение,
+    // которого не делали.
+    let u = "";
+    let uopen = false;
+    data.forEach((d, i) => {
+      const v = (d as { idx2?: number | null }).idx2;
+      if (v == null) {
+        uopen = false;
+        return;
+      }
+      u += `${uopen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
+      uopen = true;
     });
 
     // РАСХОЖДЕНИЕ. Полоска от прибора до опроса на каждой неделе, где волна
@@ -437,6 +459,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
       line: p,
       area: a,
       fomLine: f,
+      urLine: u,
 
       markers: ms,
       полосы,
@@ -695,6 +718,13 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
         ))}
 
         {showFom && <path d={fomLine} fill="none" stroke="var(--poll)" strokeWidth="1.7" opacity="0.95" />}
+        {/* ВТОРАЯ КРИВАЯ рисуется ПОД опросной и тоньше основной: она не
+            замена индексу, а второй его вид, и спорить за внимание с ним не
+            должна. Пунктир -- чтобы на чёрно-белой печати они не слились. */}
+        {превышение && (
+          <path d={urLine} fill="none" stroke="var(--accent-2)" strokeWidth="1.5"
+                strokeDasharray="6 4" opacity="0.8" />
+        )}
 
         {/* МЕТКИ СОБЫТИЙ. Подпись стоит в общем ряду, а к своей неделе идёт
             выноска: вниз от подписи, наклон, и снова вниз к точке. Подпись,

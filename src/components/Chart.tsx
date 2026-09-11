@@ -104,6 +104,13 @@ type Props = {
    * не вместо.
    */
   превышение?: boolean;
+  /**
+   * Третья кривая: тот же прибор, но с более сдержанной оценкой части
+   * недель. Она точнее сходится с опросом на неделях, которых прибор не
+   * видел, и хуже держит порядок недель внутри полугодий -- поэтому стоит
+   * рядом с индексом, а не вместо него, и выключена по умолчанию.
+   */
+  сдержанно?: boolean;
   phone?: boolean;
   /**
    * Что поставить в правый верхний угол ПОЛЯ КРИВОЙ (не полотна). Снаружи
@@ -113,7 +120,7 @@ type Props = {
   уголок?: React.ReactNode;
 };
 
-export default function Chart({ data, lang, sel, onSel, showFom, простой = false, индекс = true, превышение = false, phone = false, уголок }: Props) {
+export default function Chart({ data, lang, sel, onSel, showFom, простой = false, индекс = true, превышение = false, сдержанно = false, phone = false, уголок }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const [hovering, setHovering] = useState(false);
   /**
@@ -245,7 +252,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
     [H, PAD],
   );
 
-  const { line, area, fomLine, urLine, markers, полосы, gaps } = useMemo(() => {
+  const { line, area, fomLine, urLine, trLine, markers, полосы, gaps } = useMemo(() => {
     const pts = data.map((d, i) => [x(i), y(d.idx)] as const);
     let p = `M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
     for (let i = 0; i < pts.length - 1; i++) {
@@ -312,6 +319,20 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
       }
       u += `${uopen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
       uopen = true;
+    });
+
+    // ТРЕТЬЯ КРИВАЯ -- сдержанный вид. Рвётся по тому же правилу: где её
+    // нет, линии нет.
+    let tr = "";
+    let tropen = false;
+    data.forEach((d, i) => {
+      const v = (d as { idx3?: number | null }).idx3;
+      if (v == null) {
+        tropen = false;
+        return;
+      }
+      tr += `${tropen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`;
+      tropen = true;
     });
 
     // РАСХОЖДЕНИЕ. Полоска от прибора до опроса на каждой неделе, где волна
@@ -460,6 +481,7 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
       area: a,
       fomLine: f,
       urLine: u,
+      trLine: tr,
 
       markers: ms,
       полосы,
@@ -724,6 +746,12 @@ export default function Chart({ data, lang, sel, onSel, showFom, простой 
         {превышение && (
           <path d={urLine} fill="none" stroke="var(--accent-2)" strokeWidth="1.5"
                 strokeDasharray="6 4" opacity="0.8" />
+        )}
+        {/* ТРЕТЬЯ КРИВАЯ -- другой цвет и другой пунктир, чтобы не путалась
+            ни с основной, ни со второй, если включены обе. */}
+        {сдержанно && (
+          <path d={trLine} fill="none" stroke="var(--cool)" strokeWidth="1.5"
+                strokeDasharray="2 3" opacity="0.85" />
         )}
 
         {/* МЕТКИ СОБЫТИЙ. Подпись стоит в общем ряду, а к своей неделе идёт

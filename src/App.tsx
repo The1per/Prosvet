@@ -6,7 +6,7 @@ import { Breakdown, Methodology, Reads } from "./components/Panels";
 import { BASELINE, LATEST, SERIES, type Week, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе } from "./data/series";
 import { EVENT_BY_DATE } from "./data/events";
 import { T, fmtWeek, type Lang } from "./i18n";
-import { moodColor, moodGlow, levelIndex, moodT } from "./mood";
+import { anxiousOfTen, moodColor, moodGlow, levelIndex, moodT } from "./mood";
 import { useCounter, useLocal, useReveal, useТелефон } from "./hooks";
 
 
@@ -81,6 +81,22 @@ export default function App() {
     if (sel < срез.сдвиг) setSel(срез.сдвиг);
     else if (sel > срез.конец) setSel(срез.конец);
   }, [срез, sel]);
+
+  /* ПРЕДЕЛЫ СТРОЯ -- ЖИВЫЕ, ПО ПОКАЗАННОМУ КУСКУ РЯДА. Отсечки «мин.» и
+     «макс.» под человечками стояли на измеренных пределах ОПРОСА за все годы
+     и не двигались никогда -- рядом с кривой, которая при смене диапазона
+     показывает совсем другие годы, они начинали говорить не о ней.
+     Считается по ГЛАВНОЙ кривой (idx) и той же `anxiousOfTen`, которой
+     заливаются фигуры: строй показывает главный индекс, и пределы обязаны
+     быть его, а не включённых добавочных линий. */
+  const пределыСтроя = useMemo(() => {
+    const vs = срез.данные.map((d) => d.idx).filter((v) => Number.isFinite(v));
+    if (!vs.length) return null;
+    return {
+      floor: anxiousOfTen(Math.min(...vs)),
+      peak: anxiousOfTen(Math.max(...vs)),
+    };
+  }, [срез]);
 
   const lang = prefs.lang;
   const w = SERIES[sel];
@@ -448,23 +464,30 @@ export default function App() {
             </span>
             {/* Раздел -- то, что показано на этой странице. Отделён точкой и
                 набран обычным начертанием: это не часть имени. */}
-            <span
-              className={
-                "shrink-0 font-normal " + (телефон ? "text-[13px]" : "text-[19px] sm:text-[21px]")
-              }
-              style={{ color: "var(--ink-2)" }}
-            >
-              {телефон ? "" : "· "}
-              {T.section[lang]}
-            </span>
-            <span
-              className={
-                "mono shrink-0 font-normal tracking-normal " +
-                (телефон ? "text-[12.5px]" : "text-[16.5px]")
-              }
-              style={{ color: "var(--ink-3)" }}
-            >
-              {T.badge[lang](SERIES[0].date.slice(0, 4), SERIES[SERIES.length - 1].date.slice(0, 4), SERIES.length)}
+            {/* НА ТЕЛЕФОНЕ РАЗДЕЛ И ГОДЫ -- ОДНОЙ СТРОКОЙ. Они стояли двумя, и
+                вместе с именем прибора шапка занимала три строки. Строкой
+                меньше -- и вся страница, включая график, поднялась ровно на её
+                высоту. На экране всё как было: там h1 и без того flex-row, и
+                эта обёртка в нём ничего не меняет. */}
+            <span className={телефон ? "flex min-w-0 items-baseline gap-2" : "contents"}>
+              <span
+                className={
+                  "shrink-0 font-normal " + (телефон ? "text-[13px]" : "text-[19px] sm:text-[21px]")
+                }
+                style={{ color: "var(--ink-2)" }}
+              >
+                {телефон ? "" : "· "}
+                {T.section[lang]}
+              </span>
+              <span
+                className={
+                  "mono shrink-0 font-normal tracking-normal " +
+                  (телефон ? "text-[12.5px]" : "text-[16.5px]")
+                }
+                style={{ color: "var(--ink-3)" }}
+              >
+                {T.badge[lang](SERIES[0].date.slice(0, 4), SERIES[SERIES.length - 1].date.slice(0, 4), SERIES.length)}
+              </span>
             </span>
           </h1>
           <div className="ml-auto flex items-center gap-1.5">
@@ -527,7 +550,13 @@ export default function App() {
                    над ними пустую полосу. Ряд и без того ступенчатый -- строй
                    и сравнения кончаются выше числа, -- и лишний воздух эту
                    ступень только растягивал. */
-                (телефон ? "mb-2 gap-x-3 gap-y-2" : "gap-x-5 gap-y-3")
+                /* НА ТЕЛЕФОНЕ МЕЖДУ ЧИСЛОМ И СТРОЕМ ЗАЗОРА НЕТ (gap-y-0). Строй --
+                   вторая строка этого переносящегося ряда, и восемь пикселей
+                   зазора стояли ровно над ним, а значит и над всем, что ниже,
+                   включая график. Сам строй подтянут ещё на четыре (-mt-1):
+                   у числа плотная выключка (leading 0.84), и снизу у него
+                   остаётся воздух, в который строй и уходит. */
+                (телефон ? "mb-2 gap-x-3 gap-y-0" : "gap-x-5 gap-y-3")
               }
             >
               {/* Блок числа занимает всю ширину, но НЕ ЯВЛЯЕТСЯ рядом: пока
@@ -683,8 +712,9 @@ export default function App() {
                     выталкивал столбец за край карточки, кнопка «Тревожно ли»
                     уезжала правее кнопки ФОМа (у той такого соседа нет), и
                     середины двух кнопок расходились на десять пикселей. */}
-                <div className={телефон ? "flex items-start justify-between" : "flex items-end"}>
-                  <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level} />
+                <div className={телефон ? "-mt-1 flex items-start justify-between" : "flex items-end"}>
+                  <People idx={w.idx} lang={lang} preview={preview} part="строй" phone={телефон} level={level}
+                    floor={пределыСтроя?.floor} peak={пределыСтроя?.peak} />
                   {/* ОБЕ КНОПКИ ПОДНЯТЫ И ЧИТАЮТСЯ ПАРОЙ: «Опрос ФОМ» с числом
                       опроса стоит строкой выше, «Тревожно ли вокруг вас» --
                       прямо под ней, в коробке той же ширины. Слово недели --
@@ -713,7 +743,8 @@ export default function App() {
                         недели -- а те выше подписи на две строки, и между
                         «Тревожны» и «+29 %» зиял просвет. */}
                     <div className="min-w-0">
-                      <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone level={level} />
+                      <People idx={w.idx} lang={lang} preview={preview} part="подпись" phone level={level}
+                        floor={пределыСтроя?.floor} peak={пределыСтроя?.peak} />
                       {сравнения}
                     </div>
                   </div>

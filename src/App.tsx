@@ -246,10 +246,15 @@ export default function App() {
        строки, и вровень по середине пара садилась заметно ниже. Сдвиг
        зрительный (relative): в раскладке пара остаётся на месте и ничего не
        двигает, а items-center держит число и кнопку на одной середине. */
+    /* НА ТЕЛЕФОНЕ ПАРА ПОДНЯТА СИЛЬНЕЕ: было -7, стало -12. Строй под ней
+       подтянули на двенадцать пикселей (gap-y-0 и -mt-1), и кнопка опроса,
+       что стоит в одном ряду со строем, подошла к кнопке ФОМа вплотную и
+       налезла на неё. Сдвиг зрительный (relative): в раскладке пара остаётся
+       на месте и ничего не двигает. */
     <div
       className={
         "relative flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap "
-        + (телефон ? "top-[-7px]" : "")
+        + (телефон ? "top-[-12px]" : "")
       }
     >
       <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
@@ -469,10 +474,22 @@ export default function App() {
                 меньше -- и вся страница, включая график, поднялась ровно на её
                 высоту. На экране всё как было: там h1 и без того flex-row, и
                 эта обёртка в нём ничего не меняет. */}
-            <span className={телефон ? "flex min-w-0 items-baseline gap-2" : "contents"}>
+            {/* НА ТЕЛЕФОНЕ СТРОКА МОЖЕТ УСЕЧЬСЯ, А НЕ НАЛЕЗТЬ. Раздел и годы
+                встали в одну строку, и вместе они шире, чем остаётся в шапке
+                после кнопки языка: строка наезжала на кнопку. min-w-0 плюс
+                overflow-hidden дают ей право укоротиться -- край уйдёт, но
+                поверх кнопки текст не пойдёт никогда. */}
+            <span
+              className={
+                телефон
+                  ? "flex min-w-0 items-baseline gap-1.5 overflow-hidden"
+                  : "contents"
+              }
+            >
               <span
                 className={
-                  "shrink-0 font-normal " + (телефон ? "text-[13px]" : "text-[19px] sm:text-[21px]")
+                  "shrink-0 font-normal "
+                  + (телефон ? "text-[12.5px]" : "text-[19px] sm:text-[21px]")
                 }
                 style={{ color: "var(--ink-2)" }}
               >
@@ -481,17 +498,54 @@ export default function App() {
               </span>
               <span
                 className={
-                  "mono shrink-0 font-normal tracking-normal " +
-                  (телефон ? "text-[12.5px]" : "text-[16.5px]")
+                  "mono min-w-0 truncate font-normal tracking-normal " +
+                  (телефон ? "text-[11.5px]" : "text-[16.5px]")
                 }
                 style={{ color: "var(--ink-3)" }}
               >
-                {T.badge[lang](SERIES[0].date.slice(0, 4), SERIES[SERIES.length - 1].date.slice(0, 4), SERIES.length)}
+                {/* НА ТЕЛЕФОНЕ БЕЗ ПРОБЕЛОВ У ТИРЕ: «2019—2026» вместо
+                    «2019 — 2026». Два знака, а в строке, которой не хватает
+                    ширины, они и решают. Текст один и тот же, источник
+                    подписи -- по-прежнему i18n. */}
+                {(() => {
+                  const с = T.badge[lang](
+                    SERIES[0].date.slice(0, 4),
+                    SERIES[SERIES.length - 1].date.slice(0, 4),
+                    SERIES.length,
+                  );
+                  return телефон ? с.replace(" — ", "—") : с;
+                })()}
               </span>
             </span>
           </h1>
-          <div className="ml-auto flex items-center gap-1.5">
-            <button className="btn mono px-3.5 py-1.5 text-[17px]" onClick={() => setPrefs({ ...prefs, lang: lang === "ru" ? "en" : "ru" })}>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            {/* РАЗМЕР ЗАДАН ВСТРОЕННЫМ СТИЛЕМ, А НЕ КЛАССАМИ TAILWIND, и это не
+                прихоть: .btn объявлен в index.css ВНЕ слоёв, а утилиты
+                Tailwind -- внутри слоя, поэтому .btn их перебивает. Классы
+                px-3.5 py-1.5 text-[17px] на этой кнопке не действовали вовсе,
+                и кнопка была ростом 0.52rem + 0.95rem + 0.52rem -- слишком
+                высокой для телефонной шапки, где она упиралась в строку с
+                годами и числом недель.
+
+                inline-flex с центровкой по обеим осям: «EN» стоит ровно в
+                середине круглой кнопки, а не по базовой линии, съезжающей от
+                унаследованной высоты строки. */}
+            <button
+              className="btn mono"
+              style={
+                телефон
+                  ? {
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "3px 9px",
+                      fontSize: 12.5,
+                      lineHeight: 1.1,
+                    }
+                  : undefined
+              }
+              onClick={() => setPrefs({ ...prefs, lang: lang === "ru" ? "en" : "ru" })}
+            >
               {lang === "ru" ? "EN" : "RU"}
             </button>
           </div>
@@ -721,7 +775,12 @@ export default function App() {
                       под ними обеими: оно про ту же неделю, но к опросу
                       отношения не имеет. */}
                   {телефон && (
-                    <div className="-mt-2 flex w-[118px] shrink-0 justify-center">
+                    /* -mt-1, а не -mt-2: четыре пикселя отданы обратно, чтобы
+                       кнопка голосования отошла от кнопки ФОМа над ней. Вместе
+                       с подъёмом пары ФОМа это девять пикселей просвета --
+                       почти всё, что забрал подъём строя. Сам строй при этом
+                       остался поднятым: его -mt-1 выше, на всём ряду. */
+                    <div className="-mt-1 flex w-[118px] shrink-0 justify-center">
                       {кнопкаОпроса}
                     </div>
                   )}

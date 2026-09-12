@@ -303,9 +303,10 @@ export const T = {
     ru: "Не ушло: связь или сбор не отвечают. Попробуйте позже — написанное осталось в поле.",
     en: "Not sent: the network or the collector did not answer. Try later — your text is still here.",
   },
+  /* Число здесь обязано совпадать с В_СУТКИ в functions/api/otzyv.ts. */
   fbMany: {
-    ru: "На сегодня хватит: больше пяти отзывов в сутки с одного браузера не принимаю.",
-    en: "Enough for today: no more than five messages a day from one browser.",
+    ru: "На сегодня хватит: больше трёх отзывов в сутки с одного браузера не принимаю.",
+    en: "Enough for today: no more than three messages a day from one browser.",
   },
   phase: { ru: "Режим", en: "Mode" },
   phases: {

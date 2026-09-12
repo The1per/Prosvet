@@ -287,7 +287,25 @@ export default function App() {
         + (телефон ? "top-[-12px]" : "")
       }
     >
-      <FomNumber fom={w.fom} idx={w.idx} lang={lang} phone={телефон} />
+      {/* Табличка про опрос выпадает ЗДЕСЬ, из-под самой пары: её открывает
+          число опроса -- наведением на компьютере, нажатием на телефоне.
+          На телефоне она ставится не тут, а на уровне слов недели (там она не
+          закрывает кривую), поэтому здесь только экранный случай. */}
+      {!телефон && фомПодсказка && (
+        <ТабличкаФОМ
+          lang={lang}
+          phone={false}
+          className="absolute left-0 top-[calc(100%+10px)]"
+          style={{ width: 340 }}
+        />
+      )}
+      <FomNumber
+        fom={w.fom}
+        idx={w.idx}
+        lang={lang}
+        phone={телефон}
+        onПодсказка={setФомПодсказка}
+      />
       {/* НА ТЕЛЕФОНЕ обе кнопки стоят в коробках ОДНОЙ ширины -- 118, как у
           «Тревожно ли вокруг вас» строкой ниже. Так их середины приходятся на
           одну вертикаль. Коробки были 111 и 118, и кнопки расходились на
@@ -686,17 +704,6 @@ export default function App() {
                   человечками и оба сравнения, ездил вбок при каждом движении
                   по графику. */}
               <div className={"relative " + (телефон ? "w-full" : "shrink-0")} style={телефон ? undefined : { width: ШИРИНА_ЧИСЛА }}>
-                {/* На компьютере табличка про опрос выпадает из-под столбца с
-                    числом -- там, где на неё навели. Абсолютная: ряд
-                    показателей от неё не двигается. */}
-                {!телефон && фомПодсказка && (
-                  <ТабличкаФОМ
-                    lang={lang}
-                    phone={false}
-                    className="absolute left-0 top-[calc(100%+8px)]"
-                    style={{ width: 340 }}
-                  />
-                )}
                 <div>
                 {/* Надписи «прошедшая неделя» над числом больше нет: дата
                     недели стоит прямо под числом и говорит то же самое. */}
@@ -709,17 +716,15 @@ export default function App() {
                   {/* Зазор 3, а не 2: подпись стояла к числу вплотную и
                       читалась его частью. */}
                   <div className="flex items-end gap-3">
-                    {/* ЧИСЛО -- ВТОРАЯ КНОПКА ПОЯСНЕНИЯ ПРО ОПРОС (решение
-                        хозяина, 12 сентября 2026). На телефоне пояснение
-                        показывается один раз -- при первом касании кнопки
-                        ФОМа, -- и дальше открывается отсюда: по кнопке там
-                        нажимают, чтобы включить кривую, а не читать. Пунктир
-                        под числом и говорит, что здесь есть что открыть:
-                        на компьютере наведением, на телефоне нажатием. */}
+                    {/* ЧИСЛО ВЕДЁТ В РАЗДЕЛ «КАК ЭТО РАБОТАЕТ» (решение
+                        хозяина, 12 сентября 2026). Пояснение про опрос ушло к
+                        числу ОПРОСА -- там оно и к месту, -- а здесь вопрос
+                        другой: откуда взялась эта цифра. Пунктир говорит, что
+                        нажать есть на что. */}
                     <span
                       ref={numRef}
                       className={
-                        "mono cursor-help font-bold leading-[0.84] underline decoration-dotted underline-offset-[6px] " +
+                        "mono cursor-pointer font-bold leading-[0.84] underline decoration-dotted underline-offset-[6px] " +
                         (телефон ? "text-[46px]" : "text-[44px] sm:text-[54px] lg:text-[64px]")
                       }
                       style={{
@@ -729,10 +734,12 @@ export default function App() {
                         textDecorationThickness: 2,
                       }}
                       role="button"
-                      aria-label={T.fomWhat[lang]}
-                      onMouseEnter={телефон ? undefined : () => setФомПодсказка(true)}
-                      onMouseLeave={телефон ? undefined : () => setФомПодсказка(false)}
-                      onClick={() => setФомПодсказка((v) => !v)}
+                      aria-label={T.method[lang]}
+                      onClick={() =>
+                        document
+                          .getElementById("как-измерено")
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                      }
                     >
                       {shown.toFixed(1)}
                     </span>
@@ -2745,15 +2752,25 @@ function що(что: "от" | "до") {
   return что === "от" ? "from" : "to";
 }
 
-function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx: number; lang: Lang; phone?: boolean }) {
+function FomNumber({ fom, idx, lang, phone = false, onПодсказка }: { fom: number | null; idx: number; lang: Lang; phone?: boolean; onПодсказка?: (v: boolean | ((p: boolean) => boolean)) => void }) {
   const d = fom == null ? 0 : fom - idx;
   const врозь = fom != null && Math.abs(d) >= ПОРОГ_СОГЛАСИЯ;
   // Место под стрелку держится ВСЕГДА: появляясь и пропадая, она сдвигала
   // всё, что правее, и строка дёргалась при переходе по неделям.
+  /* ЧИСЛО ОПРОСА ОТКРЫВАЕТ ПОЯСНЕНИЕ ПРО ОПРОС (решение хозяина, 12 сентября
+     2026): на компьютере наведением, на телефоне нажатием. Прежде его
+     открывало число ПОКАЗАНИЯ, а это разные вопросы -- «что за цифра опроса» и
+     «откуда берётся индекс»; второй теперь уводит в раздел «как это
+     работает». Пунктир под числом говорит, что нажать есть на что. */
   return (
     <div
-      className={"flex items-center " + (phone ? "gap-1" : "gap-2")}
+      className={"flex cursor-help items-center " + (phone ? "gap-1" : "gap-2")}
       title={fom == null ? T.fomNone[lang] : T.fomLabel[lang]}
+      role="button"
+      aria-label={T.fomWhat[lang]}
+      onMouseEnter={phone || !onПодсказка ? undefined : () => onПодсказка(true)}
+      onMouseLeave={phone || !onПодсказка ? undefined : () => onПодсказка(false)}
+      onClick={() => onПодсказка?.((v) => !v)}
     >
       {/* Ширина постоянна: прочерк вместо «69%» короче на треть, и без этого
           всё, что правее, съезжало на неделях без опроса. На телефоне и кегль,
@@ -2762,8 +2779,14 @@ function FomNumber({ fom, idx, lang, phone = false }: { fom: number | null; idx:
       <span
         // Число опроса опущено на несколько пикселей: вровень с кнопкой оно
         // спорило с ней за внимание, а это разные вещи -- показание и переключатель.
-        className={"mono font-bold leading-none " + (phone ? "text-[20px]" : "relative top-[6px] text-[40px]")}
-        style={{ color: "var(--ink-2)", width: phone ? 44 : 72, display: "inline-block" }}
+        className={
+          "mono font-bold leading-none underline decoration-dotted underline-offset-[5px] "
+          + (phone ? "text-[20px]" : "relative top-[6px] text-[40px]")
+        }
+        style={{
+          color: "var(--ink-2)", width: phone ? 44 : 72, display: "inline-block",
+          textDecorationColor: "var(--ink-3)", textDecorationThickness: 2,
+        }}
       >
         {fom == null ? "—" : `${fom.toFixed(0)}%`}
       </span>

@@ -338,13 +338,18 @@ export function Methodology({ lang }: { lang: Lang }) {
             <button
               key={s.t}
               onClick={() => setOpen(open === i ? null : i)}
-              className="w-full cursor-pointer py-3 text-left"
+              className="w-full cursor-pointer py-3 text-left md:py-5"
               style={{ borderTop: i ? "1px solid var(--line)" : "none", background: "none", border: "none", borderTopWidth: i ? 1 : 0, borderTopStyle: "solid", borderTopColor: "var(--line)", color: "inherit" }}
             >
+              {/* КЕГЛЬ НА КОМПЬЮТЕРЕ БОЛЬШЕ НА 80 % (решение хозяина,
+                  12 сентября 2026): 16.5 -> 30 у названия шага, 16 -> 29 у
+                  текста. Через md:, а не через состояние: телефонная раскладка
+                  живёт ниже 768, и там кегли остаются прежними -- на узком
+                  экране 29 пикселей давали бы по три слова в строке. */}
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[16.5px] font-medium">{s.t}</span>
+                <span className="text-[16.5px] font-medium md:text-[30px]">{s.t}</span>
                 <span
-                  className="mono text-lg leading-none transition-transform"
+                  className="mono text-lg leading-none transition-transform md:text-[32px]"
                   style={{ color: "var(--ink-3)", transform: open === i ? "rotate(45deg)" : "none" }}
                 >
                   +
@@ -352,7 +357,7 @@ export function Methodology({ lang }: { lang: Lang }) {
               </div>
               <div className="grid transition-all duration-500" style={{ gridTemplateRows: open === i ? "1fr" : "0fr" }}>
                 <div className="overflow-hidden">
-                  <p className="pt-2 text-[16px] leading-relaxed" style={{ color: "var(--ink-2)" }}>
+                  <p className="pt-2 text-[16px] leading-relaxed md:pt-4 md:text-[29px]" style={{ color: "var(--ink-2)" }}>
                     <Жирным t={s.d} />
                   </p>
                 </div>
@@ -363,10 +368,10 @@ export function Methodology({ lang }: { lang: Lang }) {
       </div>
 
       <div className="card p-5 sm:p-7">
-        <div className="chip mb-3">{T.limits[lang]}</div>
-        <ul className="space-y-3">
+        <div className="chip mb-3 md:mb-5">{T.limits[lang]}</div>
+        <ul className="space-y-3 md:space-y-6">
           {T.limitList[lang].map((l) => (
-            <li key={l} className="flex gap-3 text-[16px] leading-relaxed" style={{ color: "var(--ink-2)" }}>
+            <li key={l} className="flex gap-3 text-[16px] leading-relaxed md:text-[29px]" style={{ color: "var(--ink-2)" }}>
               <span style={{ color: "var(--accent)" }}>—</span>
               <span>{l}</span>
             </li>

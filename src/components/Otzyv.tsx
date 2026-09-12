@@ -83,6 +83,8 @@ export default function Otzyv({
   };
 
   const кегль = phone ? "text-[18px]" : "text-[16.5px]";
+  /** Есть ли что отправлять. Одно место на кнопку, её вид и подпись рядом. */
+  const готов = текст.trim().length >= 3;
 
   return (
     <div className={"card relative flex flex-col " + (phone ? "p-5" : "p-5 sm:p-6")}>
@@ -146,18 +148,35 @@ export default function Otzyv({
           <div className="mt-4 flex items-center gap-3">
             <button
               className={"btn " + (phone ? "px-7 py-3 text-[20px]" : "px-6 py-2.5 text-[18.5px]")}
-              data-on={текст.trim().length >= 3}
-              disabled={текст.trim().length < 3 || как === "шлёт"}
+              data-on={готов}
+              disabled={!готов || как === "шлёт"}
+              /* ВЫКЛЮЧЕННАЯ КНОПКА ДОЛЖНА ВЫГЛЯДЕТЬ ВЫКЛЮЧЕННОЙ. Прежде она
+                 была неотличима от рабочей: пустое окно -- нажатие молча не
+                 делает ничего, и человек решает, что сломан сайт. Ровно на это
+                 и пожаловался хозяин. */
+              style={готов ? undefined : { opacity: 0.45, cursor: "default" }}
               onClick={отправить}
             >
               {как === "шлёт" ? T.fbSending[lang] : T.fbSend[lang]}
             </button>
-            {(как === "не ушло" || как === "много") && (
-              <span className={"leading-snug " + кегль} style={{ color: "var(--ink-2)" }}>
-                {как === "много" ? T.fbMany[lang] : T.fbFail[lang]}
+            {/* И СКАЗАТЬ, ПОЧЕМУ НЕ ЖМЁТСЯ. Молчащая кнопка -- худший род
+                поломки: она не отличима от настоящей. */}
+            {!готов && (
+              <span className={"leading-snug " + кегль} style={{ color: "var(--ink-3)" }}>
+                {T.fbShort[lang]}
               </span>
             )}
           </div>
+          {/* ОТКАЗ -- СВОЕЙ СТРОКОЙ И ЦВЕТОМ, а не приписка сбоку от кнопки:
+              сбоку её не замечают, и «ничего не произошло» повторяется. */}
+          {(как === "не ушло" || как === "много") && (
+            <p
+              className={"mt-3 leading-snug " + кегль}
+              style={{ color: "var(--accent-2)" }}
+            >
+              {как === "много" ? T.fbMany[lang] : T.fbFail[lang]}
+            </p>
+          )}
         </>
       )}
     </div>

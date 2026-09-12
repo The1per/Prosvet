@@ -297,6 +297,8 @@ export const T = {
   fbPlaceholder: { ru: "", en: "" },
   fbContact: { ru: "Куда ответить — если ждёте ответа", en: "Where to reply — if you want one" },
   fbSend: { ru: "Отправить", en: "Send" },
+  /** Почему кнопка не жмётся: молчащая кнопка неотличима от сломанной. */
+  fbShort: { ru: "напишите хоть слово", en: "write at least a word" },
   fbSending: { ru: "Отправляю…", en: "Sending…" },
   fbThanks: { ru: "Дошло. Спасибо.", en: "Received. Thank you." },
   fbFail: {

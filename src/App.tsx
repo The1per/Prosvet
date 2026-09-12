@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Chart from "./components/Chart";
 import People from "./components/People";
-import Poll from "./components/Poll";
+import Poll, { деньМСК } from "./components/Poll";
 import { Breakdown, Methodology, Reads } from "./components/Panels";
 import { BASELINE, LATEST, SERIES, type Week, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе } from "./data/series";
 import { EVENT_BY_DATE } from "./data/events";
@@ -131,12 +131,12 @@ export default function App() {
   useEffect(() => {
     try {
       const A = JSON.parse(localStorage.getItem("pai.answers.v3") || "{}");
-      // ОТВЕТ БЕРЁТСЯ ЗА ПОСЛЕДНЮЮ НЕДЕЛЮ, А НЕ ЗА ПОКАЗАННУЮ. Опрос спрашивает
-      // про сейчас (weekDate={LATEST.date}) при любой неделе на кривой. Читая
-      // ответ за показанную, кнопка считала человека неответившим, стоило ему
-      // сдвинуть неделю, -- и снова начинала мигать, хотя спрашивать не о чем:
-      // на этой неделе он уже ответил, а новый вопрос будет только на следующей.
-      const r = A?.[LATEST.date];
+      // ОТВЕТ БЕРЁТСЯ ЗА СЕГОДНЯШНИЕ СУТКИ, А НЕ ЗА НЕДЕЛЮ. Правило опроса --
+      // один ответ в сутки, и опрос с 12 сентября 2026 так и хранит ответы
+      // (деньМСК в Poll.tsx). Читая ответ за неделю, кнопка молчала бы всю
+      // неделю после одного ответа -- то есть звала бы ровно тогда, когда
+      // отвечать уже нельзя, и молчала бы, когда снова можно.
+      const r = A?.[деньМСК()];
       const v = typeof r === "number" ? r : r?.v;
       setМойОтвет(typeof v === "number" ? v : null);
     } catch {
@@ -885,7 +885,12 @@ export default function App() {
                  экран, и читателю сразу видно, за какие годы кривая. Высота
                  самого блока не тронута (minHeight 100), поэтому от длины слов
                  по-прежнему ничего не двигается. */
-              <div className="-mt-6 flex items-center gap-5">
+              /* ПОДНЯТ ЕЩЁ НА ДВЕНАДЦАТЬ (-mt-6 -> -mt-9), 12 сентября 2026 по
+                 просьбе хозяина: вместе с блоком слов поднимается и график,
+                 стоящий под ним. Выше -- нельзя: ряд над словами держится по
+                 столбцу с числом, датой и местом недели, и следующий шаг завёл
+                 бы слова под него. */
+              <div className="-mt-9 flex items-center gap-5">
                 <div className="ml-6 shrink-0">{парФОМ}</div>
                 {/* ВЫСОТА ПОД ТРИ СТРОКИ, И ТЕПЕРЬ ОНА ПОСТОЯННА. Пока ряды
                     шли одной строкой с переносом, высота гуляла от недели к

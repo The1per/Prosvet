@@ -281,9 +281,12 @@ export const T = {
     ru: "Что здесь не так или чего не хватает?",
     en: "What is wrong here, or what is missing?",
   },
+  /* «Или есть предложение?» стоит ПЕРЕД «читаю каждое письмо» (решение
+     хозяина): сперва перечислено, что годится, потом приглашение предложить
+     своё, и только затем обещание прочесть. */
   fbHint: {
-    ru: "Промах прибора на конкретной неделе, непонятное слово, сломанная кнопка — всё годится. Читаю каждое письмо, отвечаю не на каждое.",
-    en: "A miss on a particular week, an unclear wording, a broken button — all of it helps. Every message is read; not every one is answered.",
+    ru: "Промах модели на конкретной неделе, непонятное слово, сломанная кнопка — всё годится. Или есть предложение? Читаю каждое письмо.",
+    en: "A miss on a particular week, an unclear wording, a broken button — all of it helps. Or do you have a suggestion? Every message is read.",
   },
   fbPlaceholder: { ru: "Здесь", en: "Here" },
   fbContact: { ru: "Куда ответить — если ждёте ответа", en: "Where to reply — if you want one" },

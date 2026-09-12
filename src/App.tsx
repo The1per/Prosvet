@@ -1350,7 +1350,6 @@ export default function App() {
                 настройки.сдержанно ? "сдержанно" : null,
                 `${диап.от}…${диап.до}`,
               ].filter(Boolean).join(" · ")}
-              onFinished={() => setОтзывОткрыт(false)}
             />
           </div>
         </div>

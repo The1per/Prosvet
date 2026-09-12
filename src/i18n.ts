@@ -292,10 +292,7 @@ export const T = {
   fbContact: { ru: "Куда ответить — если ждёте ответа", en: "Where to reply — if you want one" },
   fbSend: { ru: "Отправить", en: "Send" },
   fbSending: { ru: "Отправляю…", en: "Sending…" },
-  fbThanks: {
-    ru: "Дошло. Спасибо — это и есть тот случай, когда одно письмо меняет прибор.",
-    en: "Received. Thank you — this is exactly the kind of message that changes the instrument.",
-  },
+  fbThanks: { ru: "Дошло. Спасибо.", en: "Received. Thank you." },
   fbFail: {
     ru: "Не ушло: связь или сбор не отвечают. Попробуйте позже — написанное осталось в поле.",
     en: "Not sent: the network or the collector did not answer. Try later — your text is still here.",

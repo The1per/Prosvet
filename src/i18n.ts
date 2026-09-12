@@ -273,6 +273,34 @@ export const T = {
 
   method: { ru: "Как это работает", en: "How it works" },
   limits: { ru: "Границы индекса", en: "Limits of the index" },
+
+  /* ---------- обратная связь ---------- */
+  fbOpen: { ru: "Написать автору", en: "Write to the author" },
+  fbChip: { ru: "Обратная связь", en: "Feedback" },
+  fbQ: {
+    ru: "Что здесь не так или чего не хватает?",
+    en: "What is wrong here, or what is missing?",
+  },
+  fbHint: {
+    ru: "Промах прибора на конкретной неделе, непонятное слово, сломанная кнопка — всё годится. Читаю каждое письмо, отвечаю не на каждое.",
+    en: "A miss on a particular week, an unclear wording, a broken button — all of it helps. Every message is read; not every one is answered.",
+  },
+  fbPlaceholder: { ru: "Здесь", en: "Here" },
+  fbContact: { ru: "Куда ответить — если ждёте ответа", en: "Where to reply — if you want one" },
+  fbSend: { ru: "Отправить", en: "Send" },
+  fbSending: { ru: "Отправляю…", en: "Sending…" },
+  fbThanks: {
+    ru: "Дошло. Спасибо — это и есть тот случай, когда одно письмо меняет прибор.",
+    en: "Received. Thank you — this is exactly the kind of message that changes the instrument.",
+  },
+  fbFail: {
+    ru: "Не ушло: связь или сбор не отвечают. Попробуйте позже — написанное осталось в поле.",
+    en: "Not sent: the network or the collector did not answer. Try later — your text is still here.",
+  },
+  fbMany: {
+    ru: "На сегодня хватит: больше пяти отзывов в сутки с одного браузера не принимаю.",
+    en: "Enough for today: no more than five messages a day from one browser.",
+  },
   phase: { ru: "Режим", en: "Mode" },
   phases: {
     ru: { обучение: "настройка", живое: "живое", отложено: "проверка" },

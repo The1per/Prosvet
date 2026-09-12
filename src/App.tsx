@@ -3,10 +3,11 @@ import { createPortal } from "react-dom";
 import Chart from "./components/Chart";
 import People from "./components/People";
 import Poll, { деньМСК } from "./components/Poll";
+import Otzyv from "./components/Otzyv";
 import { Breakdown, Methodology, Reads } from "./components/Panels";
 import { BASELINE, LATEST, SERIES, type Week, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе } from "./data/series";
 import { EVENT_BY_DATE } from "./data/events";
-import { T, fmtDate, fmtWeek, type Lang } from "./i18n";
+import { T, fmtWeek, type Lang } from "./i18n";
 import { anxiousOfTen, moodColor, moodGlow, levelIndex, moodT } from "./mood";
 import { useCounter, useLocal, useReveal, useТелефон } from "./hooks";
 
@@ -135,6 +136,12 @@ export default function App() {
   const телефон = useТелефон();
   // На телефоне опрос живёт в выдвижной панели, а не в потоке страницы.
   const [опросОткрыт, setОпросОткрыт] = useState(false);
+  /**
+   * ОБРАТНАЯ СВЯЗЬ живёт в такой же выдвижной панели -- и на телефоне, и на
+   * компьютере: она нужна редко, а места в раскладке не просит вовсе. Кнопка --
+   * значок письма в чёрной полосе, рядом с языком.
+   */
+  const [отзывОткрыт, setОтзывОткрыт] = useState(false);
   /* ВЫСОТА ЧЁРНОЙ ПОЛОСЫ МЕРЯЕТСЯ, А НЕ ЗАШИВАЕТСЯ ЧИСЛОМ. Панель опроса
      выезжает из-под неё и не имеет права её накрыть, а высота полосы разная:
      заголовок на узком экране переносится, годы уходят строкой ниже. Зашитое
@@ -612,6 +619,40 @@ export default function App() {
             </span>
           </h1>
           <div className="ml-auto flex shrink-0 items-center gap-1.5">
+            {/* ПИСЬМО -- РЯДОМ С ЯЗЫКОМ, В ЧЁРНОЙ ПОЛОСЕ (решение хозяина,
+                12 сентября 2026). Значок без подписи: конверт понимают все, а
+                подпись «написать автору» отняла бы у заголовка треть строки на
+                телефоне. Кнопка ровно того же роста, что «EN», и стоит в том же
+                ряду -- перекрыть она не может ничего: ряд выстроен флексом, и
+                заголовок слева сам укорачивается. */}
+            <button
+              className="btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: телефон ? "3px 8px" : "4px 11px",
+                lineHeight: 1,
+              }}
+              aria-label={T.fbOpen[lang]}
+              title={T.fbOpen[lang]}
+              onClick={() => setОтзывОткрыт((v) => !v)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width={телефон ? 16 : 20}
+                height={телефон ? 16 : 20}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+                <path d="M3.5 7.5 12 13.2l8.5-5.7" />
+              </svg>
+            </button>
             {/* РАЗМЕР ЗАДАН ВСТРОЕННЫМ СТИЛЕМ, А НЕ КЛАССАМИ TAILWIND, и это не
                 прихоть: .btn объявлен в index.css ВНЕ слоёв, а утилиты
                 Tailwind -- внутри слоя, поэтому .btn их перебивает. Классы
@@ -1259,6 +1300,62 @@ export default function App() {
           у полосы полупрозрачный фон, и панель просвечивала бы сквозь него.
           Панель нарисована ВСЕГДА, а не по условию: анимации нужен элемент,
           который уже стоит на месте, иначе он появлялся бы рывком. */}
+      {/* ПАНЕЛЬ ОБРАТНОЙ СВЯЗИ -- одна на оба вида. Устроена как панель опроса:
+          выезжает из-под чёрной полосы, подложки не имеет, нажатие мимо неё
+          закрывает. Нарисована всегда, а не по условию: анимации нужен элемент,
+          который уже стоит на месте. */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 overflow-hidden"
+        style={{ top: шапкаH, pointerEvents: отзывОткрыт ? "auto" : "none" }}
+        aria-hidden={!отзывОткрыт}
+      >
+        <div
+          onClick={() => setОтзывОткрыт(false)}
+          className="absolute inset-0"
+          style={{ background: "transparent" }}
+        />
+        <div
+          className="absolute right-0 top-0 flex max-h-full w-[min(430px,100vw)] flex-col overflow-y-auto p-3"
+          style={{
+            transform: отзывОткрыт ? "translateY(0)" : "translateY(-102%)",
+            transition: "transform .28s ease",
+          }}
+        >
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setОтзывОткрыт(false)}
+              aria-label={T.pollClose[lang]}
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border text-[17px]"
+              style={{
+                borderColor: "var(--line-strong)",
+                background: "var(--bg-2)",
+                color: "var(--ink-2)",
+                cursor: "pointer",
+              }}
+            >
+              ✕
+            </button>
+            <Otzyv
+              lang={lang}
+              phone={телефон}
+              /* ОБСТАНОВКА УХОДИТ ВМЕСТЕ С ТЕКСТОМ: без неё половина отзывов
+                 звучит как «у вас тут неверно», и непонятно, где именно. */
+              обстановка={[
+                w.date,
+                showFom ? "фом" : null,
+                настройки.простой ? "простой" : null,
+                настройки.прежнее ? "прежнее" : null,
+                настройки.превышение ? "превышение" : null,
+                настройки.сдержанно ? "сдержанно" : null,
+                `${диап.от}…${диап.до}`,
+              ].filter(Boolean).join(" · ")}
+              onFinished={() => setОтзывОткрыт(false)}
+            />
+          </div>
+        </div>
+      </div>
+
       {телефон && (
         <>
           <div

@@ -94,6 +94,11 @@ export default function Otzyv({
       <p className={"mt-2 leading-snug " + кегль} style={{ color: "var(--ink-2)" }}>
         {T.fbHint[lang]}
       </p>
+      {/* Вторая строка отдельным абзацем: приглашение предложить своё не должно
+          тонуть в перечислении того, что годится. */}
+      <p className={"mt-1 leading-snug " + кегль} style={{ color: "var(--ink-2)" }}>
+        {T.fbHint2[lang]}
+      </p>
 
       {как === "дошло" ? (
         <p className={"mt-5 leading-relaxed " + кегль} style={{ color: "var(--ink)" }}>

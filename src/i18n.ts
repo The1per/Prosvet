@@ -98,8 +98,8 @@ export const T = {
   /** То же на телефоне: длинная надпись там занимала строку целиком. */
   fomOnShort: { ru: "Опрос ФОМ", en: "FOM poll" },
   fomWhat: {
-    ru: "Раз в неделю ФОМ спрашивает людей, тревожно ли настроение вокруг них. Выпуск выходит через десять дней после самой недели, а индекс той же недели готов в понедельник. С этим рядом его и сверяют:",
-    en: "Once a week FOM asks people whether the mood around them is anxious. The issue appears ten days after the week itself; the index for that week is ready on Monday. That is the series it is checked against:",
+    ru: "Раз в неделю ФОМ спрашивает людей, тревожно ли настроение вокруг них. Выпуск выходит через десять дней после самой недели, а модель считает ту же неделю в понедельник. С этим рядом его и сверяют:",
+    en: "Once a week FOM asks people whether the mood around them is anxious. The issue appears ten days after the week itself; the model has that week ready on Monday. That is the series it is checked against:",
   },
   /**
    * ЧТО СКАЗАТЬ, КОГДА ЧИСЛА ОПРОСА ЕЩЁ НЕТ.
@@ -143,7 +143,7 @@ export const T = {
   // Здесь «опрос» без имени нарочно: подпись стоит вплотную к кнопке «опрос
   // ФОМ», и полное имя во второй раз только удлиняет строку.
   gapUp: { ru: "опрос выше", en: "poll higher" },
-  gapDown: { ru: "индекс выше", en: "index higher" },
+  gapDown: { ru: "модель выше", en: "model higher" },
   chartHint: { ru: "Ведите по графику или нажмите:", en: "Drag across the chart, or jump to:" },
   search: { ru: "поиск: событие или дата", en: "search: event or date" },
   searchNone: { ru: "ничего не нашлось", en: "nothing found" },
@@ -253,7 +253,7 @@ export const T = {
         : "Ни одна тема заметно не поднялась: читали примерно то же, что и всегда.";
       const о = д.опрос == null
         ? "Опроса в ту неделю не было — сверить не с чем."
-        : `Опрос ФОМа в ту неделю дал ${d0(д.опрос)} %, индекс разошёлся с ним на ${Math.abs(д.промах!).toFixed(1).replace(".", ",")} пункта.`;
+        : `Опрос ФОМа в ту неделю дал ${d0(д.опрос)} %, модель разошлась с ним на ${Math.abs(д.промах!).toFixed(1).replace(".", ",")} пункта.`;
       return `${д.место}-я по тревоге из ${д.всего} недель. ${ч} ${о}`;
     },
     en: (д: { место: number; всего: number; тема: string; раз: number; опрос: number | null; промах: number | null }) => {
@@ -262,7 +262,7 @@ export const T = {
         : "No topic rose noticeably: the reading was much as always.";
       const о = д.опрос == null
         ? "There was no poll that week, so there is nothing to check against."
-        : `The poll that week gave ${d0(д.опрос)}%, and the index differed from it by ${Math.abs(д.промах!).toFixed(1)} points.`;
+        : `The poll that week gave ${d0(д.опрос)}%, and the model differed from it by ${Math.abs(д.промах!).toFixed(1)} points.`;
       return `Ranked ${д.место} of ${д.всего} weeks by anxiety. ${ч} ${о}`;
     },
   },
@@ -272,7 +272,7 @@ export const T = {
   },
 
   method: { ru: "Как это работает", en: "How it works" },
-  limits: { ru: "Границы индекса", en: "Limits of the index" },
+  limits: { ru: "Границы модели", en: "Limits of the model" },
 
   /* ---------- обратная связь ---------- */
   fbOpen: { ru: "Написать автору", en: "Write to the author" },
@@ -281,14 +281,20 @@ export const T = {
     ru: "Что здесь не так или чего не хватает?",
     en: "What is wrong here, or what is missing?",
   },
-  /* «Или есть предложение?» стоит ПЕРЕД «читаю каждое письмо» (решение
-     хозяина): сперва перечислено, что годится, потом приглашение предложить
-     своё, и только затем обещание прочесть. */
+  /* ДВЕ СТРОКИ, А НЕ ОДНА (решение хозяина): сперва перечислено, что годится,
+     и с новой строки -- приглашение предложить своё вместе с обещанием
+     прочесть. Разбито двумя полями, а не переводом строки внутри одного:
+     перевод строки в словаре легко теряется при правке и не виден глазом. */
   fbHint: {
-    ru: "Промах модели на конкретной неделе, непонятное слово, сломанная кнопка — всё годится. Или есть предложение? Читаю каждое письмо.",
-    en: "A miss on a particular week, an unclear wording, a broken button — all of it helps. Or do you have a suggestion? Every message is read.",
+    ru: "Промах модели на конкретной неделе, непонятное слово, сломанная кнопка — всё годится.",
+    en: "A miss on a particular week, an unclear wording, a broken button — all of it helps.",
   },
-  fbPlaceholder: { ru: "Здесь", en: "Here" },
+  fbHint2: {
+    ru: "Или есть предложение? Читаю каждое письмо.",
+    en: "Or do you have a suggestion? Every message is read.",
+  },
+  /** Поля-подсказки в окне отзыва нет: пустое окно и без неё понятно. */
+  fbPlaceholder: { ru: "", en: "" },
   fbContact: { ru: "Куда ответить — если ждёте ответа", en: "Where to reply — if you want one" },
   fbSend: { ru: "Отправить", en: "Send" },
   fbSending: { ru: "Отправляю…", en: "Sending…" },
@@ -308,12 +314,12 @@ export const T = {
   },
   phaseHint: {
     ru: {
-      обучение: "на этих неделях индекс настраивался",
-      отложено: "эти недели индекс при настройке не видел",
+      обучение: "на этих неделях модель настраивалась",
+      отложено: "эти недели модель при настройке не видела",
       живое: "считается сейчас, вперёд ещё не проверялось",
     },
     en: {
-      обучение: "the index was tuned on these weeks",
+      обучение: "the model was tuned on these weeks",
       отложено: "these weeks were hidden during tuning",
       живое: "computed now, not yet validated forward",
     },
@@ -321,7 +327,7 @@ export const T = {
   scrollHint: { ru: "ниже — как это работает", en: "below — how it works" },
   events: { ru: "Что было в эти недели", en: "What happened in these weeks" },
   footer: {
-    ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа: людей спрашивают в воскресенье, а выпуск выходит через десять дней. Индекс той же недели готов в понедельник.",
+    ru: "Данные: открытая почасовая статистика просмотров Википедии на восьми языках и открытые ряды поискового интереса. Опрос — публичные еженедельные волны ФОМа: людей спрашивают в воскресенье, а выпуск выходит через десять дней. Модель считает ту же неделю в понедельник.",
     en: "Data: open hourly Wikipedia pageview statistics in eight languages and open search-interest series. The poll: public weekly FOM waves, published on Fridays about the week just ended.",
   },
   levels: {
@@ -331,13 +337,13 @@ export const T = {
   fit: {
     ru: {
       точно: "обе меры сошлись",
-      мимо: "индекс не заметил",
+      мимо: "модель не заметила",
       молчат: "обе меры промолчали",
       врозь: "меры разошлись",
     },
     en: {
       точно: "both measures agreed",
-      мимо: "the index did not notice",
+      мимо: "the model did not notice",
       молчат: "neither measure noticed",
       врозь: "the measures disagree",
     },
@@ -351,15 +357,15 @@ export const T = {
       },
       {
         t: "2. На что он отзывается",
-        d: "Индекс считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, о чём и как говорили между собой — в комментариях, в городских каналах, в заголовках новостей. Речь берётся не по словам-приметам: считается, сколько разных бед идёт разом и насколько разошлось то, о чём пишут люди, и то, о чём пишет пресса. К чтению и речи добавлено поведение, на которое идут не из любопытства, а по необходимости: попытки закрыться от наблюдения в сети — речь не о VPN, а о средствах, которые ставят, когда важно, чтобы о заходе не осталось записи, — и уход от безналичного следа.\n\nИщет он не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Конец времён** — чем всё это кончится и к кому просить заступничества. **Обряд и гадание** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
+        d: "Модель считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, о чём и как говорили между собой — в комментариях, в городских каналах, в заголовках новостей. Речь берётся не по словам-приметам: считается, сколько разных бед идёт разом и насколько разошлось то, о чём пишут люди, и то, о чём пишет пресса. К чтению и речи добавлено поведение, на которое идут не из любопытства, а по необходимости: попытки закрыться от наблюдения в сети — речь не о VPN, а о средствах, которые ставят, когда важно, чтобы о заходе не осталось записи, — и уход от безналичного следа.\n\nИщет он не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Конец времён** — чем всё это кончится и к кому просить заступничества. **Обряд и гадание** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
       },
       {
         t: "3. Только лишнее",
-        d: "У каждого следа есть свой обычный уровень, и он гуляет по временам года и дням недели. Индекс считает не уровень, а превышение над спокойной такой же неделей: обычное вычитается целиком.\n\nГодовой ход снимается дважды. Сперва календарём, снятым с постороннего, нетревожного чтения: он, в отличие от собственного, предсказуем год к году. Потом сравнением недели с такой же неделей прошлых лет. Отдельно вычитается мировой подъём — тот, что случается сразу везде: сериал «Чернобыль» поднял чтение про радиацию по всему свету, фильм «Оппенгеймер» — про атомную бомбу; в индексе от таких недель не остаётся ничего.\n\nИсточники ломаются, их блокируют, связь выключают. Поэтому неделя сравнивается не с постоянной меркой, а с недавним прошлым самого источника, и там, где это возможно, канал читается в сравнении с собой же в остальном мире: падение источника видно отдельно от подъёма тревоги. Это помогает, но не лечит совсем — где источник просел в разы, точность по нему падает.",
+        d: "У каждого следа есть свой обычный уровень, и он гуляет по временам года и дням недели. Модель считает не уровень, а превышение над спокойной такой же неделей: обычное вычитается целиком.\n\nГодовой ход снимается дважды. Сперва календарём, снятым с постороннего, нетревожного чтения: он, в отличие от собственного, предсказуем год к году. Потом сравнением недели с такой же неделей прошлых лет. Отдельно вычитается мировой подъём — тот, что случается сразу везде: сериал «Чернобыль» поднял чтение про радиацию по всему свету, фильм «Оппенгеймер» — про атомную бомбу; в индексе от таких недель не остаётся ничего.\n\nИсточники ломаются, их блокируют, связь выключают. Поэтому неделя сравнивается не с постоянной меркой, а с недавним прошлым самого источника, и там, где это возможно, канал читается в сравнении с собой же в остальном мире: падение источника видно отдельно от подъёма тревоги. Это помогает, но не лечит совсем — где источник просел в разы, точность по нему падает.",
       },
       {
         t: "4. Проверка опросом ФОМа",
-        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. На настроечных неделях индекс отвечает верно в 85 случаях из 100.\n\nРяд разрезан по времени, и это главное в проверке. На 221 неделе с опросом — до октября 2024 года — индекс настраивался: там подбирались все его постоянные. Следующие 88 недель при настройке были закрыты, и на них он отвечает верно в 89 случаях из 100, а на одном 2026 годе — в 91. Самые свежие недели он считает впервые и вперёд ещё не проверялся вовсе.\n\nЭто разделение — не формальность. Настроить прибор так, чтобы он объяснил прошлое, легко; трудно, чтобы он угадывал то, чего не видел.\n\nТам, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 56-й из 309, а опрос по уровню — 158-й; неделю боёв в Курской области — 72-й против 122-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
+        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. На настроечных неделях модель отвечает верно в 85 случаях из 100.\n\nРяд разрезан по времени, и это главное в проверке. На 221 неделе с опросом — до октября 2024 года — модель настраивалась: там подбирались все её постоянные. Следующие 88 недель при настройке были закрыты, и на них он отвечает верно в 89 случаях из 100, а на одном 2026 годе — в 91. Самые свежие недели он считает впервые и вперёд ещё не проверялся вовсе.\n\nЭто разделение — не формальность. Настроить прибор так, чтобы он объяснил прошлое, легко; трудно, чтобы он угадывал то, чего не видел.\n\nТам, где они расходятся, неправа не обязательно модель: неделю «Крокуса» он ставит 56-й из 309, а опрос по уровню — 158-й; неделю боёв в Курской области — 72-й против 122-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
       },
     ],
     en: [
@@ -369,15 +375,15 @@ export const T = {
       },
       {
         t: "2. What it responds to",
-        d: "The index counts open statistics of what the country did that week: what people read, what they searched for, what and how they said to one another — in comments, in local channels, in news headlines. Speech is not read word by word: what is counted is how many different troubles run at once, and how far what people write has drifted from what the press writes. To reading and speech is added behaviour nobody undertakes out of curiosity: attempts to stay unobserved online — not a VPN, but the tools people install when it matters that the visit leaves no record — and stepping away from the cashless trail.\n\nWhat it looks for is not anxiety in general but four of its traces. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **End times** — how all this ends, and who to ask for help. **Rite and divination** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
+        d: "The model counts open statistics of what the country did that week: what people read, what they searched for, what and how they said to one another — in comments, in local channels, in news headlines. Speech is not read word by word: what is counted is how many different troubles run at once, and how far what people write has drifted from what the press writes. To reading and speech is added behaviour nobody undertakes out of curiosity: attempts to stay unobserved online — not a VPN, but the tools people install when it matters that the visit leaves no record — and stepping away from the cashless trail.\n\nWhat it looks for is not anxiety in general but four of its traces. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **End times** — how all this ends, and who to ask for help. **Rite and divination** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
       },
       {
         t: "3. Only the excess",
-        d: "Every trace has its own ordinary level, and that level drifts with the seasons and the days of the week. The index counts not the level but the excess over a calm week like this one: the ordinary is subtracted entirely.\n\nThe yearly swing is removed twice. First by a calendar taken from unrelated, non-anxious reading: unlike the index's own, it is predictable from year to year. Then by comparing the week with the same week of earlier years. The world-wide rise — the kind that happens everywhere at once — is subtracted separately: the TV series Chernobyl lifted reading about radiation across the planet, the film Oppenheimer about the atomic bomb; weeks like those leave nothing in the index.\n\nSources break, get blocked, connections are switched off. So a week is compared not against a fixed yardstick but against the recent past of the source itself, and where possible a channel is read against itself in the rest of the world: a source's own decline shows separately from a rise in anxiety. This helps but does not cure — where a source has fallen several-fold, its precision falls with it.",
+        d: "Every trace has its own ordinary level, and that level drifts with the seasons and the days of the week. The model counts not the level but the excess over a calm week like this one: the ordinary is subtracted entirely.\n\nThe yearly swing is removed twice. First by a calendar taken from unrelated, non-anxious reading: unlike the index's own, it is predictable from year to year. Then by comparing the week with the same week of earlier years. The world-wide rise — the kind that happens everywhere at once — is subtracted separately: the TV series Chernobyl lifted reading about radiation across the planet, the film Oppenheimer about the atomic bomb; weeks like those leave nothing in the index.\n\nSources break, get blocked, connections are switched off. So a week is compared not against a fixed yardstick but against the recent past of the source itself, and where possible a channel is read against itself in the rest of the world: a source's own decline shows separately from a rise in anxiety. This helps but does not cure — where a source has fallen several-fold, its precision falls with it.",
       },
       {
         t: "4. Checked against the poll",
-        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. On the tuning weeks the index answers correctly in 85 cases out of 100.\n\nThe series is cut in time, and that is the heart of the test. On 221 poll weeks — up to October 2024 — the index was tuned: every constant in it was chosen there. The next 88 weeks were hidden during tuning, and on them it answers correctly in 89 cases out of 100, and on 2026 alone in 91. The freshest weeks it is computing for the first time, and has not been validated forward at all.\n\nThis split is not a formality. Tuning an instrument to explain the past is easy; making it guess what it has not seen is not.\n\nWhere the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 56th of 309 while the poll by level ranks it 158th; the Kursk fighting week, 72nd against 122nd. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
+        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. On the tuning weeks the model answers correctly in 85 cases out of 100.\n\nThe series is cut in time, and that is the heart of the test. On 221 poll weeks — up to October 2024 — the model was tuned: every constant in it was chosen there. The next 88 weeks were hidden during tuning, and on them it answers correctly in 89 cases out of 100, and on 2026 alone in 91. The freshest weeks it is computing for the first time, and has not been validated forward at all.\n\nThis split is not a formality. Tuning an instrument to explain the past is easy; making it guess what it has not seen is not.\n\nWhere the two disagree, it is not necessarily the model that is wrong: it ranks the Crocus week 56th of 309 while the poll by level ranks it 158th; the Kursk fighting week, 72nd against 122nd. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
       },
     ],
   },
@@ -393,11 +399,11 @@ export const T = {
     ru: [
       {
         t: "Внимание, а не чувство",
-        d: "Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, годовой ход снимается по постороннему, нетревожному чтению, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое зарубежной громкой новостью, иногда проходит за здешнюю тревогу.",
+        d: "Человек может пойти по этому следу из любопытства — и такие недели у модели есть. Против этого стоят противовесы: обычный уровень вычитается целиком, годовой ход снимается по постороннему, нетревожному чтению, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое зарубежной громкой новостью, иногда проходит за здешнюю тревогу.",
       },
       {
         t: "Удар виден лучше, чем затяжная тревога",
-        d: "Пик второй волны ковида опрос ставит 8-й неделей из 309, индекс — 13-й; год назад этот разрыв был втрое больше, его сократили, но он остался.",
+        d: "Пик второй волны ковида опрос ставит 8-й неделей из 309, модель — 13-й; год назад этот разрыв был втрое больше, его сократили, но он остался.",
       },
       {
         t: "Источники не вечны",
@@ -409,17 +415,17 @@ export const T = {
       },
       {
         t: "Ответы посетителей ничего не меняют",
-        d: "На индекс они не влияют: это отдельный вопрос отдельным людям, а не часть измерения.",
+        d: "На модель они не влияют: это отдельный вопрос отдельным людям, а не часть измерения.",
       },
     ],
     en: [
       {
         t: "Attention, not feeling",
-        d: "A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, the yearly swing is removed using unrelated, non-anxious reading, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by a loud foreign story sometimes passes for anxiety here.",
+        d: "A person can follow the same trace out of curiosity — and the model has such weeks. There are counterweights: the ordinary level is subtracted entirely, the yearly swing is removed using unrelated, non-anxious reading, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by a loud foreign story sometimes passes for anxiety here.",
       },
       {
         t: "A blow shows better than drawn-out anxiety",
-        d: "The poll ranks the peak of the second covid wave 8th of 309 weeks, the index 13th; a year ago that gap was three times wider — it has been narrowed, not closed.",
+        d: "The poll ranks the peak of the second covid wave 8th of 309 weeks, the model 13th; a year ago that gap was three times wider — it has been narrowed, not closed.",
       },
       {
         t: "Sources do not last",
@@ -431,7 +437,7 @@ export const T = {
       },
       {
         t: "Visitors’ answers change nothing",
-        d: "They do not affect the index: it is a separate question to separate people, not part of the measurement.",
+        d: "They do not affect the model: it is a separate question to separate people, not part of the measurement.",
       },
     ],
   },

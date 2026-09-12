@@ -322,6 +322,51 @@ function Жирным({ t }: { t: string }) {
   );
 }
 
+/**
+ * УДЕРЖАТЬ НАЖАТЫЙ ЗАГОЛОВОК НА МЕСТЕ, пока раскладка перестраивается.
+ *
+ * ЧТО ЛЕЧИТ. Открываешь шаг на телефоне -- и всё уезжает вверх за экран:
+ * предыдущий, длинный, в это время сворачивается, а он стоит ВЫШЕ нажатого.
+ * Сколько высоты он теряет, на столько нажатый заголовок и прыгает вверх;
+ * у «Только лишнее» после длинного второго шага это полтора экрана.
+ *
+ * ПОЧЕМУ НЕ scrollIntoView. Складывание идёт полсекунды (transition на
+ * grid-template-rows), и место назначения всё это время едет. Один прыжок в
+ * начале промахивается, прыжок в конце сперва показывает уехавший текст.
+ * Поэтому не прыжок, а привязка: каждый кадр анимации экран подкручивается
+ * ровно на столько, на сколько сместился сам заголовок. Он просто стоит.
+ */
+function держать(э: HTMLElement) {
+  const до = э.getBoundingClientRect().top;
+  const начало = performance.now();
+  let тихо = 0;
+  const шаг = () => {
+    const d = э.getBoundingClientRect().top - до;
+    /* behavior: "instant" ОБЯЗАТЕЛЕН. У страницы в index.css задано
+       scroll-behavior: smooth, и обычный scrollBy сам становится плавным:
+       покадровые подкрутки гонятся за собственной анимацией и не догоняют.
+       Первая попытка именно поэтому не удержала ничего -- заголовок уезжал
+       на 171, 365 и 655 пикселей. */
+    if (Math.abs(d) > 0.5) {
+      window.scrollBy({ top: d, behavior: "instant" as ScrollBehavior });
+      тихо = 0;
+    } else {
+      тихо += 1;
+    }
+    /* ВЫХОД ПО ТИШИНЕ, НО НЕ РАНЬШЕ КОНЦА АНИМАЦИИ. Третья попытка выходила
+       по пяти спокойным кадрам -- и выходила сразу же: у плавной кривой
+       (ease) первые кадры движутся меньше чем на полпикселя, и цикл считал
+       это «перестройка кончилась», не удержав ничего. Теперь тишина
+       засчитывается только после 550 мс, то есть после самого складывания
+       (transition 500). Потолок полторы секунды -- чтобы цикл не жил вечно. */
+    const прошло = performance.now() - начало;
+    if ((прошло < 550 || тихо < 5) && прошло < 1500) {
+      requestAnimationFrame(шаг);
+    }
+  };
+  requestAnimationFrame(шаг);
+}
+
 export function Methodology({ lang }: { lang: Lang }) {
   const ref = useReveal<HTMLDivElement>();
   const [open, setOpen] = useState<number | null>(0);
@@ -340,7 +385,10 @@ export function Methodology({ lang }: { lang: Lang }) {
           {steps.map((s, i) => (
             <button
               key={s.t}
-              onClick={() => setOpen(open === i ? null : i)}
+              onClick={(e) => {
+                держать(e.currentTarget);
+                setOpen(open === i ? null : i);
+              }}
               className="w-full cursor-pointer py-3 text-left md:py-5"
               style={{ borderTop: i ? "1px solid var(--line)" : "none", background: "none", border: "none", borderTopWidth: i ? 1 : 0, borderTopStyle: "solid", borderTopColor: "var(--line)", color: "inherit" }}
             >
@@ -379,7 +427,10 @@ export function Methodology({ lang }: { lang: Lang }) {
           {T.limitList[lang].map((l, i) => (
             <button
               key={l.t}
-              onClick={() => setГраница(граница === i ? null : i)}
+              onClick={(e) => {
+                держать(e.currentTarget);
+                setГраница(граница === i ? null : i);
+              }}
               className="w-full cursor-pointer py-3 text-left md:py-5"
               style={{ background: "none", border: "none", borderTopWidth: i ? 1 : 0, borderTopStyle: "solid", borderTopColor: "var(--line)", color: "inherit" }}
             >

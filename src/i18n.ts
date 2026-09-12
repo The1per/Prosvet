@@ -360,7 +360,7 @@ export const T = {
       },
       {
         t: "2. На что она отзывается",
-        d: "Модель считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, о чём и как говорили между собой — в комментариях, в городских каналах, в заголовках новостей. Речь берётся не по словам-приметам: считается, сколько разных бед идёт разом и насколько разошлось то, о чём пишут люди, и то, о чём пишет пресса. К чтению и речи добавлено поведение, на которое идут не из любопытства, а по необходимости: попытки закрыться от наблюдения в сети — речь не о VPN, а о средствах, которые ставят, когда важно, чтобы о заходе не осталось записи, — и уход от безналичного следа.\n\nИщет он не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Конец времён** — чем всё это кончится и к кому просить заступничества. **Обряд и гадание** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
+        d: "Модель считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, о чём и как говорили между собой — в комментариях, в городских каналах, в заголовках новостей. Речь берётся не по словам-приметам: считается, сколько разных бед идёт разом и насколько разошлось то, о чём пишут люди, и то, о чём пишет пресса. К чтению и речи добавлено поведение, на которое идут не из любопытства, а по необходимости: попытки закрыться от наблюдения в сети (речь не о VPN) и уход от безналичного следа.\n\nИщет он не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Конец времён** — чем всё это кончится и к кому просить заступничества. **Обряд и гадание** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
       },
       {
         t: "3. Только лишнее",
@@ -378,7 +378,7 @@ export const T = {
       },
       {
         t: "2. What it responds to",
-        d: "The model counts open statistics of what the country did that week: what people read, what they searched for, what and how they said to one another — in comments, in local channels, in news headlines. Speech is not read word by word: what is counted is how many different troubles run at once, and how far what people write has drifted from what the press writes. To reading and speech is added behaviour nobody undertakes out of curiosity: attempts to stay unobserved online — not a VPN, but the tools people install when it matters that the visit leaves no record — and stepping away from the cashless trail.\n\nWhat it looks for is not anxiety in general but four of its traces. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **End times** — how all this ends, and who to ask for help. **Rite and divination** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
+        d: "The model counts open statistics of what the country did that week: what people read, what they searched for, what and how they said to one another — in comments, in local channels, in news headlines. Speech is not read word by word: what is counted is how many different troubles run at once, and how far what people write has drifted from what the press writes. To reading and speech is added behaviour nobody undertakes out of curiosity: attempts to stay unobserved online (not a VPN) and stepping away from the cashless trail.\n\nWhat it looks for is not anxiety in general but four of its traces. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **End times** — how all this ends, and who to ask for help. **Rite and divination** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
       },
       {
         t: "3. Only the excess",
@@ -406,7 +406,7 @@ export const T = {
       },
       {
         t: "Удар виден лучше, чем затяжная тревога",
-        d: "Пик второй волны ковида опрос ставит 8-й неделей из 309, модель — 13-й; год назад этот разрыв был втрое больше, его сократили, но он остался.",
+        d: "Пик второй волны ковида опрос ставит 8-й неделей из 309, модель — 13-й.",
       },
       {
         t: "Источники не вечны",
@@ -417,7 +417,7 @@ export const T = {
         d: "И считать не будет: региональных опросов, с которыми можно было бы свериться, автор не знает — а без ориентира проверять нечем.",
       },
       {
-        t: "Ответы посетителей ничего не меняют",
+        t: "Ответы посетителей не учитываются моделью",
         d: "На модель они не влияют: это отдельный вопрос отдельным людям, а не часть измерения.",
       },
     ],
@@ -428,7 +428,7 @@ export const T = {
       },
       {
         t: "A blow shows better than drawn-out anxiety",
-        d: "The poll ranks the peak of the second covid wave 8th of 309 weeks, the model 13th; a year ago that gap was three times wider — it has been narrowed, not closed.",
+        d: "The poll ranks the peak of the second covid wave 8th of 309 weeks, the model 13th.",
       },
       {
         t: "Sources do not last",
@@ -439,7 +439,7 @@ export const T = {
         d: "And it will not: the author knows of no regional polls to check against, and without a reference point there is nothing to check with.",
       },
       {
-        t: "Visitors’ answers change nothing",
+        t: "Visitors’ answers are not used by the model",
         d: "They do not affect the model: it is a separate question to separate people, not part of the measurement.",
       },
     ],

@@ -98,8 +98,8 @@ export const T = {
   /** То же на телефоне: длинная надпись там занимала строку целиком. */
   fomOnShort: { ru: "Опрос ФОМ", en: "FOM poll" },
   fomWhat: {
-    ru: "ФОМ раз в неделю публикует, сколько людей называют настроение вокруг себя тревожным. Выпуск выходит через десять дней после недели, которую мерил, — а индекс той же недели готов в понедельник. На этом ряду он и проверяется:",
-    en: "Every Friday FOM publishes the share of people who call the mood around them anxious. That is the series the index is checked against:",
+    ru: "Раз в неделю ФОМ спрашивает людей, тревожно ли настроение вокруг них. Выпуск выходит через десять дней после самой недели, а индекс той же недели готов в понедельник. С этим рядом его и сверяют:",
+    en: "Once a week FOM asks people whether the mood around them is anxious. The issue appears ten days after the week itself; the index for that week is ready on Monday. That is the series it is checked against:",
   },
   /** Постоянная подпись рядом с числом: на чём это число основано. */
   // ДВЕ СТРОКИ И ПОЛНОЕ ИМЯ. «По следам в сети» отвечало на вопрос «как
@@ -292,11 +292,11 @@ export const T = {
     ru: [
       {
         t: "1. Следы вместо ответов",
-        d: "Опросы легко исказить: люди умеют молчать убедительнее, чем говорить, — особенно там, где ответ помнят дольше, чем вопрос. Поведение так не умеет: цифровой след остаётся и там, где язык выбрал тишину. Индекс считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, как часто пытались что-то скрыть, как обращались с наличными. Годится не всякое действие, а такое, которое человеку невыгодно и неприятно: на него не идут из любопытства.",
+        d: "Опросы легко исказить: люди умеют молчать убедительнее, чем говорить. Поведение так не умеет — цифровой след остаётся почти всегда, даже там, где язык выбрал тишину. Отпечаток этот частичный, и индекс не притворяется иначе.\n\nОн считает открытую статистику того, что люди в стране делали на этой неделе: что читали, что искали, о чём и как говорили между собой — в комментариях, в городских каналах, в заголовках новостей. Речь берётся не по словам-приметам: считается, сколько разных бед идёт разом и насколько разошлось то, о чём пишут люди, и то, о чём пишет пресса. К чтению и речи добавлено поведение, на которое идут не из любопытства, а по необходимости: попытки закрыться от наблюдения в сети и уход от безналичного следа.\n\nГодовой ход снимается дважды. Сперва календарём, снятым с постороннего, нетревожного чтения: он, в отличие от собственного, предсказуем год к году. Потом сравнением недели с такой же неделей прошлых лет. Отдельно вычитается мировой подъём — тот, что случается сразу везде.\n\nИсточники ломаются, их блокируют, связь выключают. Поэтому неделя сравнивается не с постоянной меркой, а с недавним прошлым самого источника, и там, где это возможно, канал читается в сравнении с собой же в остальном мире: падение источника видно отдельно от подъёма тревоги. Это помогает, но не лечит совсем — где источник просел в разы, точность по нему падает.\n\nИ главное: часть недель прибор при настройке не видел. Настраивали на 221 неделе с опросом — до октября 2024 года. Следующие 88 недель были закрыты, и на них он верно говорит, какая из двух недель тревожнее, в 89 случаях из ста; на 2026 годе — в 91; на тех самых настроечных неделях — в 85.",
       },
       {
         t: "2. На что он отзывается",
-        d: "Индекс ищет не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Катастрофические прогнозы** — чем всё это кончится. **Религиозное обращение** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
+        d: "Индекс ищет не тревогу вообще, а четыре её следа. **Личные последствия** — когда беда касается лично: призыв, документы, выезд. **Подготовка и защита** — аптечка, убежище, запасы. **Конец времён** — чем всё это кончится и к кому просить заступничества. **Обряд и гадание** — то, к чему идут, когда сделать больше нечего. Ни одна из четырёх сама по себе ничего не значит; значит их одновременный подъём.",
       },
       {
         t: "3. Только лишнее",
@@ -304,17 +304,17 @@ export const T = {
       },
       {
         t: "4. Проверка опросом ФОМа",
-        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. Индекс отвечает верно примерно в 84 случаях из 100.\n\nРяд разрезан по времени, и это главное в проверке. На 265 неделях — с 2019 по октябрь 2024 года — индекс настраивался: там подбирались все его постоянные. Следующие 89 недель, по конец 2025-го, при настройке были закрыты, и на них он отвечает верно в 83 случаях из 100. Всё, что позже, он считает впервые и вперёд ещё не проверялся вовсе.\n\nЭто разделение — не формальность. Настроить прибор так, чтобы он объяснил прошлое, легко; трудно, чтобы он угадывал то, чего не видел.\n\nТам, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 38-й из 302, а опрос по уровню — 141-й; неделю боёв в Курской области — 82-й против 120-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
+        d: "Готовую кривую сверяют с еженедельным опросом ФОМа. Мера строгая: берут любые две недели и спрашивают, какая тревожнее. На настроечных неделях индекс отвечает верно в 85 случаях из 100.\n\nРяд разрезан по времени, и это главное в проверке. На 221 неделе с опросом — до октября 2024 года — индекс настраивался: там подбирались все его постоянные. Следующие 88 недель при настройке были закрыты, и на них он отвечает верно в 89 случаях из 100, а на одном 2026 годе — в 91. Самые свежие недели он считает впервые и вперёд ещё не проверялся вовсе.\n\nЭто разделение — не формальность. Настроить прибор так, чтобы он объяснил прошлое, легко; трудно, чтобы он угадывал то, чего не видел.\n\nТам, где они расходятся, неправ не обязательно индекс: неделю «Крокуса» он ставит 56-й из 309, а опрос по уровню — 158-й; неделю боёв в Курской области — 72-й против 122-й. События бесспорные, а уровень опроса на них почти не двинулся. Кто ближе к правде на таких неделях, проверить нечем: опрос и есть та правда, с которой сверяются.",
       },
     ],
     en: [
       {
         t: "1. Traces, not answers",
-        d: "Surveys are easy to distort: people are better at staying silent than at speaking — especially where an answer is remembered longer than the question. Behaviour cannot do that: a digital trace remains even where the tongue chose silence. The index counts open statistics of what the country did that week: what people read, what they searched for, how often they tried to hide something, how they handled cash. Not every action counts — only the kind that costs something: nobody does it out of curiosity.",
+        d: "Surveys are easy to distort: people are better at staying silent than at speaking. Behaviour is not — a digital trace remains almost always, even where the tongue chose silence. That imprint is partial, and the index does not pretend otherwise.\n\nIt counts open statistics of what the country did that week: what people read, what they searched for, what and how they said to one another — in comments, in local channels, in news headlines. Speech is not read word by word: what is counted is how many different troubles run at once, and how far what people write has drifted from what the press writes. To reading and speech is added behaviour nobody undertakes out of curiosity: attempts to stay unobserved online, and stepping away from the cashless trail.\n\nThe yearly swing is removed twice. First by a calendar taken from unrelated, non-anxious reading: unlike the index's own, it is predictable from year to year. Then by comparing the week with the same week of earlier years. The world-wide rise — the kind that happens everywhere at once — is subtracted separately.\n\nSources break, get blocked, connections are switched off. So a week is compared not against a fixed yardstick but against the recent past of the source itself, and where possible a channel is read against itself in the rest of the world: a source's own decline shows separately from a rise in anxiety. This helps but does not cure — where a source has fallen several-fold, its precision falls with it.\n\nAnd the main thing: part of the weeks the instrument never saw while being tuned. Tuning used 221 poll weeks, up to October 2024. The next 88 weeks were held back, and on them it says correctly which of two weeks was more anxious in 89 cases out of 100; on 2026, in 91; on the tuning weeks themselves, in 85.",
       },
       {
         t: "2. What it responds to",
-        d: "The index looks for four traces of anxiety, not anxiety in general. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **Catastrophic forecasts** — how all this ends. **Religious recourse** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
+        d: "The index looks for four traces of anxiety, not anxiety in general. **Personal exposure** — when trouble reaches you: the draft, paperwork, leaving. **Preparedness** — first-aid kit, shelter, supplies. **End times** — how all this ends, and who to ask for help. **Rite and divination** — where people turn when nothing else is left. None of the four means anything on its own; what means something is all four rising at once.",
       },
       {
         t: "3. Only the excess",
@@ -322,21 +322,25 @@ export const T = {
       },
       {
         t: "4. Checked against the poll",
-        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. The index answers correctly in about 84 cases out of 100.\n\nThe series is cut in time, and that is the heart of the test. On 265 weeks — from 2019 to October 2024 — the index was tuned: every constant in it was chosen there. The next 89 weeks, through the end of 2025, were hidden during tuning, and on them it answers correctly in 83 cases out of 100. Everything later it is computing for the first time, and has not been validated forward at all.\n\nThis split is not a formality. Tuning an instrument to explain the past is easy; making it guess what it has not seen is not.\n\nWhere the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 38th of 302 while the poll by level ranks it 141st; the Kursk fighting week, 82nd against 120th. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
+        d: "The finished curve is checked against the weekly FOM poll. The test is strict: take any two weeks and ask which was more anxious. On the tuning weeks the index answers correctly in 85 cases out of 100.\n\nThe series is cut in time, and that is the heart of the test. On 221 poll weeks — up to October 2024 — the index was tuned: every constant in it was chosen there. The next 88 weeks were hidden during tuning, and on them it answers correctly in 89 cases out of 100, and on 2026 alone in 91. The freshest weeks it is computing for the first time, and has not been validated forward at all.\n\nThis split is not a formality. Tuning an instrument to explain the past is easy; making it guess what it has not seen is not.\n\nWhere the two disagree, it is not necessarily the index that is wrong: it ranks the Crocus week 56th of 309 while the poll by level ranks it 158th; the Kursk fighting week, 72nd against 122nd. The events are beyond dispute, and the poll’s level barely moved. Which is closer to the truth cannot be checked: the poll is the truth being checked against.",
       },
     ],
   },
 
   limitList: {
     ru: [
-      "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое зарубежной громкой новостью, иногда проходит за здешнюю тревогу.",
-      "Резкий удар он видит лучше, чем затяжную тревогу: вторую волну ковида опрос ФОМа поставил восьмой неделей, индекс — тридцать второй.",
+      "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, годовой ход снимается по постороннему, нетревожному чтению, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое зарубежной громкой новостью, иногда проходит за здешнюю тревогу.",
+      "Он лучше говорит, какая неделя тревожнее, чем насколько. Кривая у него площе опроса: в спокойную треть недель он стоит выше опроса в среднем на 2,4 пункта, в самую тревожную — ниже на 2,2. Расходятся они больше чем на пять пунктов в 28 неделях из ста, а самые крупные промахи доходят до пятнадцати.",
+      "Резкий удар он видит лучше, чем затяжную тревогу. Пик второй волны ковида опрос ставит 8-й неделей из 309, индекс — 13-й; год назад этот разрыв был втрое больше, его сократили, но он остался.",
+      "Источники не вечны: их блокируют, они затухают, связь выключают. Неделя поэтому сравнивается с недавним прошлым самого источника, а где можно — с ним же в остальном мире. Это отделяет падение источника от подъёма тревоги, но не лечит: где источник просел в разы, точность по нему падает.",
       "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы сверяться, нет — а без правды проверять нечем.",
       "Ответы посетителей на индекс не влияют. Индекс считается по чтению и ничего не знает про них: это отдельный вопрос отдельным людям, а не часть измерения.",
     ],
     en: [
-      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by a loud foreign story sometimes passes for anxiety here.",
-      "It sees a sharp blow better than drawn-out anxiety: the poll ranked the second covid wave eighth, the index thirty-second.",
+      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, the yearly swing is removed using unrelated, non-anxious reading, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by a loud foreign story sometimes passes for anxiety here.",
+      "It tells you which week was more anxious better than by how much. Its curve is flatter than the poll's: across the calmest third of weeks it stands 2.4 points above the poll on average, across the most anxious third 2.2 points below. The two differ by more than five points in 28 weeks out of 100, and the largest misses reach fifteen.",
+      "It sees a sharp blow better than drawn-out anxiety. The poll ranks the peak of the second covid wave 8th of 309 weeks, the index 13th; a year ago that gap was three times wider — it has been narrowed, not closed.",
+      "Sources do not last: they get blocked, they fade, connections are switched off. So a week is compared with the recent past of the source itself and, where possible, with the same source in the rest of the world. That separates a source's decline from a rise in anxiety, but does not cure it: where a source has fallen several-fold, its precision falls too.",
       "It does not measure regions and will not: there are no regional polls to check against, and without a truth there is nothing to check with.",
       "Visitors’ answers do not affect the index. The index is computed from reading and knows nothing about them: it is a separate question to separate people, not part of the measurement.",
     ],
@@ -353,13 +357,22 @@ export const BASKET_LABEL: Record<BasketKey, Record<Lang, { name: string; hint: 
     ru: { name: "Подготовка и защита", hint: "аптечка, убежище, запасы, дозиметр" },
     en: { name: "Preparedness", hint: "first-aid kit, shelter, supplies, dosimeter" },
   },
+  /* ИМЕНА ИСПРАВЛЕНЫ 12 сентября 2026 по замечанию хозяина: «Отче наш» в
+     группе «Катастрофические прогнозы» выглядел странно -- и справедливо.
+     Чтение в этой группе не только про прогнозы: рядом с пророчествами и
+     Апокалипсисом там молитвы о заступничестве и вопросы о том, что после
+     смерти. Это одна связка -- «чем всё кончится и к кому просить», -- и имя
+     должно называть её целиком, а не одну её половину.
+     Вторая группа переименована по той же причине: рядом с иконами и
+     обрядами там гадание и гороскопы, а «Религиозное обращение» их не
+     покрывало. */
   "конец света": {
-    ru: { name: "Катастрофические прогнозы", hint: "пророчества, предсказания, большие страхи" },
-    en: { name: "Catastrophic forecasts", hint: "prophecies, predictions, the big fears" },
+    ru: { name: "Конец времён", hint: "пророчества, Апокалипсис, молитва, жизнь после смерти" },
+    en: { name: "End times", hint: "prophecy, Apocalypse, prayer, life after death" },
   },
   вера: {
-    ru: { name: "Религиозное обращение", hint: "обряд, молитва, писание, обереги" },
-    en: { name: "Religious recourse", hint: "ritual, prayer, scripture, amulets" },
+    ru: { name: "Обряд и гадание", hint: "иконы и святые, обряды, писание, гадание" },
+    en: { name: "Rite and divination", hint: "icons and saints, rites, scripture, fortune-telling" },
   },
 };
 

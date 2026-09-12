@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Poles from "./Poles";
 import ProfileForm from "./Profile";
 import { moodColor } from "../mood";
 import { SERIES } from "../data/series";
 import { отправить, type Сводка } from "../answers";
-import { T, fmtDate, type Lang } from "../i18n";
+import { T, type Lang } from "../i18n";
 
 /**
  * Опрос посетителя.
@@ -90,6 +90,12 @@ export function деньМСК(t: number = Date.now()): string {
   return new Date(t + 3 * 3600 * 1000).toISOString().slice(0, 10);
 }
 
+/** Дата цифрами: 12.09.2026. Из строки «2026-09-12», без часовых поясов. */
+function цифрами(д: string, lang: Lang): string {
+  const [г, м, ч] = д.split("-");
+  return lang === "ru" ? `${ч}.${м}.${г}` : `${ч}/${м}/${г}`;
+}
+
 /**
  * Отладочный переключатель, в работе всегда выключен. Когда включён, опрос
  * забывает ответ при каждой загрузке страницы -- это нужно, чтобы видеть форму,
@@ -143,6 +149,122 @@ function Подпись({
   );
 }
 
+/**
+ * ГОРИЗОНТАЛЬНЫЙ БАРАБАН -- и на компьютере тоже (решение хозяина, 12 сентября
+ * 2026). Прошлые ответы стояли переносящейся строкой: с дневным опросом их
+ * становится много, и строка росла вниз, удлиняя карточку на каждый ответ.
+ * Лентой она не растёт никогда.
+ *
+ * ТРИ СПОСОБА КРУТИТЬ, потому что на компьютере полоски прокрутки здесь нет:
+ *   -- тачпадом в две пальца или колесом с наклоном: это `overflow-x`, он
+ *      работает сам, ничего для этого делать не надо;
+ *   -- оттягиванием: pointer-события, тянут прямо за ленту;
+ *   -- нажатием на стрелки по краям -- они появляются только когда прятать
+ *      есть что, и только там, куда ещё можно уехать.
+ * Стрелки нужны затем, что про оттягивание мышью никто не догадывается, пока
+ * не попробует.
+ */
+function Барабан({
+  phone,
+  children,
+}: {
+  phone: boolean;
+  children: React.ReactNode;
+}) {
+  const ссыл = useRef<HTMLDivElement | null>(null);
+  const [края, setКрая] = useState({ влево: false, вправо: false });
+  const тяга = useRef<{ x: number; с: number; ехал: boolean } | null>(null);
+
+  const мерить = () => {
+    const э = ссыл.current;
+    if (!э) return;
+    setКрая({
+      влево: э.scrollLeft > 2,
+      вправо: э.scrollLeft < э.scrollWidth - э.clientWidth - 2,
+    });
+  };
+  useEffect(() => {
+    мерить();
+    const э = ссыл.current;
+    if (!э) return;
+    const н = new ResizeObserver(мерить);
+    н.observe(э);
+    return () => н.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [children]);
+
+  const шаг = (куда: number) => {
+    const э = ссыл.current;
+    if (!э) return;
+    э.scrollBy({ left: куда * Math.max(120, э.clientWidth * 0.6), behavior: "smooth" });
+  };
+
+  const стрелка = (куда: -1 | 1, можно: boolean) =>
+    !phone && можно ? (
+      <button
+        type="button"
+        aria-label={куда < 0 ? "левее" : "правее"}
+        onClick={() => шаг(куда)}
+        className="absolute top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border text-[15px]"
+        style={{
+          [куда < 0 ? "left" : "right"]: -2,
+          borderColor: "var(--line-strong)",
+          background: "var(--bg-2)",
+          color: "var(--ink-2)",
+          opacity: 0.92,
+        }}
+      >
+        {куда < 0 ? "‹" : "›"}
+      </button>
+    ) : null;
+
+  return (
+    <div className="relative">
+      {стрелка(-1, края.влево)}
+      {стрелка(1, края.вправо)}
+      <div
+        ref={ссыл}
+        className={
+          "lenta flex gap-x-2 overflow-x-auto whitespace-nowrap "
+          + (края.вправо ? "лента-право " : "")
+          + (phone ? "" : "cursor-grab active:cursor-grabbing")
+        }
+        onScroll={мерить}
+        onPointerDown={(e) => {
+          if (phone || e.pointerType === "touch") return;
+          const э = ссыл.current;
+          if (!э) return;
+          тяга.current = { x: e.clientX, с: э.scrollLeft, ехал: false };
+        }}
+        onPointerMove={(e) => {
+          const т = тяга.current;
+          const э = ссыл.current;
+          if (!т || !э) return;
+          const d = e.clientX - т.x;
+          if (Math.abs(d) > 3) т.ехал = true;
+          э.scrollLeft = т.с - d;
+        }}
+        onPointerUp={() => {
+          тяга.current = null;
+        }}
+        onPointerLeave={() => {
+          тяга.current = null;
+        }}
+        /* Оттянули ленту -- нажатие не считается: иначе всякая тяга кончалась
+           бы щелчком по тому ответу, за который тянули. */
+        onClickCapture={(e) => {
+          if (тяга.current?.ехал) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /** Доля посетителей, ответивших спокойнее, по гистограмме десятков. */
 function доляНиже(buckets: number[], v: number): number {
   const мой = Math.min(9, Math.max(0, Math.floor(v / 10)));
@@ -162,7 +284,6 @@ function load(): Answers {
 
 export default function Poll({
   idx,
-  weekDate,
   lang,
   onPreview,
   phone = false,
@@ -170,7 +291,6 @@ export default function Poll({
 }: {
   /** Показание недели -- им пульсирует заголовок, пока не ответили. */
   idx?: number;
-  weekDate: string;
   lang: Lang;
   /** Значение ползунка наверх, пока его ведут: силуэты у числа отзываются. */
   onPreview?: (v: number | null) => void;
@@ -285,7 +405,8 @@ export default function Poll({
       Object.entries(answers)
         .filter(([d]) => d !== день)
         .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-        .slice(0, 6),
+        // Лентой их можно держать много: она не растёт ни вниз, ни вбок.
+        .slice(0, 30),
     [answers, день],
   );
 
@@ -439,8 +560,14 @@ export default function Poll({
             <button className={"btn " + (phone ? "px-7 py-3 text-[20px]" : "px-6 py-2.5 text-[18.5px]")} data-on={true} onClick={submit}>
               {T.save[lang]}
             </button>
+            {/* ДАТА -- СЕГОДНЯШНЯЯ И ЦИФРАМИ (решение хозяина, 12 сентября
+                2026). Здесь стояла дата НЕДЕЛИ ПРИБОРА, а она отстаёт от
+                сегодняшнего дня на полторы недели: человек отвечает про
+                сейчас, а рядом с кнопкой стояло прошедшее число -- и выходило,
+                будто его спрашивают о нём. Цифрами, а не словом с «г.»:
+                короче и не спорит с кнопкой за внимание. */}
             <span className={"mono font-semibold " + (phone ? "text-[22px]" : "text-[21px]")} style={{ color: "var(--ink-2)" }}>
-              {fmtDate(weekDate, lang)}
+              {цифрами(день, lang)}
             </span>
           </div>
         </>
@@ -497,12 +624,26 @@ export default function Poll({
           <div className={"mono uppercase tracking-[0.14em] " + (phone ? "text-[20px]" : "text-[19px]")} style={{ color: "var(--ink-3)" }}>
             {T.yourPast[lang]}
           </div>
-          <div className="mono mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[18px]" style={{ color: "var(--ink-2)" }}>
-            {past.map(([d, a]) => (
-              <span key={d}>
-                {fmtDate(d, lang)} — <b style={{ color: moodColor(a.v, 6) }}>{a.v}</b>
-              </span>
-            ))}
+          <div className="mono mt-1.5 text-[18px]" style={{ color: "var(--ink-2)" }}>
+            <Барабан phone={phone}>
+              {past.map(([d, a]) => (
+                /* Фишка целиком, как метка важной даты: дата и ответ внутри
+                   одной рамки, цвет рамки -- цвет самого ответа. Порознь они
+                   в ленте расходились, и дата одного ответа читалась рядом с
+                   числом другого. */
+                <span
+                  key={d}
+                  className="shrink-0 rounded-full border px-2.5 py-1"
+                  style={{
+                    borderColor: moodColor(a.v, 6, 0.55),
+                    background: "var(--card-2)",
+                  }}
+                >
+                  {цифрами(d, lang)}{" "}
+                  <b style={{ color: moodColor(a.v, 6) }}>{a.v}</b>
+                </span>
+              ))}
+            </Барабан>
           </div>
         </div>
       )}

@@ -329,8 +329,10 @@ export function Methodology({ lang }: { lang: Lang }) {
   return (
     <div ref={ref} id="как-измерено" className="reveal grid gap-4 lg:grid-cols-[1.15fr_.85fr] scroll-mt-16">
       <div className="card p-5 sm:p-7">
-        <div className="chip mb-3">{T.method[lang]}</div>
-        <h3 className="mb-5 max-w-xl text-xl font-semibold leading-snug sm:text-2xl">{T.methodLead[lang]}</h3>
+        {/* ПОДЗАГОЛОВКА ЗДЕСЬ БОЛЬШЕ НЕТ (решение хозяина, 12 сентября 2026):
+            строка про то, «что люди в это время делают руками», снята. Первый
+            шаг говорит то же самое и точнее. */}
+        <div className="chip mb-4">{T.method[lang]}</div>
         <div>
           {steps.map((s, i) => (
             <button

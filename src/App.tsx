@@ -53,6 +53,31 @@ export default function App() {
    */
   const [фомТронут, setФомТронут] = useState(false);
   /**
+   * ПОЯСНЕНИЕ ПРО ОПРОС ФОМа -- одно состояние на всю страницу.
+   *
+   * Открывают его два места: число показания (наведением на компьютере,
+   * нажатием на телефоне) и -- ОДИН РАЗ, при самом первом касании -- кнопка
+   * ФОМа на телефоне. Держать его внутри кнопки, как раньше, больше нельзя:
+   * на телефоне оно показывается НЕ У КНОПКИ, а на уровне слов недели, чтобы
+   * не закрывать кривую, за которой кнопку и нажимали.
+   */
+  const [фомПодсказка, setФомПодсказка] = useState(false);
+  /* На телефоне гаснет от любого следующего нажатия -- через тик, иначе то же
+     нажатие, что открыло, тут же и закроет. */
+  useEffect(() => {
+    if (!фомПодсказка) return;
+    let снять = () => {};
+    const т = setTimeout(() => {
+      const закрыть = () => setФомПодсказка(false);
+      document.addEventListener("pointerdown", закрыть, true);
+      снять = () => document.removeEventListener("pointerdown", закрыть, true);
+    }, 0);
+    return () => {
+      clearTimeout(т);
+      снять();
+    };
+  }, [фомПодсказка]);
+  /**
    * ЧТО ОТВЕТИЛ ПОСЕТИТЕЛЬ про ЭТУ неделю, если отвечал. Хранит опрос
    * (pai.answers.v3), здесь только читается -- кнопке нужно знать, звать ли
    * ещё и каким цветом обвестись.
@@ -269,10 +294,10 @@ export default function App() {
           три с половиной пикселя -- мелочь, которую глаз всё равно ловит. */}
       {телефон ? (
         <span className="flex w-[118px] shrink-0 justify-center">
-          <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone тронут={фомТронут} onТронуть={() => setФомТронут(true)} />
+          <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone тронут={фомТронут} onТронуть={() => setФомТронут(true)} onПодсказка={setФомПодсказка} />
         </span>
       ) : (
-        <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} тронут={фомТронут} onТронуть={() => setФомТронут(true)} />
+        <FomButton lang={lang} on={showFom} onToggle={() => setShowFom((s) => !s)} phone={телефон} тронут={фомТронут} onТронуть={() => setФомТронут(true)} onПодсказка={setФомПодсказка} />
       )}
     </div>
   );
@@ -660,7 +685,18 @@ export default function App() {
                   строка блока раздвигала его -- и весь ряд правее, строй с
                   человечками и оба сравнения, ездил вбок при каждом движении
                   по графику. */}
-              <div className={телефон ? "w-full" : "shrink-0"} style={телефон ? undefined : { width: ШИРИНА_ЧИСЛА }}>
+              <div className={"relative " + (телефон ? "w-full" : "shrink-0")} style={телефон ? undefined : { width: ШИРИНА_ЧИСЛА }}>
+                {/* На компьютере табличка про опрос выпадает из-под столбца с
+                    числом -- там, где на неё навели. Абсолютная: ряд
+                    показателей от неё не двигается. */}
+                {!телефон && фомПодсказка && (
+                  <ТабличкаФОМ
+                    lang={lang}
+                    phone={false}
+                    className="absolute left-0 top-[calc(100%+8px)]"
+                    style={{ width: 340 }}
+                  />
+                )}
                 <div>
                 {/* Надписи «прошедшая неделя» над числом больше нет: дата
                     недели стоит прямо под числом и говорит то же самое. */}
@@ -673,13 +709,30 @@ export default function App() {
                   {/* Зазор 3, а не 2: подпись стояла к числу вплотную и
                       читалась его частью. */}
                   <div className="flex items-end gap-3">
+                    {/* ЧИСЛО -- ВТОРАЯ КНОПКА ПОЯСНЕНИЯ ПРО ОПРОС (решение
+                        хозяина, 12 сентября 2026). На телефоне пояснение
+                        показывается один раз -- при первом касании кнопки
+                        ФОМа, -- и дальше открывается отсюда: по кнопке там
+                        нажимают, чтобы включить кривую, а не читать. Пунктир
+                        под числом и говорит, что здесь есть что открыть:
+                        на компьютере наведением, на телефоне нажатием. */}
                     <span
                       ref={numRef}
                       className={
-                        "mono font-bold leading-[0.84] " +
+                        "mono cursor-help font-bold leading-[0.84] underline decoration-dotted underline-offset-[6px] " +
                         (телефон ? "text-[46px]" : "text-[44px] sm:text-[54px] lg:text-[64px]")
                       }
-                      style={{ color, transition: "color 0.12s linear" }}
+                      style={{
+                        color,
+                        transition: "color 0.12s linear",
+                        textDecorationColor: "var(--ink-3)",
+                        textDecorationThickness: 2,
+                      }}
+                      role="button"
+                      aria-label={T.fomWhat[lang]}
+                      onMouseEnter={телефон ? undefined : () => setФомПодсказка(true)}
+                      onMouseLeave={телефон ? undefined : () => setФомПодсказка(false)}
+                      onClick={() => setФомПодсказка((v) => !v)}
                     >
                       {shown.toFixed(1)}
                     </span>
@@ -852,8 +905,22 @@ export default function App() {
                     между строками только так и читается: слова одной под
                     словами другой. */}
                 {телефон && (
-                  <div className="mt-1.5">
+                  <div className="relative mt-1.5">
                     <СловаНедели w={w} lang={lang} phone />
+                    {/* ТАБЛИЧКА ПРО ОПРОС СТОИТ ЗДЕСЬ, НА УРОВНЕ СЛОВ НЕДЕЛИ
+                        (решение хозяина, 12 сентября 2026). Ни у кнопки, ни у
+                        нижнего края экрана ей не место: и там и там она
+                        накрывает кривую или разбор. Слова -- единственное, что
+                        не жаль закрыть на несколько секунд, и они ровно того
+                        размера, что нужен тексту. Абсолютная, поэтому
+                        страницу не двигает. */}
+                    {фомПодсказка && (
+                      <ТабличкаФОМ
+                        lang={lang}
+                        phone
+                        className="absolute inset-x-0 top-0"
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -1174,14 +1241,15 @@ export default function App() {
               style={{ background: "transparent" }}
             />
             <div
-              className="absolute right-0 top-0 flex max-h-full w-[min(430px,100vw)] flex-col overflow-y-auto p-3 backdrop-blur-xl"
+              /* ПОДЛОЖКИ У ПАНЕЛИ БОЛЬШЕ НЕТ (решение хозяина, 12 сентября
+                 2026). Здесь было то же стекло, что у верхней полосы: свой
+                 фон, размытие и две рамки. Вместе с карточкой опроса выходило
+                 две поверхности одна на другой, и панель читалась как окно
+                 поверх окна. Теперь выезжает сама карточка, а под ней -- чистый
+                 сайт. Отступ и прокрутка остаются: карточке нужен зазор от края
+                 экрана, а на низком экране -- возможность прокрутиться. */
+              className="absolute right-0 top-0 flex max-h-full w-[min(430px,100vw)] flex-col overflow-y-auto p-3"
               style={{
-                /* ТО ЖЕ ВЕЩЕСТВО, ЧТО У ВЕРХНЕЙ ПОЛОСЫ: тот же color-mix и то
-                   же размытие. Панель выезжает ИЗ полосы, и глухой чёрный фон
-                   выдавал в ней постороннюю вещь, приехавшую откуда-то ещё. */
-                background: "color-mix(in srgb, var(--bg) 76%, transparent)",
-                borderBottom: "1px solid var(--line-strong)",
-                borderLeft: "1px solid var(--line-strong)",
                 transform: опросОткрыт ? "translateY(0)" : "translateY(-102%)",
                 transition: "transform .28s ease",
               }}
@@ -1450,7 +1518,48 @@ function EventSearch({ lang, onPick, phone = false, крупно = false, все
  * вся проверка прибора. Ссылка ведёт на источник, чтобы читатель мог посмотреть
  * тот же ряд своими глазами, а не верить нам на слово.
  */
-function FomButton({ lang, on, onToggle, phone = false, тронут = false, onТронуть }: { lang: Lang; on: boolean; onToggle: () => void; phone?: boolean; тронут?: boolean; onТронуть?: () => void }) {
+/**
+ * Пояснение про опрос ФОМа -- одна табличка на два места: число показания и
+ * (единожды) кнопка ФОМа на телефоне. Содержимое одно, ставится по-разному,
+ * поэтому положение задаёт тот, кто её ставит.
+ */
+function ТабличкаФОМ({
+  lang, phone, style, className = "",
+}: { lang: Lang; phone: boolean; style?: React.CSSProperties; className?: string }) {
+  return (
+    <div
+      className={
+        "z-40 rounded-2xl border leading-relaxed "
+        + (phone ? "p-3 text-[13.5px] " : "p-4 text-[16px] ")
+        + className
+      }
+      style={{
+        borderColor: "var(--line-strong)",
+        background: "var(--bg-2)",
+        color: "var(--ink-2)",
+        boxShadow: "var(--shadow)",
+        /* ПЕРЕНОС ЯВНО: у ряда показателей стоит whitespace-nowrap, чтобы он
+           не ломался пополам, и табличка наследовала запрет переноса -- текст
+           вставал одной строкой в тысячу пикселей и вылезал наружу. */
+        whiteSpace: "normal",
+        ...style,
+      }}
+    >
+      {T.fomWhat[lang]}{" "}
+      <a
+        href="https://fom.ru/obshestvo/10946"
+        target="_blank"
+        rel="noreferrer noopener"
+        className="underline underline-offset-4"
+        style={{ color: "var(--cool)" }}
+      >
+        fom.ru
+      </a>
+    </div>
+  );
+}
+
+function FomButton({ lang, on, onToggle, phone = false, тронут = false, onТронуть, onПодсказка }: { lang: Lang; on: boolean; onToggle: () => void; phone?: boolean; тронут?: boolean; onТронуть?: () => void; onПодсказка?: (v: boolean) => void }) {
   const [tip, setTip] = useState(false);
   /**
    * ПОЯСНЕНИЕ ПОКАЗЫВАЕТСЯ ПО НАВЕДЕНИЮ И ГАСНЕТ ПО НАЖАТИЮ.
@@ -1461,78 +1570,30 @@ function FomButton({ lang, on, onToggle, phone = false, тронут = false, on
    * просил. Теперь наоборот: навёл на кнопку -- прочитал, нажал -- пояснение
    * ушло и осталась кривая.
    *
-   * НА ТЕЛЕФОНЕ -- ПО НАЖАТИЮ И ПОЛОСОЙ У НИЖНЕГО КРАЯ ЭКРАНА (решение
-   * хозяина, 12 сентября 2026). Наведения там нет, а в строке места под
-   * подсказку не взять: привязанная к кнопке, она встаёт поверх кривой -- ровно
-   * того, за чем кнопку и нажимали. У нижнего края в этот миг стоит начало
-   * разбора недели, и закрыть собой его не жаль. Гаснет от ЛЮБОГО следующего
-   * нажатия, в том числе по себе самой: на телефоне промахнуться мимо
-   * «снаружи» слишком легко, а висящая подсказка хуже, чем её отсутствие.
+   * НА ТЕЛЕФОНЕ СВОЕЙ ТАБЛИЧКИ У КНОПКИ НЕТ (решение хозяина, 12 сентября
+   * 2026). Наведения там нет, а привязанная к кнопке табличка встаёт поверх
+   * кривой -- ровно того, за чем кнопку и нажимали. Поэтому на телефоне кнопка
+   * только СИГНАЛИТ наверх, и один раз: при самом первом касании. Ставит
+   * табличку страница -- на уровне слов недели, где кривой она не мешает, а
+   * дальше открывают её числом показания. См. фомПодсказка в App.
    */
-  // Только на компьютере: на телефоне это же включение кривой и ПОКАЗЫВАЕТ
-  // пояснение, и без оговорки оно гасло бы в тот же миг, как появилось.
   useEffect(() => {
     if (!on || phone) return;
     setTip(false);
   }, [on, phone]);
-  useEffect(() => {
-    if (!tip || !phone) return;
-    // Через тик, иначе то же самое нажатие, что её открыло, её и закроет.
-    let снять = () => {};
-    const т = setTimeout(() => {
-      const закрыть = () => setTip(false);
-      document.addEventListener("pointerdown", закрыть, true);
-      снять = () => document.removeEventListener("pointerdown", закрыть, true);
-    }, 0);
-    return () => {
-      clearTimeout(т);
-      снять();
-    };
-  }, [tip, phone]);
   return (
     <div
       className="relative"
       onMouseEnter={() => !phone && setTip(true)}
       onMouseLeave={() => setTip(false)}
     >
-      {tip && (
-        <div
-          /* НА ТЕЛЕФОНЕ -- ПОЛОСОЙ У НИЖНЕГО КРАЯ ЭКРАНА, а не под кнопкой:
-             под кнопкой она накрывала кривую. fixed, поэтому в раскладке не
-             занимает ничего и ни при какой длине текста страницу не двигает. */
-          className={
-            "z-40 rounded-2xl border leading-relaxed " +
-            (phone
-              ? "fixed bottom-2 left-2 right-2 p-3 text-[13.5px]"
-              : "absolute left-0 top-[calc(100%+10px)] p-4 text-[16px]")
-          }
-          /* Ширина стилем, а не классом: произвольное значение с calc внутри
-             min() Tailwind не собрал, и подсказка сжималась до ширины кнопки. */
-          style={{
-            borderColor: "var(--line-strong)",
-            background: "var(--bg-2)",
-            color: "var(--ink-2)",
-            boxShadow: "var(--shadow)",
-            width: phone ? undefined : 340,
-            /* ПЕРЕНОС ЯВНО. Кнопка стоит в ряду показателей, а тому ряду
-               задано whitespace-nowrap, чтобы он не ломался пополам, -- и
-               подсказка наследовала запрет переноса. Текст вставал в одну
-               строку шириной 1142 пикселя внутри коробки в 338 и вылезал
-               наружу. */
-            whiteSpace: "normal",
-          }}
-        >
-          {T.fomWhat[lang]}{" "}
-          <a
-            href="https://fom.ru/obshestvo/10946"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="underline underline-offset-4"
-            style={{ color: "var(--cool)" }}
-          >
-            fom.ru
-          </a>
-        </div>
+      {tip && !phone && (
+        <ТабличкаФОМ
+          lang={lang}
+          phone={false}
+          className="absolute left-0 top-[calc(100%+10px)]"
+          style={{ width: 340 }}
+        />
       )}
       <button
         className={
@@ -1548,11 +1609,12 @@ function FomButton({ lang, on, onToggle, phone = false, тронут = false, on
            пятнадцатью пикселями, сколько её ни увеличивай в разметке. */
         style={{ fontSize: phone ? 13 : 20 }}
         data-on={on}
-        /* На телефоне то же нажатие и включает кривую, и показывает
-           пояснение: другого случая показать его там нет. На компьютере
-           нажатие по-прежнему ГАСИТ пояснение -- прочитал и убрал. */
+        /* На телефоне ПЕРВОЕ касание, кроме включения кривой, просит страницу
+           показать пояснение -- один раз; дальше его открывают числом. На
+           компьютере нажатие по-прежнему ГАСИТ пояснение: прочитал и убрал. */
         onClick={() => {
-          setTip(phone);
+          setTip(false);
+          if (phone && !тронут) onПодсказка?.(true);
           onТронуть?.();
           onToggle();
         }}
@@ -1983,7 +2045,9 @@ function СтрелкаНедели({
        никто не мешает. */
     ? { top: 34, paddingTop: 2, alignItems: "flex-start",
         ...(влево ? { left: 22 - поля } : { right: 6 - поля }) }
-    : { top: "20%", ...(влево ? { left: 78 } : { right: 58 }) };
+    /* На компьютере 26 %: 31 % было низко (стрелки попадали в самую гущу
+       кривой), 20 % -- высоко, они подошли к ряду лупы и настроек. */
+    : { top: "26%", ...(влево ? { left: 78 } : { right: 58 }) };
   return (
     <button
       type="button"

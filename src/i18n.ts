@@ -101,6 +101,37 @@ export const T = {
     ru: "Раз в неделю ФОМ спрашивает людей, тревожно ли настроение вокруг них. Выпуск выходит через десять дней после самой недели, а индекс той же недели готов в понедельник. С этим рядом его и сверяют:",
     en: "Once a week FOM asks people whether the mood around them is anxious. The issue appears ten days after the week itself; the index for that week is ready on Monday. That is the series it is checked against:",
   },
+  /**
+   * ЧТО СКАЗАТЬ, КОГДА ЧИСЛА ОПРОСА ЕЩЁ НЕТ.
+   *
+   * Прочерк на месте числа сам по себе не говорит, поломка это или порядок
+   * вещей. Порядок: волну опрашивают в воскресенье недели, а выпуск с ней
+   * выходит через одиннадцать дней, по четвергам, -- значит у свежих недель
+   * числа опроса не может быть в принципе, и день, когда оно появится, можно
+   * назвать заранее.
+   */
+  fomSoon: {
+    ru: (дата: string) =>
+      `Опроса за эту неделю ещё нет. Волну опрашивают в воскресенье, а выпуск с ней выходит через одиннадцать дней: ждём ${дата}.`,
+    en: (дата: string) =>
+      `No poll for this week yet. The wave is surveyed on Sunday and published eleven days later: expected ${дата}.`,
+  },
+  /** День и месяц без «г.»: дата стоит внутри фразы, и точка у неё своя. */
+  dayMonth: {
+    ru: (д: string) =>
+      new Date(д + "T00:00:00Z").toLocaleDateString("ru-RU", {
+        day: "numeric", month: "long", timeZone: "UTC",
+      }),
+    en: (д: string) =>
+      new Date(д + "T00:00:00Z").toLocaleDateString("en-GB", {
+        day: "numeric", month: "long", timeZone: "UTC",
+      }),
+  },
+  /** Недели, до которых опрос просто не дотягивается: его тогда не было. */
+  fomNever: {
+    ru: "Опроса за эту неделю нет: волны за неё ФОМ не публиковал.",
+    en: "There is no poll for this week: FOM published no wave for it.",
+  },
   /** Постоянная подпись рядом с числом: на чём это число основано. */
   // ДВЕ СТРОКИ И ПОЛНОЕ ИМЯ. «По следам в сети» отвечало на вопрос «как
   // измерено», но не говорило, ЧТО измерено. Рядом с числом должно стоять имя
@@ -288,7 +319,7 @@ export const T = {
     ru: [
       {
         t: "1. Следы вместо ответов",
-        d: "Опросы легко исказить: люди умеют молчать убедительнее, чем говорить. Поведение так не умеет — цифровой след остаётся почти всегда. Отпечаток этот частичный.",
+        d: "Опросы легко исказить: люди умеют молчать убедительнее, чем говорить. Поведение скрыть сложнее — цифровой след остаётся почти всегда. Отпечаток этот частичный, но по нему можно судить о том, что люди чувствуют.",
       },
       {
         t: "2. На что он отзывается",
@@ -306,7 +337,7 @@ export const T = {
     en: [
       {
         t: "1. Traces, not answers",
-        d: "Surveys are easy to distort: people are better at staying silent than at speaking. Behaviour is not — a digital trace remains almost always. That imprint is partial.",
+        d: "Surveys are easy to distort: people are better at staying silent than at speaking. Behaviour is harder to hide — a digital trace remains almost always. That imprint is partial, but it still tells you something about what people feel.",
       },
       {
         t: "2. What it responds to",
@@ -323,20 +354,57 @@ export const T = {
     ],
   },
 
+  /**
+   * ГРАНИЦЫ -- ТАКИЕ ЖЕ СКЛАДНЫЕ БЛОКИ, ЧТО И ШАГИ (решение хозяина,
+   * 12 сентября 2026), и у каждого своё название. Пять абзацев подряд читались
+   * одной стеной, а с крупным кеглем заняли бы два экрана: свёрнутые, они
+   * показывают сразу весь список того, чего прибор не умеет, -- а подробность
+   * открывает тот, кому она нужна.
+   */
   limitList: {
     ru: [
-      "Индекс видит внимание, а не чувство. Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, годовой ход снимается по постороннему, нетревожному чтению, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое зарубежной громкой новостью, иногда проходит за здешнюю тревогу.",
-      "Резкий удар он видит лучше, чем затяжную тревогу. Пик второй волны ковида опрос ставит 8-й неделей из 309, индекс — 13-й; год назад этот разрыв был втрое больше, его сократили, но он остался.",
-      "Источники не вечны: их блокируют, они затухают, связь выключают. Неделя поэтому сравнивается с недавним прошлым самого источника, а где можно — с ним же в остальном мире. Это отделяет падение источника от подъёма тревоги, но не лечит: где источник просел в разы, точность по нему падает.",
-      "По регионам он не считает и считать не будет: региональных опросов, с которыми можно было бы свериться, автор не знает — а без ориентира проверять нечем.",
-      "Ответы посетителей на индекс не влияют: это отдельный вопрос отдельным людям, а не часть измерения.",
+      {
+        t: "Внимание, а не чувство",
+        d: "Человек может пойти по этому следу из любопытства — и такие недели у индекса есть. Против этого стоят противовесы: обычный уровень вычитается целиком, годовой ход снимается по постороннему, нетревожному чтению, а мировой подъём меряется отдельно и вычитается тоже. Полной защиты они не дают: любопытство, поднятое зарубежной громкой новостью, иногда проходит за здешнюю тревогу.",
+      },
+      {
+        t: "Удар виден лучше, чем затяжная тревога",
+        d: "Пик второй волны ковида опрос ставит 8-й неделей из 309, индекс — 13-й; год назад этот разрыв был втрое больше, его сократили, но он остался.",
+      },
+      {
+        t: "Источники не вечны",
+        d: "Их блокируют, они затухают, связь выключают. Неделя поэтому сравнивается с недавним прошлым самого источника, а где можно — с ним же в остальном мире. Это отделяет падение источника от подъёма тревоги, но не лечит: где источник просел в разы, точность по нему падает.",
+      },
+      {
+        t: "По регионам он не считает",
+        d: "И считать не будет: региональных опросов, с которыми можно было бы свериться, автор не знает — а без ориентира проверять нечем.",
+      },
+      {
+        t: "Ответы посетителей ничего не меняют",
+        d: "На индекс они не влияют: это отдельный вопрос отдельным людям, а не часть измерения.",
+      },
     ],
     en: [
-      "It sees attention, not feeling. A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, the yearly swing is removed using unrelated, non-anxious reading, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by a loud foreign story sometimes passes for anxiety here.",
-      "It sees a sharp blow better than drawn-out anxiety. The poll ranks the peak of the second covid wave 8th of 309 weeks, the index 13th; a year ago that gap was three times wider — it has been narrowed, not closed.",
-      "Sources do not last: they get blocked, they fade, connections are switched off. So a week is compared with the recent past of the source itself and, where possible, with the same source in the rest of the world. That separates a source's decline from a rise in anxiety, but does not cure it: where a source has fallen several-fold, its precision falls too.",
-      "It does not measure regions and will not: the author knows of no regional polls to check against, and without a reference point there is nothing to check with.",
-      "Visitors’ answers do not affect the index: it is a separate question to separate people, not part of the measurement.",
+      {
+        t: "Attention, not feeling",
+        d: "A person can follow the same trace out of curiosity — and the index has such weeks. There are counterweights: the ordinary level is subtracted entirely, the yearly swing is removed using unrelated, non-anxious reading, and the world-wide rise is measured separately and subtracted too. They give no full protection: curiosity raised by a loud foreign story sometimes passes for anxiety here.",
+      },
+      {
+        t: "A blow shows better than drawn-out anxiety",
+        d: "The poll ranks the peak of the second covid wave 8th of 309 weeks, the index 13th; a year ago that gap was three times wider — it has been narrowed, not closed.",
+      },
+      {
+        t: "Sources do not last",
+        d: "They get blocked, they fade, connections are switched off. So a week is compared with the recent past of the source itself and, where possible, with the same source in the rest of the world. That separates a source's decline from a rise in anxiety, but does not cure it: where a source has fallen several-fold, its precision falls too.",
+      },
+      {
+        t: "It does not measure regions",
+        d: "And it will not: the author knows of no regional polls to check against, and without a reference point there is nothing to check with.",
+      },
+      {
+        t: "Visitors’ answers change nothing",
+        d: "They do not affect the index: it is a separate question to separate people, not part of the measurement.",
+      },
     ],
   },
 } as const;

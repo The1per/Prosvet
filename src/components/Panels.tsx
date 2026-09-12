@@ -325,6 +325,9 @@ function Жирным({ t }: { t: string }) {
 export function Methodology({ lang }: { lang: Lang }) {
   const ref = useReveal<HTMLDivElement>();
   const [open, setOpen] = useState<number | null>(0);
+  /* Границы открываются своим счётом: они в другой карточке, и открытый шаг
+     не должен закрывать открытую границу. Изначально свёрнуты все. */
+  const [граница, setГраница] = useState<number | null>(null);
   const steps = T.steps[lang];
   return (
     <div ref={ref} id="как-измерено" className="reveal grid gap-4 lg:grid-cols-[1.15fr_.85fr] scroll-mt-16">
@@ -369,14 +372,36 @@ export function Methodology({ lang }: { lang: Lang }) {
 
       <div className="card p-5 sm:p-7">
         <div className="chip mb-3 md:mb-5">{T.limits[lang]}</div>
-        <ul className="space-y-3 md:space-y-6">
-          {T.limitList[lang].map((l) => (
-            <li key={l} className="flex gap-3 text-[16px] leading-relaxed md:text-[29px]" style={{ color: "var(--ink-2)" }}>
-              <span style={{ color: "var(--accent)" }}>—</span>
-              <span>{l}</span>
-            </li>
+        {/* СКЛАДНЫЕ БЛОКИ, КАК У ШАГОВ (решение хозяина, 12 сентября 2026).
+            Свёрнуты все: список того, чего прибор не умеет, виден целиком с
+            одного взгляда, а подробность открывает тот, кому она нужна. */}
+        <div>
+          {T.limitList[lang].map((l, i) => (
+            <button
+              key={l.t}
+              onClick={() => setГраница(граница === i ? null : i)}
+              className="w-full cursor-pointer py-3 text-left md:py-5"
+              style={{ background: "none", border: "none", borderTopWidth: i ? 1 : 0, borderTopStyle: "solid", borderTopColor: "var(--line)", color: "inherit" }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[16.5px] font-medium md:text-[30px]">{l.t}</span>
+                <span
+                  className="mono text-lg leading-none transition-transform md:text-[32px]"
+                  style={{ color: "var(--ink-3)", transform: граница === i ? "rotate(45deg)" : "none" }}
+                >
+                  +
+                </span>
+              </div>
+              <div className="grid transition-all duration-500" style={{ gridTemplateRows: граница === i ? "1fr" : "0fr" }}>
+                <div className="overflow-hidden">
+                  <p className="pt-2 text-[16px] leading-relaxed md:pt-4 md:text-[29px]" style={{ color: "var(--ink-2)" }}>
+                    {l.d}
+                  </p>
+                </div>
+              </div>
+            </button>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );

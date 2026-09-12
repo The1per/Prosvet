@@ -6,7 +6,7 @@ import Poll, { деньМСК } from "./components/Poll";
 import { Breakdown, Methodology, Reads } from "./components/Panels";
 import { BASELINE, LATEST, SERIES, type Week, ГРАНИЦА_ЭПОХ, indexOfDate, местоВЭпохе } from "./data/series";
 import { EVENT_BY_DATE } from "./data/events";
-import { T, fmtWeek, type Lang } from "./i18n";
+import { T, fmtDate, fmtWeek, type Lang } from "./i18n";
 import { anxiousOfTen, moodColor, moodGlow, levelIndex, moodT } from "./mood";
 import { useCounter, useLocal, useReveal, useТелефон } from "./hooks";
 
@@ -267,6 +267,26 @@ export default function App() {
    * в верхнем ряду, рядом с числами, на телефоне -- каждый у своего числа.
    * Дважды написанная разметка разъезжается при первой же правке.
    */
+  /**
+   * КОГДА ЖДАТЬ ОПРОС ЗА ПОКАЗАННУЮ НЕДЕЛЮ -- если его ещё нет.
+   *
+   * Волну опрашивают в воскресенье самой недели, а выпуск с ней выходит через
+   * одиннадцать дней, в четверг. Отсюда и дата: понедельник недели плюс шесть
+   * до воскресенья плюс одиннадцать. Зашитого числа здесь нет -- это календарь,
+   * и он честно считается для любой недели, на которую смотрят.
+   *
+   * Если этот день уже прошёл, а числа так и нет, обещать нечего: значит волны
+   * за эту неделю ФОМ не публиковал (так у всех недель до 2020 года).
+   */
+  const фомКогда = useMemo(() => {
+    if (w.fom != null) return null;
+    const д = new Date(w.date + "T00:00:00Z");
+    д.setUTCDate(д.getUTCDate() + 6 + 11);
+    const иso = д.toISOString().slice(0, 10);
+    const сегодня = new Date().toISOString().slice(0, 10);
+    return иso >= сегодня ? T.fomSoon[lang](T.dayMonth[lang](иso)) : T.fomNever[lang];
+  }, [w.fom, w.date, lang]);
+
   const парФОМ = (
     // shrink-0 и nowrap: пара не имеет права разъезжаться на две строки. Когда
     // кнопку увеличили, ей перестало хватать восьми пикселей, и число оставалось
@@ -295,6 +315,7 @@ export default function App() {
         <ТабличкаФОМ
           lang={lang}
           phone={false}
+          нет={фомКогда}
           className="absolute left-0 top-[calc(100%+10px)]"
           style={{ width: 340 }}
         />
@@ -925,6 +946,7 @@ export default function App() {
                       <ТабличкаФОМ
                         lang={lang}
                         phone
+                        нет={фомКогда}
                         className="absolute inset-x-0 top-0"
                       />
                     )}
@@ -1531,8 +1553,16 @@ function EventSearch({ lang, onPick, phone = false, крупно = false, все
  * поэтому положение задаёт тот, кто её ставит.
  */
 function ТабличкаФОМ({
-  lang, phone, style, className = "",
-}: { lang: Lang; phone: boolean; style?: React.CSSProperties; className?: string }) {
+  lang, phone, style, className = "", нет,
+}: {
+  lang: Lang; phone: boolean; style?: React.CSSProperties; className?: string;
+  /**
+   * Строка о том, что числа опроса за эту неделю нет, -- или пусто, если есть.
+   * Стоит ПЕРВОЙ и своим абзацем: человек навёл на прочерк, и первое, что он
+   * должен прочесть, -- почему там прочерк, а не что такое ФОМ.
+   */
+  нет?: string | null;
+}) {
   return (
     <div
       className={
@@ -1552,6 +1582,11 @@ function ТабличкаФОМ({
         ...style,
       }}
     >
+      {нет && (
+        <span className="mb-2 block font-semibold" style={{ color: "var(--ink)" }}>
+          {нет}
+        </span>
+      )}
       {T.fomWhat[lang]}{" "}
       <a
         href="https://fom.ru/obshestvo/10946"
@@ -2156,6 +2191,24 @@ function СловаНедели({ w, lang, phone = false }: { w: Week; lang: Lan
   };
   const коробка = useRef<HTMLDivElement>(null);
   useЗакрытьСнаружи(коробка, подсказка, () => setПодсказка(false));
+  /* И ГАСНЕТ ОТ ЛЮБОГО НАЖАТИЯ, В ТОМ ЧИСЛЕ ПО СЕБЕ САМОЙ (решение хозяина,
+     12 сентября 2026). Закрытия «снаружи» не хватало: на телефоне подсказка
+     занимает пол-карточки, и нажатие почти всегда приходится по ней самой --
+     то есть внутрь, где сторож молчит, и она висела, пока не попадёшь в
+     заголовок. Через тик, иначе то же нажатие, что её открыло, её и закроет. */
+  useEffect(() => {
+    if (!подсказка) return;
+    let снять = () => {};
+    const т = setTimeout(() => {
+      const закрыть = () => _setПодсказка(false);
+      document.addEventListener("pointerdown", закрыть, true);
+      снять = () => document.removeEventListener("pointerdown", закрыть, true);
+    }, 0);
+    return () => {
+      clearTimeout(т);
+      снять();
+    };
+  }, [подсказка]);
   /* ОТКРЫТО ВСЕГДА НЕ БОЛЬШЕ ОДНОГО ОКНА. Пока каждое слово помнило своё
      состояние само, на телефоне (где окно открывается нажатием, а не
      наведением) они копились: открыл три слова -- висят три окна внахлёст.

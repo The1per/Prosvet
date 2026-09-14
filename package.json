@@ -1,14 +1,12 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "anxiety-index-site",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node gen_data.mjs && vite build",
-    "preview": "vite preview",
-    "data": "node gen_data.mjs",
-    "build:prod": "node gen_data.mjs --без-подробностей && vite build"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "clsx": "2.1.1",
